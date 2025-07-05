@@ -1,2 +1,7 @@
-# Trae 
+# Cursor
+
+ npx degit next-dev-team/awesome-agent-rules/.cursor .cursor --force
+
+# Trae
+
  npx degit next-dev-team/awesome-agent-rules/.trae .trae --force
