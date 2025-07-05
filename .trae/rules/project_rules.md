@@ -49,5 +49,3 @@ Here's a rephrasing of your operational guidelines, emphasizing the critical poi
 * **External Queries:** For queries related to external libraries or general knowledge, use `context7`.
 
 ---
-
-**Please tell me what specific component, page, or feature you'd like me to design or implement within the `/home/sila/wpay/apps/wpay-merchant-web/src/` directory, adhering to these strict guidelines.**
