@@ -1,32 +1,53 @@
-operational guidelines:
+It sounds like you're looking for a way to ensure your agent strictly adheres to the defined operational guidelines, especially within your monorepo structure. The key is to make these rules **unambiguous** and **actionable** for the agent.
 
-# Note 
-- xx mean just sample so you need to handle dynamic
+---
 
-# **Appreciation **
+### Clarifying and Reinforcing Your Guidelines
 
-common related to help list, or docs
+Here's a rephrasing of your operational guidelines, emphasizing the critical points for your agent's understanding and adherence:
 
-### :ls_app
+---
 
-mean readonly list all current Appreciation file in summary in shortest eg. - MPC , :c7 mean use context7 ....
+## Operational Guidelines: STRICT ADHERENCE REQUIRED
 
-### :c7
+**All agent actions and modifications must strictly comply with the following directives.**
 
-means use context7 MCP Server eg. c7: antd button
+### 1. Project Scope & File Modifications
 
-**Scope**: All code modifications will be strictly within /home/sila/wpay/apps/wpay-merchant-web/src/xx.
+* **Primary Focus:** All code modifications, new files, and any changes whatsoever must be **strictly contained** within the `/home/sila/wpay/apps/wpay-merchant-web/src/` directory.
+* **No External Writes:** The agent is **forbidden** from writing, modifying, or creating any files outside of this specified directory. This includes any other projects within the monorepo or any root-level configuration files.
+* **Dynamic Paths:** The `xx` in `/home/sila/wpay/apps/wpay-merchant-web/src/xx` signifies a dynamic path within your project. The agent must respect this and operate only within this *relative* project structure.
 
-**Design System**: I will leverage your existing design system, colors, and themes defined in src/Main.tsx.
+### 2. Configuration & Environment
 
-**Component Usage**: I'll prioritize existing src/core/ components (e.g., core/DataGridX, core/Text) and standard MUI components as available in package.json.
+* **Hands-Off Policy:** The agent **must not** touch, modify, or create any configuration files unless explicitly instructed to do so. This includes, but is not limited to:
+    * ESLint configurations (e.g., `.eslintrc.js`, `.eslintrc.json`)
+    * TypeScript configurations (e.g., `tsconfig.json`)
+    * Webpack configurations
+    * Package manager files (e.g., `package.json`, `package-lock.json`, `yarn.lock`)
+    * Any other root-level or shared configuration files.
+* **"Only When Asked For":** This rule is absolute. If a task requires modifying a configuration file, the user will explicitly state it.
 
-**Data**: I will implement mock API fetches and useFetch with realistic state management.
+### 3. Design System & Component Usage
 
-**Structure**: Pages and related files will be self-contained within their own folders (e.g., folder/index.tsx, service.ts).
+* **Design System:** Always leverage the existing design system, including colors and themes, as defined in `src/Main.tsx` within the project scope.
+* **Component Priority:** Prioritize the use of existing components from `src/core/` (e.g., `core/DataGridX`, `core/Text`). If a suitable `src/core/` component isn't available, then use standard MUI components as listed in the project's `package.json`.
 
-**Environment**: Don't touch or modify configuration mostly already config, such as ESLint, or TypeScript setup files, webpack and more only modify when I ask for.
+### 4. Data & State Management
 
-**Tools**: I'll use TaskMgt mcp for medium tasks, figm AI Brideg if Figma details are provided, and context7 for external library queries.
+* **Mock Data:** Implement mock API fetches and utilize `useFetch` for data retrieval.
+* **Realistic State:** Ensure realistic state management for all implemented features.
 
-Please tell me what specific component, page, or feature you'd like me to design or implement within the /home/sila/wpay/apps/wpay-merchant-web/src/xx directory.
+### 5. Code Structure
+
+* **Self-Contained Units:** Pages and their related files (e.g., components, services) must be self-contained within their own dedicated folders (e.g., `folder/index.tsx`, `folder/service.ts`).
+
+### 6. Tools & Context
+
+* **Task Management:** Use `TaskMgt mcp` for medium-sized tasks.
+* **Figma Integration:** If Figma details are provided, utilize `figm AI Bridge`.
+* **External Queries:** For queries related to external libraries or general knowledge, use `context7`.
+
+---
+
+**Please tell me what specific component, page, or feature you'd like me to design or implement within the `/home/sila/wpay/apps/wpay-merchant-web/src/` directory, adhering to these strict guidelines.**
