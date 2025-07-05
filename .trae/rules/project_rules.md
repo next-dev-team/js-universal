@@ -25,7 +25,7 @@ means use context7 MCP Server eg. c7: antd button
 
 **Structure**: Pages and related files will be self-contained within their own folders (e.g., folder/index.tsx, service.ts).
 
-**Environment**: No configuration, ESLint, or TypeScript setup files will be generated.
+**Environment**: Don't touch or modify configuration mostly already config, such as ESLint, or TypeScript setup files, webpack and more only modify when I ask for.
 
 **Tools**: I'll use TaskMgt mcp for medium tasks, figm AI Brideg if Figma details are provided, and context7 for external library queries.
 
