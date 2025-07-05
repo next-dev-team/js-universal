@@ -1,0 +1,5 @@
+@forward './variable';
+
+.color-test {
+  color: $color-test;
+}

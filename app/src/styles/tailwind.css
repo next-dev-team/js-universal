@@ -1,0 +1,13 @@
+@import 'tailwindcss';
+
+@theme {
+  /** 基础配置重写 */
+
+  /** 自定义配置 */
+  --color-main: #333; /** 主要文字 */
+  --color-secondary: #999; /** 次要文字 */
+  --color-disabled: #ddd; /** 禁用文字 */
+  --color-white: #fff;
+  --color-red: #e23; /** 主题色/强提示 */
+  --color-link: #09f; /** 链接/信息 */
+}

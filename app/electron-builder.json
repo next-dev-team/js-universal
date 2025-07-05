@@ -1,0 +1,44 @@
+{
+  "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
+  "appId": "YourAppID",
+  "asar": true,
+  "directories": {
+    "output": "dist-release/${version}"
+  },
+  "files": ["dist-electron"],
+  "asarUnpack": [
+    "resources/**",
+    "node_modules/go-get-folder-size/**/*",
+    "node_modules/7zip-bin/**/*",
+    "node_modules/sweetalert2/**/*",
+    "node_modules/@cocktailpeanut/**/*"
+  ],
+  "mac": {
+    "artifactName": "${productName}_${version}.${ext}",
+    "target": ["dmg", "zip"]
+  },
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      }
+    ],
+    "artifactName": "${productName}_${version}.${ext}"
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": true,
+    "deleteAppDataOnUninstall": true,
+    "uninstallDisplayName": "${productName} ${buildVersion}",
+    "artifactName": "${productName}_${version}.${ext}",
+    "shortcutName": "${productName}_${version}"
+  },
+  "publish": {
+    "provider": "generic",
+    "channel": "latest",
+    "url": "http://localhost:5173/sub/download/"
+  },
+  "buildDependenciesFromSource": true
+}

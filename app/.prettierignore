@@ -1,0 +1,7 @@
+/node_modules/**
+/dist/
+/dist*
+/public/*
+/docs/*
+CHANGELOG
+/coverage/

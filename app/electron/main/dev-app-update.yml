@@ -1,0 +1,3 @@
+provider: generic
+url: http://localhost:5173/sub/download/
+updaterCacheDirName: electron-vite-react-updater
