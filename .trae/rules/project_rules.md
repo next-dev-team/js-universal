@@ -1,5 +1,3 @@
-It sounds like you're looking for a way to ensure your agent strictly adheres to the defined operational guidelines, especially within your monorepo structure. The key is to make these rules **unambiguous** and **actionable** for the agent.
-
 ---
 
 ### Clarifying and Reinforcing Your Guidelines
