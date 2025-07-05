@@ -1,2 +1,2 @@
 # Trae 
-npx degit next-dev-team/awesome-agent-rules/ .trae
+ npx degit next-dev-team/awesome-agent-rules/.trae .trae --force
