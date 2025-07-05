@@ -1,5 +1,15 @@
 # Operational Guidelines: STRICT ADHERENCE REQUIRED
 
+### Tools & Context & MCP
+
+- **Task Management:** Use `TaskMgt mcp` for medium-sized tasks.
+- **External Queries:** For queries related to external libraries or general knowledge, use `context7`.
+
+## Development Environment
+
+- **Package Manager:** Always use `yarn` for installing dependencies and managing packages.
+- **Starting Development:** Use `./dev.sh` or `setup.sh` to start the development server.
+
 ## Project Overview
 
 A project launcher that replaces itself with the chosen IDE is much more efficient than embedding. This approach eliminates the performance overhead while solving your workflow problem perfectly.
@@ -26,8 +36,3 @@ Implementation Strategy
 4. [] IDE Auto-Detection
 5. [] Project Templates or stater
 6. [] Workspace Management
-
-### Tools & Context & MCP
-
-- **Task Management:** Use `TaskMgt mcp` for medium-sized tasks.
-- **External Queries:** For queries related to external libraries or general knowledge, use `context7`.

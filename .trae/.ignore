@@ -1,0 +1,27 @@
+# Ignore files for Trae AI agent
+.env
+.env.*
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.log
+logs/
+.DS_Store
+.idea/
+.vscode/
+node_modules/
+dist/
+build/
+*.egg-info/
+.coverage
+coverage/
+.pytest_cache/
+.mypy_cache/
+.tox/
+.cache/
+tmp/
+temp/

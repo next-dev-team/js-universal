@@ -28,16 +28,28 @@ const showMainWindow = () => {
 
 function createMainWindow() {
   const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1200,
+    height: 800,
+    minWidth: 800,
+    minHeight: 600,
+    show: false, // Don't show until ready
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.cjs'),
       nodeIntegrationInSubFrames: true,
+      contextIsolation: true,
+
     },
+    titleBarStyle: 'default',
+    icon: path.join(__dirname, '../../../resources/icon.png'), // Add app icon
   });
-  if (isDevelopment) {
-    mainWindow.webContents.openDevTools();
-  }
+  // Show window when ready
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
+    if (isDevelopment) {
+      mainWindow.webContents.openDevTools();
+    }
+  });
+  
   checkUpdate(mainWindow);
   context.mainWindow = mainWindow;
   context.mainWindow.on('close', (event) => {
@@ -51,6 +63,7 @@ function createMainWindow() {
       context.mainWindow = undefined;
     }
   });
+  // Load the app
   if (isDevelopment && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(
       `${process.env['ELECTRON_RENDERER_URL']}#${import.meta.env.VITE_BASE_ROUTER_PREFIX}`,
@@ -60,8 +73,14 @@ function createMainWindow() {
     mainWindow.loadURL(
       `app://../renderer/index.html#${import.meta.env.VITE_BASE_ROUTER_PREFIX}`,
     );
-    //mainWindow.loadURL(`app://../renderer/index.html#${import.meta.env.VITE_BASE_ROUTER_PREFIX}test/test1`);
   }
+  
+  // Handle window closed
+  mainWindow.on('closed', () => {
+    context.mainWindow = undefined;
+  });
+  
+  return mainWindow;
 }
 
 // quit app set allowQuitting to true

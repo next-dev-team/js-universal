@@ -26,6 +26,7 @@ export default tseslint.config(
       ...react.configs['jsx-runtime'].rules,
       '@typescript-eslint/consistent-type-imports': 1,
       'constructor-super': 'error',
+      't@typescript-eslint/no-explicit-any': 0,
     },
     languageOptions: {
       ecmaVersion: 2020,

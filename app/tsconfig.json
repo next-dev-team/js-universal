@@ -13,6 +13,7 @@
     "isolatedModules": true,
     "moduleDetection": "force",
     "noEmit": true,
+    "types": ["chokidar"],
     "jsx": "react-jsx",
 
     /* Linting */

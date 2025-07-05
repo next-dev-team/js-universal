@@ -1,16 +1,7 @@
-import { RouterProvider } from 'react-router/dom';
-import AjaxLoading from '@/components/ajax-loading';
-import { useAjaxLoadingStore } from '@/store';
-import router from './router';
+import ProjectLauncher from '@/components/ProjectLauncher';
 
 function App() {
-  const { isLoading } = useAjaxLoadingStore();
-  return (
-    <>
-      <RouterProvider router={router} />
-      <AjaxLoading visible={isLoading} />
-    </>
-  );
+  return <ProjectLauncher />;
 }
 
 export default App;

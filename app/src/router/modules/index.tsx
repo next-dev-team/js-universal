@@ -1,7 +1,6 @@
 import { lazy } from 'react';
 import { Navigate } from 'react-router';
 import CommonLayout from '@/layouts/common';
-import testRoutes from '@/router/modules/test.tsx';
 import { LazyLoad } from '@/router/utils';
 import type { ExtendRouteObjectWith } from '@/types/router';
 
@@ -20,7 +19,6 @@ const routes: ExtendRouteObjectWith[] = [
         element: LazyLoad(lazy(() => import('@/pages/index'))),
         title: 'index',
       },
-      ...testRoutes,
     ],
   },
   {

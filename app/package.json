@@ -46,12 +46,16 @@
     "test": "vitest run",
     "test-u": "vitest -u run",
     "typecheck": "tsc --noEmit",
-    "update:deps": "yarn upgrade-interactive --latest"
+    "update:deps": "yarn upgrade-interactive --latest",
+    "rebuild:native": "electron-rebuild"
   },
   "dependencies": {
+    "better-sqlite3": "^12.2.0",
+    "chokidar": "^4.0.3",
     "electron-log": "^5.3.3",
     "electron-store": "^8.1.0",
     "electron-updater": "^6.6.2",
+    "fast-glob": "^3.3.2",
     "koffi": "^2.11.0"
   },
   "devDependencies": {
@@ -59,6 +63,7 @@
     "@commitlint/cli": "^19.8.0",
     "@commitlint/config-conventional": "^19.8.0",
     "@commitlint/prompt-cli": "^19.8.0",
+    "@electron-toolkit/utils": "^4.0.0",
     "@eslint/js": "^9.24.0",
     "@liangskyli/axios-request": "^0.2.0",
     "@liangskyli/mock": "^6.0.0",
@@ -68,6 +73,7 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
+    "@types/chokidar": "^2.1.7",
     "@types/node": "^24.0.3",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",

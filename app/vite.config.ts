@@ -28,8 +28,7 @@ export const getViteConfig: UserConfigFnObject = ({ mode }) => {
   const proxy: Required<UserConfig>['server']['proxy'] =
     env.VITE_HTTP_MOCK_ENV === 'true' ? mockProxy : noMockProxy;
 
-  return {
-    base: routerBase,
+  const config: UserConfig = {
     plugins: [
       react(),
       svgr(),
@@ -94,6 +93,13 @@ export const getViteConfig: UserConfigFnObject = ({ mode }) => {
       proxy: proxy,
     },
   };
+
+  // Only set base for non-electron environments
+  if (routerBase && !process.env.ELECTRON_RENDERER_URL) {
+    config.base = routerBase;
+  }
+
+  return config;
 };
 
 export default defineConfig(getViteConfig);
