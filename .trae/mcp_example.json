@@ -1,0 +1,33 @@
+{
+  "mcpServers": {
+    "consult7": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["consult7", "openrouter", ""]
+    },
+    "Memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "env": {
+        "MEMORY_FILE_PATH": "memory.json"
+      },
+      "fromGalleryId": "modelcontextprotocol.servers_memory"
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"],
+      "env": {
+        "DEFAULT_MINIMUM_TOKENS": "10000"
+      },
+      "fromGalleryId": "upstash.context7"
+    },
+    "TaskManager": {
+      "command": "npx",
+      "args": ["-y", "@kazuph/mcp-taskmanager"],
+      "env": {
+        "TASK_MANAGER_FILE_PATH": "Documents/GitHub/awesome-agent-rules/resource/tasks.json"
+      },
+      "fromGalleryId": "kazuph.mcp-taskmanager"
+    }
+  }
+}
