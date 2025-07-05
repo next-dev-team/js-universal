@@ -1,10 +1,3 @@
----
-
-### Clarifying and Reinforcing Your Guidelines
-
-Here's a rephrasing of your operational guidelines, emphasizing the critical points for your agent's understanding and adherence:
-
----
 
 ## Operational Guidelines: STRICT ADHERENCE REQUIRED
 
