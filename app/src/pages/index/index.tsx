@@ -28,37 +28,21 @@ import {
   message,
 } from 'antd';
 import type { MenuProps } from 'antd';
+import type { IDE, Project } from '../../../electron/main/services/database';
 
 const { Header, Content } = Layout;
 const { Search } = Input;
-const { Text, Title } = Typography;
+const { Title } = Typography;
 
-interface Project {
-  id: string;
-  name: string;
-  path: string;
-  type: string;
-  lastOpened: number;
-  favorite: boolean;
-  tags: string[];
-  description?: string;
-}
+type FilterType = 'all' | 'favorites' | 'recent';
 
-interface IDE {
-  id: string;
-  name: string;
-  path: string;
-  icon?: string;
-}
-
-const ProjectLauncher: React.FC = () => {
+const IndexPage: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
-  const [ides, setIdes] = useState<IDE[]>([]);
+  const [ides, setIDEs] = useState<IDE[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState<string>('all');
+  const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
 
-  // Load projects and IDEs on component mount
   useEffect(() => {
     loadProjects();
     loadIDEs();
@@ -69,13 +53,14 @@ const ProjectLauncher: React.FC = () => {
       setLoading(true);
       const result = await (
         window as any
-      ).electron.projectManager.getProjects();
+      ).electronAPI.projectManager.getProjects();
       if (result.success) {
         setProjects(result.data || []);
       } else {
         message.error('Failed to load projects');
       }
-    } catch (_) {
+    } catch (error) {
+      console.error('Error loading projects:', error);
       message.error('Error loading projects');
     } finally {
       setLoading(false);
@@ -84,12 +69,12 @@ const ProjectLauncher: React.FC = () => {
 
   const loadIDEs = async () => {
     try {
-      const result = await (window as any).electron.projectManager.getIDEs();
+      const result = await (window as any).electronAPI.projectManager.getIDEs();
       if (result.success) {
-        setIdes(result.data || []);
+        setIDEs(result.data || []);
       }
-    } catch (_) {
-      console.error('Error loading IDEs:', _);
+    } catch (error) {
+      console.error('Error loading IDEs:', error);
     }
   };
 
@@ -97,12 +82,12 @@ const ProjectLauncher: React.FC = () => {
     try {
       let result;
       if (ideId) {
-        result = await (window as any).electron.projectManager.launchWithIDE(
+        result = await (window as any).electronAPI.projectManager.launchWithIDE(
           projectId,
           ideId,
         );
       } else {
-        result = await (window as any).electron.projectManager.launchProject(
+        result = await (window as any).electronAPI.projectManager.launchProject(
           projectId,
         );
       }
@@ -113,7 +98,8 @@ const ProjectLauncher: React.FC = () => {
       } else {
         message.error(result.error || 'Failed to launch project');
       }
-    } catch (_) {
+    } catch (error) {
+      console.error('Error launching project:', error);
       message.error('Error launching project');
     }
   };
@@ -122,40 +108,54 @@ const ProjectLauncher: React.FC = () => {
     try {
       const result = await (
         window as any
-      ).electron.projectManager.updateProject(projectId, {
+      ).electronAPI.projectManager.updateProject(projectId, {
         favorite: !favorite,
       });
       if (result.success) {
         loadProjects();
       }
-    } catch (_) {
+    } catch (error) {
+      console.error('Error updating project:', error);
       message.error('Error updating project');
     }
   };
 
   const handleScanDirectory = async () => {
     try {
-      const result = await window.electron.projectManager.selectDirectory();
-      if (result.success && !result.canceled) {
-        setLoading(true);
+      setLoading(true);
+      const result = await (window as any).electronAPI.projectManager.selectDirectory();
+      
+      if (result.success && !result.canceled && result.data) {
         const scanResult = await (
           window as any
-        ).electron.projectManager.scanDirectory(result.data);
+        ).electronAPI.projectManager.scanDirectory(result.data);
+        
         if (scanResult.success) {
-          message.success(`Found ${scanResult.data.length} projects`);
-          // Show import modal or auto-import
-          if (scanResult.data.length > 0) {
+          message.success(`Found ${scanResult.data?.length || 0} projects`);
+          
+          // Auto-import found projects
+          if (scanResult.data && scanResult.data.length > 0) {
             const importResult = await (
               window as any
-            ).electron.projectManager.importProjects(scanResult.data);
+            ).electronAPI.projectManager.importProjects(scanResult.data);
+            
             if (importResult.success) {
-              message.success(`Imported ${importResult.data.length} projects`);
+              message.success(`Imported ${importResult.data?.length || 0} projects`);
               loadProjects();
+            } else {
+              message.error(importResult.error || 'Failed to import projects');
             }
           }
+        } else {
+          message.error(scanResult.error || 'Failed to scan directory');
         }
+      } else if (result.canceled) {
+        // User canceled the dialog, no error message needed
+      } else {
+        message.error(result.error || 'Failed to select directory');
       }
-    } catch (_) {
+    } catch (error) {
+      console.error('Error scanning directory:', error);
       message.error('Error scanning directory');
     } finally {
       setLoading(false);
@@ -206,7 +206,8 @@ const ProjectLauncher: React.FC = () => {
           await (window as any).electron.projectManager.openInExplorer(
             project.id,
           );
-        } catch (_) {
+        } catch (error) {
+          console.error('Error opening in explorer:', error);
           message.error('Error opening in explorer');
         }
       },
@@ -220,7 +221,8 @@ const ProjectLauncher: React.FC = () => {
           await (window as any).electron.projectManager.openInTerminal(
             project.id,
           );
-        } catch (_) {
+        } catch (error) {
+          console.error('Error opening in terminal:', error);
           message.error('Error opening in terminal');
         }
       },
@@ -354,40 +356,42 @@ const ProjectLauncher: React.FC = () => {
                       menu={{ items: getProjectActions(project) }}
                       trigger={['click']}
                     >
-                      <Button type="text" icon={<MoreOutlined />} />
+                      <Button icon={<MoreOutlined />} />
                     </Dropdown>,
                   ]}
                 >
                   <Card.Meta
                     title={
-                      <Space>
-                        <Text strong>{project.name}</Text>
-                        <Tag color="blue">{project.type}</Tag>
-                      </Space>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <span>{project.name}</span>
+                        {project.type && (
+                          <Tag color="blue">{project.type}</Tag>
+                        )}
+                      </div>
                     }
                     description={
                       <div>
-                        <Text type="secondary" style={{ fontSize: '12px' }}>
+                        <div
+                          style={{
+                            fontSize: '12px',
+                            color: '#666',
+                            marginBottom: '4px',
+                          }}
+                        >
                           {project.path}
-                        </Text>
-                        {project.description && (
-                          <div style={{ marginTop: 8 }}>
-                            <Text>{project.description}</Text>
-                          </div>
-                        )}
-                        {project.tags.length > 0 && (
-                          <div style={{ marginTop: 8 }}>
-                            {project.tags.map((tag) => (
-                              <Tag key={tag}>{tag}</Tag>
-                            ))}
-                          </div>
-                        )}
-                        <div style={{ marginTop: 8 }}>
-                          <Text type="secondary" style={{ fontSize: '11px' }}>
+                        </div>
+                        {project.lastOpened && (
+                          <div style={{ fontSize: '11px', color: '#999' }}>
                             Last opened:{' '}
                             {new Date(project.lastOpened).toLocaleDateString()}
-                          </Text>
-                        </div>
+                          </div>
+                        )}
                       </div>
                     }
                   />
@@ -401,4 +405,4 @@ const ProjectLauncher: React.FC = () => {
   );
 };
 
-export default ProjectLauncher;
+export default IndexPage;

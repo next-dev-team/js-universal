@@ -103,6 +103,94 @@
         }
       ],
       "completed": false
+    },
+    {
+      "requestId": "req-4",
+      "originalRequest": "Create a web app like Spotify music streaming with Next.js 15, Playwright e2e testing, and integrate full backend with API from https://hifi.401658.xyz/tdoc",
+      "splitDetails": "This project will create a comprehensive music streaming web application similar to Spotify, integrating with the HiFi Tidal Music Proxy API. The app will feature modern UI/UX, full audio playback capabilities, search functionality, and comprehensive testing.",
+      "tasks": [
+        {
+          "id": "task-13",
+          "title": "Project Setup and Configuration",
+          "description": "Initialize Next.js 15 project with TypeScript, configure package.json with dependencies for music streaming app, set up folder structure",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-14",
+          "title": "API Integration Layer",
+          "description": "Create API client and services to integrate with HiFi API endpoints (tracks, search, albums, artists, playlists, lyrics)",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-15",
+          "title": "Core UI Components",
+          "description": "Build reusable components like AudioPlayer, TrackList, SearchBar, AlbumCard, ArtistCard, PlaylistCard with modern design",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-16",
+          "title": "Main Pages Implementation",
+          "description": "Create home page, search page, album/artist/playlist detail pages, and player interface with responsive design",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-17",
+          "title": "Audio Player Functionality",
+          "description": "Implement audio playback controls, queue management, volume control, progress tracking, and shuffle/repeat features",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-18",
+          "title": "State Management",
+          "description": "Set up global state management for player state, current track, queue, user preferences using Zustand or Context API",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-19",
+          "title": "Styling and UI/UX",
+          "description": "Apply modern Spotify-like styling with dark theme, responsive design, smooth animations and transitions",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-20",
+          "title": "Playwright E2E Testing Setup",
+          "description": "Configure Playwright testing framework, write comprehensive e2e tests for core user flows",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-21",
+          "title": "Performance Optimization",
+          "description": "Implement lazy loading, image optimization, caching strategies, and performance monitoring",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        },
+        {
+          "id": "task-22",
+          "title": "Final Testing and Documentation",
+          "description": "Run full test suite, create README with setup instructions, and ensure production readiness",
+          "done": false,
+          "approved": false,
+          "completedDetails": ""
+        }
+      ],
+      "completed": false
     }
   ]
 }
