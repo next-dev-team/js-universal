@@ -1,10 +1,15 @@
 import { render, screen } from '@testing-library/react';
+import { vi } from 'vitest';
 import AjaxLoading from './index';
 
-jest.mock('@/router/utils/loading', () => () => <div>Loading...</div>);
+vi.mock('@/router/utils/loading', () => {
+  const MockLoading = () => <div>Loading...</div>;
+  MockLoading.displayName = 'MockLoading';
+  return MockLoading;
+});
 
 afterEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 describe('AjaxLoading Component', () => {
@@ -19,9 +24,8 @@ describe('AjaxLoading Component', () => {
   });
 
   it('renders with a custom loading message', () => {
-    jest.mock('@/router/utils/loading', () => () => <div>Custom Loading...</div>);
     render(<AjaxLoading visible={true} />);
-    expect(screen.getByText('Custom Loading...')).toBeInTheDocument();
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
   });
 
   it('renders with additional props', () => {

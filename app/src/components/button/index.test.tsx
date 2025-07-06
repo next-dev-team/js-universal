@@ -1,13 +1,12 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import Button from './index';
 
-jest.mock('@/components/button', () => ({
-  Button: (props) => <button {...props}>Mocked Button</button>,
+vi.mock('@/components/button', () => ({
+  Button: (props: React.ComponentProps<typeof Button>) => <button {...props}>Mocked Button</button>,
 }));
 
 afterEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 describe('Button Component', () => {

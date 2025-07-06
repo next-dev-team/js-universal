@@ -1,13 +1,14 @@
 import { render, screen } from '@testing-library/react';
+import { vi } from 'vitest';
 import Icon from './index';
 
-jest.mock('@/components/icon/icons-loader', () => ({
+vi.mock('@/components/icon/icons-loader', () => ({
   '/src/icons/test-icon.svg': () => <svg>Test Icon</svg>,
   '/src/icons/another-icon.svg': () => <svg>Another Icon</svg>,
 }));
 
 afterEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 describe('Icon Component', () => {

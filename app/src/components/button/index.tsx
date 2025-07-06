@@ -1,6 +1,10 @@
 import React from 'react';
 
-const Button = ({ children, ...props }) => (
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  children: React.ReactNode;
+}
+
+const Button: React.FC<ButtonProps> = ({ children, ...props }) => (
   <button {...props}>{children}</button>
 );
 

@@ -1,6 +1,28 @@
 # Operational Guidelines: STRICT ADHERENCE REQUIRED
 
-### Tools & Context & MCP
+## Abbreviation
+
+:abb_ls: mean list summary of all ## Abbreviation
+:rule - mean must follow rule Guidelines to make sure project work as expected
+:rule_ls - mean list summary of rules
+:rule_improve - mean I want you to help improve this rule file based on current context, especially when encountering and resolving issues.
+
+- eg. usage :rule install antd lib
+- mean you read rules and will know I use yarn as package manager, so you must use yarn to install lib
+
+:c7 - mean use context7 MCP
+
+- usage eg. :c7 antd button type
+
+:task_mgt_start - mean use Task Manager MCP to continue todo in tasks.json then update check in ## Project Feature / Roadmap
+:task_mgt_ls - mean use Task Manager MCP to list all task with status
+:task_mgt_sync - mean use Task Manager MCP to check code and status is sync with tasks.json, if not, update status (not code) accordingly
+
+:fix_log - mean collect info log about current thermal log and fix all issue
+:start_dev - mean run ./dev.sh
+:restart_dev - mean run cd app && yarn kill-port && yarn dev
+
+## Tools & Context & MCP
 
 - **Task Management:** Use `TaskMgt mcp` for medium-sized tasks.
 - **External Queries:** For queries related to external libraries or general knowledge, use `context7`.
@@ -15,6 +37,8 @@
 ## Project Overview
 
 A project launcher that replaces itself with the chosen IDE is much more efficient than embedding. This approach eliminates the performance overhead while solving your workflow problem perfectly.
+
+## Project Feature / Roadmap
 
 Benefits of This Approach
 ✅ Zero performance overhead - launcher closes when IDE opens

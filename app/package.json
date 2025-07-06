@@ -47,7 +47,8 @@
     "test-u": "vitest -u run",
     "typecheck": "tsc --noEmit",
     "update:deps": "yarn upgrade-interactive --latest",
-    "rebuild:native": "electron-rebuild"
+    "rebuild:native": "electron-rebuild",
+    "kill-port": "kill-port 5173"
   },
   "dependencies": {
     "better-sqlite3": "^12.2.0",
@@ -75,6 +76,7 @@
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/better-sqlite3": "^7.6.13",
     "@types/chokidar": "^2.1.7",
+    "@types/jest": "^30.0.0",
     "@types/node": "^24.0.3",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
@@ -95,6 +97,7 @@
     "husky": "^9.1.7",
     "immer": "^10.1.1",
     "jsdom": "^26.1.0",
+    "kill-port": "^2.0.1",
     "less": "^4.3.0",
     "lint-staged": "^16.1.2",
     "optics-ts": "^2.4.1",

@@ -1,7 +1,7 @@
 import Loading from '@/router/utils/loading.tsx';
 
 export type Props = {
-  visible: boolean;
+  visible?: boolean | null;
 };
 const AjaxLoading = (props: Props) => {
   const { visible } = props;

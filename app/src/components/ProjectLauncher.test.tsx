@@ -1,26 +1,32 @@
 import { render, screen } from '@testing-library/react';
+
+import * as antd from 'antd';
 import ProjectLauncher from './ProjectLauncher';
 
-jest.mock('antd', () => ({
-  Button: ({ children, ...props }) => <button {...props}>{children}</button>,
+vi.mock('antd', () => ({
+  Button: ({ children, ...props }: { children?: React.ReactNode }) => <button {...props}>{children}</button>,
   message: {
-    success: jest.fn(),
-    error: jest.fn(),
+    success: vi.fn(),
+    error: vi.fn(),
   },
 }));
 
-jest.mock('@/router/utils/loading', () => () => <div>Loading...</div>);
+vi.mock('@/router/utils/loading', () => {
+  const Loading = () => <div>Loading...</div>;
+  Loading.displayName = 'Loading';
+  return Loading;
+});
 
-jest.mock('electron', () => ({
+vi.mock('electron', () => ({
   ipcRenderer: {
-    invoke: jest.fn(),
+    invoke: vi.fn(),
   },
 }));
 
-const mockOpenProject = jest.spyOn(window.electron.ipcRenderer, 'invoke');
+const mockOpenProject = vi.spyOn(window.electron.ipcRenderer, 'invoke');
 
 afterEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 describe('ProjectLauncher Component', () => {
@@ -71,7 +77,7 @@ describe('ProjectLauncher Component', () => {
   });
 
   it('logs an error when project opening fails', async () => {
-    console.error = jest.fn();
+    console.error = vi.fn();
     mockOpenProject.mockRejectedValueOnce(new Error('Failed to open project'));
     render(<ProjectLauncher />);
     const button = screen.getByText('Select Project Folder');

@@ -245,7 +245,7 @@ class IDELauncherService {
       }
       
       // Prepare launch arguments
-      const args = [...selectedIDE.arguments, projectPath];
+      let args = [...selectedIDE.arguments, projectPath];
       
       logger.info(`Launching ${selectedIDE.name} with args:`, args);
       
@@ -262,6 +262,12 @@ class IDELauncherService {
             height: bounds.height,
           };
         }
+      }
+
+      // Apply window position for supported IDEs (e.g., VS Code)
+      if (launchPosition && (selectedIDE.name === 'Visual Studio Code' || selectedIDE.name === 'Visual Studio Code Insiders')) {
+        args.push(`--window-size=${launchPosition.width},${launchPosition.height}`);
+        args.push(`--window-position=${launchPosition.x},${launchPosition.y}`);
       }
       
       // Launch the IDE
@@ -286,10 +292,18 @@ class IDELauncherService {
           logger.info('Window position stored for next launch');
         }
         
-        // Close the app
-        setTimeout(() => {
-          app.quit();
-        }, 500);
+        // Close the main window first
+        const mainWindow = BrowserWindow.getFocusedWindow();
+        if (mainWindow) {
+          mainWindow.close();
+        }
+
+        // Quit the app if no other windows are open
+        if (BrowserWindow.getAllWindows().length === 0) {
+          setTimeout(() => {
+            app.quit();
+          }, 500);
+        }
       }
       
       logger.info(`Successfully launched ${selectedIDE.name}`);
