@@ -2,11 +2,10 @@ import { render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
 import AjaxLoading from './index';
 
-vi.mock('@/router/utils/loading', () => {
-  const MockLoading = () => <div>Loading...</div>;
-  MockLoading.displayName = 'MockLoading';
-  return MockLoading;
-});
+vi.mock('@/router/utils/loading', () => ({
+  __esModule: true,
+  default: () => <div data-testid='loading'>Loading...</div>,
+}));
 
 afterEach(() => {
   vi.clearAllMocks();

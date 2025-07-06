@@ -2,10 +2,17 @@ import { render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
 import Icon from './index';
 
-vi.mock('@/components/icon/icons-loader', () => ({
-  '/src/icons/test-icon.svg': () => <svg>Test Icon</svg>,
-  '/src/icons/another-icon.svg': () => <svg>Another Icon</svg>,
-}));
+vi.mock('@/components/icon/icons-loader', async () => {
+  const actual = await vi.importActual('@/components/icon/icons-loader');
+  return {
+    __esModule: true,
+    default: {
+      ...(actual as any).default,
+      '/src/icons/test-icon.svg': () => <svg>Test Icon</svg>,
+      '/src/icons/another-icon.svg': () => <svg>Another Icon</svg>,
+    },
+  };
+});
 
 afterEach(() => {
   vi.clearAllMocks();

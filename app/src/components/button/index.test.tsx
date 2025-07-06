@@ -1,9 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import Button from './index';
 
-vi.mock('@/components/button', () => ({
-  Button: (props: React.ComponentProps<typeof Button>) => <button {...props}>Mocked Button</button>,
-}));
+
 
 afterEach(() => {
   vi.clearAllMocks();

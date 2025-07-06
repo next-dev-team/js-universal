@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button, message } from 'antd';
+import { ipcRenderer } from 'electron';
 
 const ProjectLauncher = () => {
   const [projectPath, setProjectPath] = useState<string | null>(null);
 
   const handleOpenProject = async (newWindow: boolean) => {
     try {
-      const path = await window.electron.ipcRenderer.invoke('open-project', {
+      const path = await ipcRenderer.invoke('open-project', {
         newWindow,
       });
       if (path) {
