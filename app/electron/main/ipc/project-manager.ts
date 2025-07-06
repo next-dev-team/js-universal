@@ -2,10 +2,10 @@
 import { BrowserWindow, ipcMain } from 'electron';
 import { getMainLogger } from '../../common/logger/main';
 import type { AppSettings, IDE, Project } from '../services/database';
-import databaseService from '../services/database';
-import ideLauncherService from '../services/ide-launcher';
+import { getDatabaseService } from '../services/database';
+import { getIDELauncherService } from '../services/ide-launcher';
 import type { ProjectDetectionResult } from '../services/project-scanner';
-import projectScannerService from '../services/project-scanner';
+import { getProjectScannerService } from '../services/project-scanner';
 
 let logger: ReturnType<ReturnType<typeof getMainLogger>['scope']>;
 
@@ -57,7 +57,7 @@ class ProjectManagerIPC {
   init() {
     // Initialize logger when IPC is initialized
     logger = getMainLogger().scope('project-manager-ipc');
-    
+
     this.registerProjectHandlers();
     this.registerIDEHandlers();
     this.registerSettingsHandlers();
@@ -70,7 +70,7 @@ class ProjectManagerIPC {
     // Get all projects
     ipcMain.handle(IPC_CHANNELS.GET_PROJECTS, async () => {
       try {
-        const projects = databaseService.getProjects();
+        const projects = getDatabaseService().getProjects();
         logger.debug(`Retrieved ${projects.length} projects`);
         return { success: true, data: projects };
       } catch (error: any) {
@@ -89,7 +89,7 @@ class ProjectManagerIPC {
         projectData: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>,
       ) => {
         try {
-          const project = databaseService.addProject(projectData);
+          const project = getDatabaseService().addProject(projectData);
           this.notifyProjectsUpdated();
           logger.info(`Added project: ${project.name}`);
           return { success: true, data: project };
@@ -105,7 +105,7 @@ class ProjectManagerIPC {
       IPC_CHANNELS.UPDATE_PROJECT,
       async (_, id: string, updates: Partial<Project>) => {
         try {
-          const success = databaseService.updateProject(id, updates);
+          const success = getDatabaseService().updateProject(id, updates);
           if (success) {
             this.notifyProjectsUpdated();
             logger.info(`Updated project: ${id}`);
@@ -121,7 +121,7 @@ class ProjectManagerIPC {
     // Delete project
     ipcMain.handle(IPC_CHANNELS.DELETE_PROJECT, async (_, id: string) => {
       try {
-        const success = databaseService.deleteProject(id);
+        const success = getDatabaseService().deleteProject(id);
         if (success) {
           this.notifyProjectsUpdated();
           logger.info(`Deleted project: ${id}`);
@@ -145,7 +145,7 @@ class ProjectManagerIPC {
           });
 
           const detectedProjects =
-            await projectScannerService.scanDirectory(directoryPath);
+            await getProjectScannerService().scanDirectory(directoryPath);
 
           this.notifyScanComplete({
             directory: directoryPath,
@@ -180,7 +180,7 @@ class ProjectManagerIPC {
 
           for (const projectData of projects) {
             try {
-              const project = databaseService.addProject({
+              const project = getDatabaseService().addProject({
                 ...projectData,
                 lastOpened: Date.now(),
                 favorite: false,
@@ -210,15 +210,15 @@ class ProjectManagerIPC {
       IPC_CHANNELS.LAUNCH_PROJECT,
       async (_, projectId: string, ideId?: string) => {
         try {
-          const project = databaseService.getProjectById(projectId);
+          const project = getDatabaseService().getProjectById(projectId);
           if (!project) {
             throw new Error('Project not found');
           }
 
           // Update last opened time
-          databaseService.updateProjectLastOpened(projectId);
+          getDatabaseService().updateProjectLastOpened(projectId);
 
-          const success = await ideLauncherService.launchIDE({
+          const success = await getIDELauncherService().launchIDE({
             projectPath: project.path,
             ideId,
             closeAfterLaunch: true,
@@ -238,12 +238,12 @@ class ProjectManagerIPC {
       IPC_CHANNELS.OPEN_IN_EXPLORER,
       async (_, projectId: string) => {
         try {
-          const project = databaseService.getProjectById(projectId);
+          const project = getDatabaseService().getProjectById(projectId);
           if (!project) {
             throw new Error('Project not found');
           }
 
-          await ideLauncherService.openProjectInExplorer(project.path);
+          await getIDELauncherService().openProjectInExplorer(project.path);
           logger.info(`Opened project in explorer: ${project.name}`);
           return { success: true };
         } catch (error: any) {
@@ -258,12 +258,12 @@ class ProjectManagerIPC {
       IPC_CHANNELS.OPEN_IN_TERMINAL,
       async (_, projectId: string) => {
         try {
-          const project = databaseService.getProjectById(projectId);
+          const project = getDatabaseService().getProjectById(projectId);
           if (!project) {
             throw new Error('Project not found');
           }
 
-          await ideLauncherService.openProjectInTerminal(project.path);
+          await getIDELauncherService().openProjectInTerminal(project.path);
           logger.info(`Opened project in terminal: ${project.name}`);
           return { success: true };
         } catch (error: any) {
@@ -278,7 +278,7 @@ class ProjectManagerIPC {
     // Get all IDEs
     ipcMain.handle(IPC_CHANNELS.GET_IDES, async () => {
       try {
-        const ides = databaseService.getIDEs();
+        const ides = getDatabaseService().getIDEs();
         logger.debug(`Retrieved ${ides.length} IDEs`);
         return { success: true, data: ides };
       } catch (error: any) {
@@ -290,7 +290,8 @@ class ProjectManagerIPC {
     // Detect installed IDEs
     ipcMain.handle(IPC_CHANNELS.DETECT_IDES, async () => {
       try {
-        const detectedIDEs = await ideLauncherService.detectInstalledIDEs();
+        const detectedIDEs =
+          await getIDELauncherService().detectInstalledIDEs();
         logger.info(`Detected ${detectedIDEs.length} IDEs`);
         return { success: true, data: detectedIDEs };
       } catch (error: any) {
@@ -304,7 +305,7 @@ class ProjectManagerIPC {
       IPC_CHANNELS.ADD_IDE,
       async (_, ideData: Omit<IDE, 'id'>) => {
         try {
-          const ide = databaseService.addIDE(ideData);
+          const ide = getDatabaseService().addIDE(ideData);
           logger.info(`Added IDE: ${ide.name}`);
           return { success: true, data: ide };
         } catch (error: any) {
@@ -319,16 +320,16 @@ class ProjectManagerIPC {
       IPC_CHANNELS.LAUNCH_WITH_IDE,
       async (_, projectId: string, ideId: string) => {
         try {
-          const project = databaseService.getProjectById(projectId);
-          const ide = databaseService.getIDEs().find((i) => i.id === ideId);
+          const project = getDatabaseService().getProjectById(projectId);
+          const ide = getDatabaseService().getIDEs().find((i) => i.id === ideId);
 
           if (!project) throw new Error('Project not found');
           if (!ide) throw new Error('IDE not found');
 
           // Update last opened time
-          databaseService.updateProjectLastOpened(projectId);
+          getDatabaseService().updateProjectLastOpened(projectId);
 
-          const success = await ideLauncherService.launchWithCustomIDE(
+          const success = await getIDELauncherService().launchWithCustomIDE(
             ide,
             project.path,
           );
@@ -347,7 +348,7 @@ class ProjectManagerIPC {
     // Get settings
     ipcMain.handle(IPC_CHANNELS.GET_SETTINGS, async () => {
       try {
-        const settings = databaseService.getSettings();
+        const settings = getDatabaseService().getSettings();
         return { success: true, data: settings };
       } catch (error: any) {
         logger.error('Failed to get settings:', error);
@@ -360,7 +361,7 @@ class ProjectManagerIPC {
       IPC_CHANNELS.UPDATE_SETTINGS,
       async (_, updates: Partial<AppSettings>) => {
         try {
-          const success = databaseService.updateSettings(updates);
+          const success = getDatabaseService().updateSettings(updates);
 
           // Update watched directories if auto scan directories changed
           if (updates.autoScanDirectories) {
@@ -432,11 +433,11 @@ class ProjectManagerIPC {
   // }
 
   private updateWatchedDirectories(directories: string[]) {
-    projectScannerService.stopWatching();
+    getProjectScannerService().stopWatching();
     this.updateWatchedDirectories(directories);
 
     if (directories.length > 0) {
-      projectScannerService.startWatching(directories, (projects) => {
+      getProjectScannerService().startWatching(directories, (projects) => {
         // Auto-import detected projects
         this.autoImportProjects(projects);
       });
@@ -445,8 +446,8 @@ class ProjectManagerIPC {
 
   private async autoImportProjects(detectedProjects: ProjectDetectionResult[]) {
     try {
-      const existingProjects = databaseService.getProjects();
-      const existingPaths = new Set(existingProjects.map((p) => p.path));
+      const existingProjects = getDatabaseService().getProjects();
+      const existingPaths = new Set(existingProjects.map((p: any) => p.path));
 
       const newProjects = detectedProjects.filter(
         (p) => !existingPaths.has(p.path),
@@ -455,7 +456,7 @@ class ProjectManagerIPC {
       if (newProjects.length > 0) {
         for (const projectData of newProjects) {
           try {
-            databaseService.addProject({
+            getDatabaseService().addProject({
               ...projectData,
               lastOpened: Date.now(),
               favorite: false,

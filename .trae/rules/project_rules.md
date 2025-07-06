@@ -18,7 +18,7 @@
 :task_mgt_ls - mean use Task Manager MCP to list all task with status
 :task_mgt_sync - mean use Task Manager MCP to check code and status is sync with tasks.json, if not, update status (not code) accordingly
 
-:fix_log - mean collect info log about current thermal log and fix all issue
+:fix_log - mean collect info log about current terminal running log and fix all issue
 :start_dev - mean run ./dev.sh
 :restart - mean run ./restart.sh just kill and re-run that it's
 

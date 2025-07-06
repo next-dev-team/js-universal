@@ -1,8 +1,7 @@
 import { electronApp, is, optimizer } from '@electron-toolkit/utils';
 import { BrowserWindow, app, dialog, ipcMain, shell } from 'electron';
 import { join } from 'path';
-import './logger-init';
-import { getMainLogger } from '../common/logger/main';
+import { getMainLogger, initMainLogger } from '../common/logger/main';
 import { projectManagerIPC } from './ipc/project-manager';
 
 let indexLog: ReturnType<typeof getMainLogger>;
@@ -29,13 +28,14 @@ function createWindow(): void {
     autoHideMenuBar: true,
 
     webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
+      preload: join(__dirname, '../preload/index.cjs'),
       sandbox: false,
     },
   });
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();
+    mainWindow.webContents.openDevTools();
   });
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -57,8 +57,9 @@ function createWindow(): void {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   // Initialize logger after app is ready
+  initMainLogger();
   indexLog = getMainLogger();
-  
+
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron');
 

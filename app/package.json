@@ -57,7 +57,8 @@
     "electron-store": "^8.1.0",
     "electron-updater": "^6.6.2",
     "fast-glob": "^3.3.2",
-    "koffi": "^2.11.0"
+    "koffi": "^2.11.0",
+    "react-router-dom": "^7.6.3"
   },
   "devDependencies": {
     "@ant-design/v5-patch-for-react-19": "^1.0.3",

@@ -1,10 +1,10 @@
-import { spawn, exec } from 'node:child_process';
+import { BrowserWindow, app } from 'electron';
+import { exec, spawn } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { promisify } from 'node:util';
-import { BrowserWindow, app } from 'electron';
 import { getMainLogger } from '../../common/logger/main';
-import { IDE } from './database';
+import type { IDE } from './database';
 
 const execAsync = promisify(exec);
 let logger: ReturnType<ReturnType<typeof getMainLogger>['scope']>;
@@ -25,7 +25,7 @@ export interface DetectedIDE {
   supportedTypes: string[];
 }
 
-class IDELauncherService {
+export class IDELauncherService {
   private detectedIDEs: Map<string, DetectedIDE> = new Map();
   private isDetecting = false;
 
@@ -36,7 +36,7 @@ class IDELauncherService {
 
   // Common IDE detection patterns for Windows
   private readonly idePatterns = {
-    'vscode': {
+    vscode: {
       name: 'Visual Studio Code',
       paths: [
         'C:\\Users\\%USERNAME%\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe',
@@ -56,7 +56,7 @@ class IDELauncherService {
       supportedTypes: ['react', 'vue', 'angular', 'node', 'python', 'other'],
       icon: 'vscode-insiders',
     },
-    'webstorm': {
+    webstorm: {
       name: 'WebStorm',
       paths: [
         'C:\\Users\\%USERNAME%\\AppData\\Local\\JetBrains\\Toolbox\\apps\\WebStorm\\ch-0\\*\\bin\\webstorm64.exe',
@@ -66,7 +66,7 @@ class IDELauncherService {
       supportedTypes: ['react', 'vue', 'angular', 'node'],
       icon: 'webstorm',
     },
-    'intellij': {
+    intellij: {
       name: 'IntelliJ IDEA',
       paths: [
         'C:\\Users\\%USERNAME%\\AppData\\Local\\JetBrains\\Toolbox\\apps\\IDEA-U\\ch-0\\*\\bin\\idea64.exe',
@@ -76,7 +76,7 @@ class IDELauncherService {
       supportedTypes: ['react', 'vue', 'angular', 'node', 'python', 'other'],
       icon: 'intellij',
     },
-    'pycharm': {
+    pycharm: {
       name: 'PyCharm',
       paths: [
         'C:\\Users\\%USERNAME%\\AppData\\Local\\JetBrains\\Toolbox\\apps\\PyCharm-P\\ch-0\\*\\bin\\pycharm64.exe',
@@ -86,7 +86,7 @@ class IDELauncherService {
       supportedTypes: ['python'],
       icon: 'pycharm',
     },
-    'sublime': {
+    sublime: {
       name: 'Sublime Text',
       paths: [
         'C:\\Program Files\\Sublime Text\\sublime_text.exe',
@@ -96,16 +96,14 @@ class IDELauncherService {
       supportedTypes: ['react', 'vue', 'angular', 'node', 'python', 'other'],
       icon: 'sublime',
     },
-    'atom': {
+    atom: {
       name: 'Atom',
-      paths: [
-        'C:\\Users\\%USERNAME%\\AppData\\Local\\atom\\atom.exe',
-      ],
+      paths: ['C:\\Users\\%USERNAME%\\AppData\\Local\\atom\\atom.exe'],
       arguments: ['--new-window'],
       supportedTypes: ['react', 'vue', 'angular', 'node', 'python', 'other'],
       icon: 'atom',
     },
-    'notepadpp': {
+    notepadpp: {
       name: 'Notepad++',
       paths: [
         'C:\\Program Files\\Notepad++\\notepad++.exe',
@@ -132,10 +130,13 @@ class IDELauncherService {
 
       for (const [ideKey, ideConfig] of Object.entries(this.idePatterns)) {
         try {
-          const detectedPath = await this.findIDEExecutable(ideConfig.paths, username);
+          const detectedPath = await this.findIDEExecutable(
+            ideConfig.paths,
+            username,
+          );
           if (detectedPath) {
             const version = await this.getIDEVersion(detectedPath, ideKey);
-            
+
             const detectedIDE: DetectedIDE = {
               name: ideConfig.name,
               executablePath: detectedPath,
@@ -160,17 +161,22 @@ class IDELauncherService {
     }
   }
 
-  private async findIDEExecutable(paths: string[], username: string): Promise<string | null> {
+  private async findIDEExecutable(
+    paths: string[],
+    username: string,
+  ): Promise<string | null> {
     for (let pathPattern of paths) {
       // Replace username placeholder
       pathPattern = pathPattern.replace(/%USERNAME%/g, username);
-      
+
       // Handle wildcard patterns
       if (pathPattern.includes('*')) {
         try {
           const basePath = pathPattern.substring(0, pathPattern.indexOf('*'));
-          const suffix = pathPattern.substring(pathPattern.lastIndexOf('*') + 1);
-          
+          const suffix = pathPattern.substring(
+            pathPattern.lastIndexOf('*') + 1,
+          );
+
           if (fs.existsSync(basePath)) {
             const entries = await fs.promises.readdir(basePath);
             for (const entry of entries) {
@@ -190,14 +196,17 @@ class IDELauncherService {
         }
       }
     }
-    
+
     return null;
   }
 
-  private async getIDEVersion(executablePath: string, ideKey: string): Promise<string | undefined> {
+  private async getIDEVersion(
+    executablePath: string,
+    ideKey: string,
+  ): Promise<string | undefined> {
     try {
       let versionCommand: string;
-      
+
       switch (ideKey) {
         case 'vscode':
         case 'vscode-insiders':
@@ -209,7 +218,7 @@ class IDELauncherService {
         default:
           return undefined;
       }
-      
+
       const { stdout } = await execAsync(versionCommand, { timeout: 5000 });
       return stdout.trim().split('\n')[0];
     } catch (error) {
@@ -219,18 +228,23 @@ class IDELauncherService {
   }
 
   async launchIDE(options: LaunchOptions): Promise<boolean> {
-    const { projectPath, ideId, windowPosition, closeAfterLaunch = true } = options;
-    
+    const {
+      projectPath,
+      ideId,
+      windowPosition,
+      closeAfterLaunch = true,
+    } = options;
+
     logger.info(`Launching IDE for project: ${projectPath}`);
-    
+
     try {
       // Ensure IDEs are detected
       if (this.detectedIDEs.size === 0) {
         await this.detectInstalledIDEs();
       }
-      
+
       let selectedIDE: DetectedIDE | undefined;
-      
+
       if (ideId) {
         selectedIDE = this.detectedIDEs.get(ideId);
         if (!selectedIDE) {
@@ -243,12 +257,12 @@ class IDELauncherService {
           throw new Error('No IDEs detected');
         }
       }
-      
+
       // Prepare launch arguments
-      let args = [...selectedIDE.arguments, projectPath];
-      
+      const args = [...selectedIDE.arguments, projectPath];
+
       logger.info(`Launching ${selectedIDE.name} with args:`, args);
-      
+
       // Get current window position if needed
       let launchPosition = windowPosition;
       if (!launchPosition && closeAfterLaunch) {
@@ -265,33 +279,39 @@ class IDELauncherService {
       }
 
       // Apply window position for supported IDEs (e.g., VS Code)
-      if (launchPosition && (selectedIDE.name === 'Visual Studio Code' || selectedIDE.name === 'Visual Studio Code Insiders')) {
-        args.push(`--window-size=${launchPosition.width},${launchPosition.height}`);
+      if (
+        launchPosition &&
+        (selectedIDE.name === 'Visual Studio Code' ||
+          selectedIDE.name === 'Visual Studio Code Insiders')
+      ) {
+        args.push(
+          `--window-size=${launchPosition.width},${launchPosition.height}`,
+        );
         args.push(`--window-position=${launchPosition.x},${launchPosition.y}`);
       }
-      
+
       // Launch the IDE
       const child = spawn(selectedIDE.executablePath, args, {
         detached: true,
         stdio: 'ignore',
         cwd: projectPath,
       });
-      
+
       child.unref();
-      
+
       // Wait a moment for the IDE to start
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       // Close the launcher if requested
       if (closeAfterLaunch) {
         logger.info('Closing launcher after IDE launch');
-        
+
         // Store window position for next launch
         if (launchPosition) {
           // This would be saved to settings via IPC
           logger.info('Window position stored for next launch');
         }
-        
+
         // Close the main window first
         const mainWindow = BrowserWindow.getFocusedWindow();
         if (mainWindow) {
@@ -305,7 +325,7 @@ class IDELauncherService {
           }, 500);
         }
       }
-      
+
       logger.info(`Successfully launched ${selectedIDE.name}`);
       return true;
     } catch (error) {
@@ -316,27 +336,27 @@ class IDELauncherService {
 
   async launchWithCustomIDE(ide: IDE, projectPath: string): Promise<boolean> {
     logger.info(`Launching custom IDE ${ide.name} for project: ${projectPath}`);
-    
+
     try {
       if (!fs.existsSync(ide.executablePath)) {
         throw new Error(`IDE executable not found: ${ide.executablePath}`);
       }
-      
+
       const args = [...ide.arguments, projectPath];
-      
+
       logger.info(`Launching ${ide.name} with args:`, args);
-      
+
       const child = spawn(ide.executablePath, args, {
         detached: true,
         stdio: 'ignore',
         cwd: projectPath,
       });
-      
+
       child.unref();
-      
+
       // Wait a moment for the IDE to start
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       logger.info(`Successfully launched ${ide.name}`);
       return true;
     } catch (error) {
@@ -377,8 +397,11 @@ class IDELauncherService {
         ['wt', ['-d', projectPath]], // Windows Terminal
         ['cmd', ['/k', `cd /d "${projectPath}"`]], // Command Prompt
       ];
-      
-      for (const [command, ...args] of terminalCommands as [string, ...string[]][]) {
+
+      for (const [command, ...args] of terminalCommands as [
+        string,
+        ...string[],
+      ][]) {
         try {
           spawn(command, args, { detached: true, stdio: 'ignore' });
           logger.info(`Opened project in terminal: ${projectPath}`);
@@ -387,7 +410,7 @@ class IDELauncherService {
           // Try next terminal
         }
       }
-      
+
       throw new Error('No suitable terminal found');
     } catch (error) {
       logger.error('Failed to open project in terminal:', error);
@@ -396,5 +419,11 @@ class IDELauncherService {
   }
 }
 
-export const ideLauncherService = new IDELauncherService();
-export default ideLauncherService;
+let instance: IDELauncherService | null = null;
+
+export const getIDELauncherService = () => {
+  if (!instance) {
+    instance = new IDELauncherService();
+  }
+  return instance;
+};

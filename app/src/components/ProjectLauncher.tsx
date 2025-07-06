@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from 'react';
 import { Button, message } from 'antd';
 
@@ -9,7 +8,7 @@ const ProjectLauncher = () => {
     try {
       const path = await (window as any).electron.ipcRenderer.invoke(
         'open-project',
-        { newWindow }
+        { newWindow },
       );
       if (path) {
         setProjectPath(path);
@@ -25,10 +24,18 @@ const ProjectLauncher = () => {
     <div className="flex h-screen flex-col items-center justify-center bg-gray-100">
       <h1 className="mb-6 text-2xl font-bold">Project Launcher</h1>
 
-      <Button type="primary" onClick={() => handleOpenProject(false)} className="px-6 py-3">
+      <Button
+        type="primary"
+        onClick={() => handleOpenProject(false)}
+        className="px-6 py-3"
+      >
         Select Project Folder
       </Button>
-      <Button type="primary" onClick={() => handleOpenProject(true)} className="ml-4 px-6 py-3">
+      <Button
+        type="primary"
+        onClick={() => handleOpenProject(true)}
+        className="ml-4 px-6 py-3"
+      >
         Open Project in New Window
       </Button>
 
