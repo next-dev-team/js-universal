@@ -20,7 +20,7 @@
 
 :fix_log - mean collect info log about current thermal log and fix all issue
 :start_dev - mean run ./dev.sh
-:restart_dev - mean run cd app && yarn kill-port && yarn dev
+:restart - mean run ./restart.sh just kill and re-run that it's
 
 ## Tools & Context & MCP
 
