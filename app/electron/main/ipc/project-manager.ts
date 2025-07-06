@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BrowserWindow, ipcMain } from 'electron';
 import { getMainLogger } from '../../common/logger/main';
 import type { AppSettings, IDE, Project } from '../services/database';
@@ -27,6 +26,7 @@ export const IPC_CHANNELS = {
   DETECT_IDES: 'ide:detect',
   ADD_IDE: 'ide:add',
   LAUNCH_WITH_IDE: 'ide:launch-with',
+  DELETE_IDE: 'ide:delete',
 
   // Settings operations
   GET_SETTINGS: 'settings:get',
@@ -40,6 +40,7 @@ export const IPC_CHANNELS = {
   PROJECTS_UPDATED: 'projects:updated',
   SCAN_PROGRESS: 'scan:progress',
   SCAN_COMPLETE: 'scan:complete',
+  PROJECT_ADDED: 'project:added',
 } as const;
 
 export interface ScanProgress {
@@ -166,7 +167,6 @@ class ProjectManagerIPC {
             error: error.message,
           });
           return { success: false, error: error.message };
-        } finally {
         }
       },
     );
@@ -321,7 +321,9 @@ class ProjectManagerIPC {
       async (_, projectId: string, ideId: string) => {
         try {
           const project = getDatabaseService().getProjectById(projectId);
-          const ide = getDatabaseService().getIDEs().find((i) => i.id === ideId);
+          const ide = getDatabaseService()
+            .getIDEs()
+            .find((i) => i.id === ideId);
 
           if (!project) throw new Error('Project not found');
           if (!ide) throw new Error('IDE not found');

@@ -200,7 +200,7 @@ export class DatabaseService {
   }
 
   updateProject(id: string, updates: Partial<Project>): boolean {
-    const { id: _, createdAt, ...updateData } = updates;
+    const { id: _, ...updateData } = updates;
     const updatedAt = Date.now();
 
     const setClause = Object.keys(updateData)
@@ -298,7 +298,7 @@ export class DatabaseService {
   }
 
   updateSettings(updates: Partial<AppSettings>): boolean {
-    const { id, ...updateData } = updates;
+    const { ...updateData } = updates;
 
     const setClause = Object.keys(updateData)
       .map((key) => {

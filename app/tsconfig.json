@@ -30,5 +30,13 @@
     }
   },
   "include": ["**/*.ts", "src/**/*.d.ts", "**/*.tsx"],
-  "exclude": ["node_modules", "dist", "dist-*"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "dist-*",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "vitest.config.ts",
+    "vitest.setup.ts"
+  ]
 }

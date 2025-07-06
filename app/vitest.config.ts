@@ -3,7 +3,7 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    include: ['src/**/*.test.{ts,tsx,js}', './__test__/**/*.test.{ts,tsx,js}', './electron/preload/ipc/**/*.test.{ts,tsx,js}'],
+    include: ['src/**/*.test.{ts,tsx,js}', './__test__/**/*.test.{ts,tsx,js}', 'electron/preload/ipc/**/*.test.{ts,tsx,js}'],
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
     css: true,

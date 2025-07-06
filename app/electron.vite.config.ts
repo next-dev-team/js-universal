@@ -8,8 +8,8 @@ import { getViteConfig } from './vite.config';
 export default defineConfig((configEnv) => {
   const viteConfig = getViteConfig(configEnv);
   // Remove base option for electron renderer to avoid warning
-  const { base, ...viteConfigWithoutBase } = viteConfig;
-  
+  const { ...viteConfigWithoutBase } = viteConfig;
+
   const renderer: ElectronViteConfig['renderer'] = mergeConfig<
     Required<ElectronViteConfig>['renderer'],
     Required<ElectronViteConfig>['renderer']

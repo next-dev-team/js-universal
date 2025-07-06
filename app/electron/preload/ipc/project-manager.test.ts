@@ -1,3 +1,5 @@
+/// <reference types="vitest" />
+
 import { ipcRenderer } from 'electron';
 import projectManagerAPI from './project-manager';
 import { IPC_CHANNELS } from '../../main/ipc/project-manager';

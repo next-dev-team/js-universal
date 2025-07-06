@@ -186,7 +186,7 @@ export class IDELauncherService {
               }
             }
           }
-        } catch (error) {
+        } catch (_error) {
           // Continue to next path
         }
       } else {
@@ -406,7 +406,7 @@ export class IDELauncherService {
           spawn(command, args, { detached: true, stdio: 'ignore' });
           logger.info(`Opened project in terminal: ${projectPath}`);
           return;
-        } catch (error) {
+        } catch (_) {
           // Try next terminal
         }
       }

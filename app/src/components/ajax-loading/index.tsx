@@ -1,13 +1,12 @@
-import Loading from '@/router/utils/loading.tsx';
+import Loading from '@/router/utils/loading';
 
 export type Props = {
   visible?: boolean | null;
 };
-import Loading from '@/router/utils/loading';
 
 const AjaxLoading = (props: Props) => {
   const { visible } = props;
 
-  return <div>{visible && <Loading visible={visible} />}</div>;
+  return <div>{visible && <Loading />}</div>;
 };
 export default AjaxLoading;

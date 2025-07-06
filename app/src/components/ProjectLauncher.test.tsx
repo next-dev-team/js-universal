@@ -9,7 +9,7 @@ vi.mock('antd', () => ({
   ),
   message: {
     success: vi.fn(),
-    error: vi.fn((...args) => {
+    error: vi.fn((..._args) => {
       // This is a workaround to make waitFor work with antd.message
       // In a real application, antd.message would update the DOM,
       // but in tests, we need to explicitly tell waitFor when the mock is called.

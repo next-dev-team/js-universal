@@ -1,7 +1,7 @@
 import { ipcRenderer } from 'electron';
 import type { LogFunctions } from 'electron-log';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 
 type ILog = LogFunctions & { scope: (label: string) => LogFunctions };
 

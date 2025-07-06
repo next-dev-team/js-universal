@@ -84,8 +84,8 @@ export class ProjectScannerService {
           if (project) {
             projects.push(project);
           }
-        } catch (error) {
-          logger.error(`Error analyzing project at ${projectDir}:`, error);
+        } catch (_error) {
+          logger.error(`Error analyzing project at ${projectDir}:`, _error);
         }
       }
 
@@ -136,8 +136,8 @@ export class ProjectScannerService {
       }
 
       return Array.from(directories);
-    } catch (error) {
-      logger.error(`Error finding project directories in ${rootPath}:`, error);
+    } catch (_error) {
+      logger.error(`Error finding project directories in ${rootPath}:`, _error);
       return [];
     }
   }
@@ -169,8 +169,8 @@ export class ProjectScannerService {
         gitRemote,
         description,
       };
-    } catch (error) {
-      logger.error(`Error analyzing project ${projectPath}:`, error);
+    } catch (_error) {
+      logger.error(`Error analyzing project ${projectPath}:`, _error);
       return null;
     }
   }
@@ -196,7 +196,7 @@ export class ProjectScannerService {
               matches++;
             }
           }
-        } catch (error) {
+        } catch (_error) {
           // Ignore file read errors
         }
       }
@@ -268,7 +268,7 @@ export class ProjectScannerService {
         else language = 'JavaScript';
 
         return { framework, language };
-      } catch (error) {
+      } catch (_error) {
         // Ignore JSON parse errors
       }
     }
@@ -296,7 +296,7 @@ export class ProjectScannerService {
         if (remoteMatch) {
           return remoteMatch[1].trim();
         }
-      } catch (error) {
+      } catch (_error) {
         // Ignore git config read errors
       }
     }
@@ -315,7 +315,7 @@ export class ProjectScannerService {
           await fs.promises.readFile(packageJsonPath, 'utf-8'),
         );
         return packageJson.description;
-      } catch (error) {
+      } catch (_error) {
         // Ignore JSON parse errors
       }
     }
@@ -336,7 +336,7 @@ export class ProjectScannerService {
       }
 
       const watcher = chokidar.watch(directory, {
-        ignored: /(^|[\/\\])\../, // ignore dotfiles
+        ignored: /(^|[/\\])\../, // ignore dotfiles
         persistent: true,
         ignoreInitial: true,
         depth: 3, // Limit depth to avoid performance issues
