@@ -20,17 +20,17 @@ afterEach(() => {
 
 describe('Icon Component', () => {
   it('renders without crashing with a valid icon name', () => {
-    render(<Icon name='test-icon' />);
-    expect(screen.getByText('Test Icon')).toBeInTheDocument();
+    render(<Icon name="test-icon" />);
+    expect(screen.getByText('Test Icon')).toBeDefined();
   });
 
   it('does not render when an invalid icon name is provided', () => {
-    render(<Icon name='invalid-icon' />);
-    expect(screen.queryByText('Test Icon')).not.toBeInTheDocument();
+    render(<Icon name="invalid-icon" />);
+    expect(screen.queryByText('Test Icon')).not.toBeDefined();
   });
 
   it('renders with another valid icon name', () => {
-    render(<Icon name='another-icon' />);
-    expect(screen.getByText('Another Icon')).toBeInTheDocument();
+    render(<Icon name="another-icon" />);
+    expect(screen.getByText('Another Icon')).toBeDefined();
   });
 });

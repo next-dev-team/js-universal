@@ -3,40 +3,55 @@
   "compilerOptions": {
     "target": "ESNext",
     "useDefineForClassFields": true,
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ESNext",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "module": "ESNext",
     "skipLibCheck": true,
-
     /* Bundler mode */
     "moduleResolution": "Bundler",
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "moduleDetection": "force",
     "noEmit": true,
-    "types": ["chokidar", "vitest/globals"],
+    "typeRoots": [
+      "./types",
+      "./node_modules/@types",
+      "./node_modules"
+    ],
+    "types": [
+      "chokidar",
+      "vitest/globals",
+      "vitest/jsdom"
+    ],
     "jsx": "react-jsx",
-
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-
     /** 别名路径提示 */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     }
   },
-  "include": ["**/*.ts", "src/**/*.d.ts", "**/*.tsx"],
+  "include": [
+    "**/*.ts",
+    "src/**/*.d.ts",
+    "**/*.tsx"
+  ],
   "exclude": [
     "node_modules",
     "dist",
     "dist-*",
-    "**/*.test.ts",
-    "**/*.test.tsx",
     "vitest.config.ts",
-    "vitest.setup.ts"
+    "vitest.setup.ts",
+
   ]
 }

@@ -9,7 +9,7 @@ export interface Project {
   id: string;
   name: string;
   path: string;
-  type: 'react' | 'vue' | 'angular' | 'node' | 'python' | 'other';
+  type: 'react' | 'vue' | 'angular' | 'node' | 'python' | 'other' | 'unknown';
   lastOpened: number;
   favorite: boolean;
   description?: string;

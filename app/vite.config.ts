@@ -7,6 +7,8 @@ import { defineConfig, loadEnv } from 'vite';
 import checker from 'vite-plugin-checker';
 import svgr from 'vite-plugin-svgr';
 
+/// <reference types="vitest" />
+
 export const getViteConfig: UserConfigFnObject = ({ mode }) => {
   // 获取`.env`环境配置文件
   const env = loadEnv(mode, process.cwd());

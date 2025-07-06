@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import * as antd from 'antd';
 import { ipcRenderer } from 'electron';
+import { vi } from 'vitest';
 import ProjectLauncher from './ProjectLauncher';
 
 vi.mock('antd', () => ({
@@ -49,7 +50,7 @@ afterEach(() => {
 describe('ProjectLauncher Component', () => {
   it('renders without crashing', () => {
     render(<ProjectLauncher />);
-    expect(screen.getByText('Select Project Folder')).toBeInTheDocument();
+    expect(screen.getByText('Select Project Folder')).toBeDefined();
   });
 
   it('opens a project and displays the path', async () => {
@@ -58,7 +59,7 @@ describe('ProjectLauncher Component', () => {
     const button = screen.getByText('Select Project Folder');
     button.click();
     await screen.findByText('/path/to/project');
-    expect(screen.getByText('/path/to/project')).toBeInTheDocument();
+    expect(screen.getByText('/path/to/project')).toBeDefined();
   });
 
   it('handles errors when opening a project', async () => {
@@ -69,7 +70,7 @@ describe('ProjectLauncher Component', () => {
     await waitFor(() => {
       expect(antd.message.error).toHaveBeenCalledWith('Failed to open project');
     });
-    expect(screen.queryByText('/path/to/project')).not.toBeInTheDocument();
+    expect(screen.queryByText('/path/to/project')).not.toBeDefined();
   });
 
   it('displays a success message when a project is opened', async () => {
@@ -96,7 +97,7 @@ describe('ProjectLauncher Component', () => {
 
   it('does not display the project path when no project is selected', () => {
     render(<ProjectLauncher />);
-    expect(screen.queryByText(/path\/to\/project/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/path\/to\/project/)).not.toBeDefined();
   });
 
   it('logs an error when project opening fails', async () => {
@@ -108,9 +109,9 @@ describe('ProjectLauncher Component', () => {
 
     await waitFor(() => {
       expect(console.error).toHaveBeenCalledWith(
-      'Error selecting project:',
-      expect.objectContaining({ message: 'Failed to open project' }),
-    );
+        'Error selecting project:',
+        expect.objectContaining({ message: 'Failed to open project' }),
+      );
     });
   });
 
@@ -120,7 +121,7 @@ describe('ProjectLauncher Component', () => {
     const button = screen.getByText('Open Project in New Window');
     button.click();
     await screen.findByText('/path/to/project');
-    expect(screen.getByText('/path/to/project')).toBeInTheDocument();
+    expect(screen.getByText('/path/to/project')).toBeDefined();
   });
 
   it('handles errors when opening a project in a new window', async () => {
@@ -129,11 +130,9 @@ describe('ProjectLauncher Component', () => {
     const button = screen.getByText('Open Project in New Window');
     button.click();
     await waitFor(() => {
-      expect(antd.message.error).toHaveBeenCalledWith(
-        'Failed to open project',
-      );
+      expect(antd.message.error).toHaveBeenCalledWith('Failed to open project');
     });
-    expect(screen.queryByText('/path/to/project')).not.toBeInTheDocument();
+    expect(screen.queryByText('/path/to/project')).not.toBeDefined();
   });
 
   it('displays a success message when a project is opened in a new window', async () => {
@@ -153,9 +152,7 @@ describe('ProjectLauncher Component', () => {
     const button = screen.getByText('Open Project in New Window');
     button.click();
     await waitFor(() => {
-      expect(antd.message.error).toHaveBeenCalledWith(
-        'Failed to open project',
-      );
+      expect(antd.message.error).toHaveBeenCalledWith('Failed to open project');
     });
   });
 });
