@@ -20,6 +20,7 @@ export interface ProjectManagerAPI {
   detectIDEs(): Promise<{ success: boolean; data?: IDE[]; error?: string }>;
   addIDE(ide: Omit<IDE, 'id'>): Promise<{ success: boolean; data?: IDE; error?: string }>;
   launchWithIDE(projectId: string, ideId: string): Promise<{ success: boolean; data?: boolean; error?: string }>;
+  deleteIDE(ideId: string): Promise<{ success: boolean; data?: boolean; error?: string }>;
   
   // Settings operations
   getSettings(): Promise<{ success: boolean; data?: AppSettings; error?: string }>;
@@ -52,6 +53,7 @@ const projectManagerAPI: ProjectManagerAPI = {
   detectIDEs: () => ipcRenderer.invoke(IPC_CHANNELS.DETECT_IDES),
   addIDE: (ide) => ipcRenderer.invoke(IPC_CHANNELS.ADD_IDE, ide),
   launchWithIDE: (projectId, ideId) => ipcRenderer.invoke(IPC_CHANNELS.LAUNCH_WITH_IDE, projectId, ideId),
+  deleteIDE: (ideId) => ipcRenderer.invoke(IPC_CHANNELS.DELETE_IDE, ideId),
   
   // Settings operations
   getSettings: () => ipcRenderer.invoke(IPC_CHANNELS.GET_SETTINGS),
@@ -78,6 +80,12 @@ const projectManagerAPI: ProjectManagerAPI = {
     const handler = (_: Electron.IpcRendererEvent, result: any) => callback(result);
     ipcRenderer.on(IPC_CHANNELS.SCAN_COMPLETE, handler);
     return () => ipcRenderer.removeListener(IPC_CHANNELS.SCAN_COMPLETE, handler);
+  },
+
+  onProjectAdded: (callback) => {
+    const handler = (_: Electron.IpcRendererEvent, project: any) => callback(project);
+    ipcRenderer.on(IPC_CHANNELS.PROJECT_ADDED, handler);
+    return () => ipcRenderer.removeListener(IPC_CHANNELS.PROJECT_ADDED, handler);
   },
 };
 

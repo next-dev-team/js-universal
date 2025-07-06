@@ -1,32 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  Layout,
-  Input,
-  Button,
-  Card,
-  List,
-  Tag,
-  Space,
-  Dropdown,
-  message,
-  Typography,
-  Row,
-  Col,
-  Tooltip,
-  Empty,
-} from 'antd';
-import {
-  SearchOutlined,
+  CodeOutlined,
   FolderOpenOutlined,
-  StarOutlined,
-  StarFilled,
+  FolderOutlined,
   MoreOutlined,
   PlusOutlined,
-  SettingOutlined,
   ReloadOutlined,
-  FolderOutlined,
-  CodeOutlined,
+  SearchOutlined,
+  SettingOutlined,
+  StarFilled,
+  StarOutlined,
 } from '@ant-design/icons';
+import {
+  Button,
+  Card,
+  Col,
+  Dropdown,
+  Empty,
+  Input,
+  Layout,
+  List,
+  Row,
+  Space,
+  Tag,
+  Tooltip,
+  Typography,
+  message,
+} from 'antd';
 import type { MenuProps } from 'antd';
 
 const { Header, Content } = Layout;
@@ -67,14 +67,16 @@ const ProjectLauncher: React.FC = () => {
   const loadProjects = async () => {
     try {
       setLoading(true);
-      const result = await (window as any).electron.projectManager.getProjects();
+      const result = await (
+        window as any
+      ).electron.projectManager.getProjects();
       if (result.success) {
         setProjects(result.data || []);
       } else {
         message.error('Failed to load projects');
       }
     } catch (_) {
-        message.error('Error loading projects');
+      message.error('Error loading projects');
     } finally {
       setLoading(false);
     }
@@ -95,11 +97,16 @@ const ProjectLauncher: React.FC = () => {
     try {
       let result;
       if (ideId) {
-        result = await (window as any).electron.projectManager.launchWithIDE(projectId, ideId);
+        result = await (window as any).electron.projectManager.launchWithIDE(
+          projectId,
+          ideId,
+        );
       } else {
-        result = await (window as any).electron.projectManager.launchProject(projectId);
+        result = await (window as any).electron.projectManager.launchProject(
+          projectId,
+        );
       }
-      
+
       if (result.success) {
         message.success('Project launched successfully');
         loadProjects(); // Refresh to update last opened time
@@ -113,7 +120,11 @@ const ProjectLauncher: React.FC = () => {
 
   const handleToggleFavorite = async (projectId: string, favorite: boolean) => {
     try {
-      const result = await (window as any).electron.projectManager.updateProject(projectId, { favorite: !favorite });
+      const result = await (
+        window as any
+      ).electron.projectManager.updateProject(projectId, {
+        favorite: !favorite,
+      });
       if (result.success) {
         loadProjects();
       }
@@ -124,15 +135,19 @@ const ProjectLauncher: React.FC = () => {
 
   const handleScanDirectory = async () => {
     try {
-      const result = await (window as any).electron.projectManager.selectDirectory();
+      const result = await window.electron.projectManager.selectDirectory();
       if (result.success && !result.canceled) {
         setLoading(true);
-        const scanResult = await (window as any).electron.projectManager.scanDirectory(result.data);
+        const scanResult = await (
+          window as any
+        ).electron.projectManager.scanDirectory(result.data);
         if (scanResult.success) {
           message.success(`Found ${scanResult.data.length} projects`);
           // Show import modal or auto-import
           if (scanResult.data.length > 0) {
-            const importResult = await (window as any).electron.projectManager.importProjects(scanResult.data);
+            const importResult = await (
+              window as any
+            ).electron.projectManager.importProjects(scanResult.data);
             if (importResult.success) {
               message.success(`Imported ${importResult.data.length} projects`);
               loadProjects();
@@ -147,15 +162,19 @@ const ProjectLauncher: React.FC = () => {
     }
   };
 
-  const filteredProjects = projects.filter(project => {
-    const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         project.path.toLowerCase().includes(searchTerm.toLowerCase());
-    
+  const filteredProjects = projects.filter((project) => {
+    const matchesSearch =
+      project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      project.path.toLowerCase().includes(searchTerm.toLowerCase());
+
     switch (selectedFilter) {
       case 'favorites':
         return matchesSearch && project.favorite;
       case 'recent':
-        return matchesSearch && project.lastOpened > Date.now() - 7 * 24 * 60 * 60 * 1000; // Last 7 days
+        return (
+          matchesSearch &&
+          project.lastOpened > Date.now() - 7 * 24 * 60 * 60 * 1000
+        ); // Last 7 days
       default:
         return matchesSearch;
     }
@@ -172,7 +191,7 @@ const ProjectLauncher: React.FC = () => {
       key: 'launch-with',
       label: 'Launch with...',
       icon: <FolderOpenOutlined />,
-      children: ides.map(ide => ({
+      children: ides.map((ide) => ({
         key: `launch-${ide.id}`,
         label: ide.name,
         onClick: () => handleLaunchProject(project.id, ide.id),
@@ -184,7 +203,9 @@ const ProjectLauncher: React.FC = () => {
       icon: <FolderOutlined />,
       onClick: async () => {
         try {
-          await (window as any).electron.projectManager.openInExplorer(project.id);
+          await (window as any).electron.projectManager.openInExplorer(
+            project.id,
+          );
         } catch (_) {
           message.error('Error opening in explorer');
         }
@@ -196,7 +217,9 @@ const ProjectLauncher: React.FC = () => {
       icon: <FolderOutlined />,
       onClick: async () => {
         try {
-          await (window as any).electron.projectManager.openInTerminal(project.id);
+          await (window as any).electron.projectManager.openInTerminal(
+            project.id,
+          );
         } catch (_) {
           message.error('Error opening in terminal');
         }
@@ -206,7 +229,13 @@ const ProjectLauncher: React.FC = () => {
 
   return (
     <Layout style={{ minHeight: '100vh', background: '#f5f5f5' }}>
-      <Header style={{ background: '#fff', padding: '0 24px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+      <Header
+        style={{
+          background: '#fff',
+          padding: '0 24px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        }}
+      >
         <Row justify="space-between" align="middle">
           <Col>
             <Title level={3} style={{ margin: 0, color: '#1890ff' }}>
@@ -215,20 +244,22 @@ const ProjectLauncher: React.FC = () => {
           </Col>
           <Col>
             <Space>
-              <Button icon={<ReloadOutlined />} onClick={loadProjects} loading={loading}>
+              <Button
+                icon={<ReloadOutlined />}
+                onClick={loadProjects}
+                loading={loading}
+              >
                 Refresh
               </Button>
               <Button icon={<PlusOutlined />} onClick={handleScanDirectory}>
                 Add Projects
               </Button>
-              <Button icon={<SettingOutlined />}>
-                Settings
-              </Button>
+              <Button icon={<SettingOutlined />}>Settings</Button>
             </Space>
           </Col>
         </Row>
       </Header>
-      
+
       <Content style={{ padding: '24px' }}>
         <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
           <Col span={12}>
@@ -270,7 +301,11 @@ const ProjectLauncher: React.FC = () => {
             description="No projects found"
             image={Empty.PRESENTED_IMAGE_SIMPLE}
           >
-            <Button type="primary" icon={<PlusOutlined />} onClick={handleScanDirectory}>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={handleScanDirectory}
+            >
               Add Your First Project
             </Button>
           </Empty>
@@ -284,11 +319,26 @@ const ProjectLauncher: React.FC = () => {
                 <Card
                   hoverable
                   actions={[
-                    <Tooltip key="favorite" title={project.favorite ? 'Remove from favorites' : 'Add to favorites'}>
+                    <Tooltip
+                      key="favorite"
+                      title={
+                        project.favorite
+                          ? 'Remove from favorites'
+                          : 'Add to favorites'
+                      }
+                    >
                       <Button
                         type="text"
-                        icon={project.favorite ? <StarFilled style={{ color: '#faad14' }} /> : <StarOutlined />}
-                        onClick={() => handleToggleFavorite(project.id, project.favorite)}
+                        icon={
+                          project.favorite ? (
+                            <StarFilled style={{ color: '#faad14' }} />
+                          ) : (
+                            <StarOutlined />
+                          )
+                        }
+                        onClick={() =>
+                          handleToggleFavorite(project.id, project.favorite)
+                        }
                       />
                     </Tooltip>,
                     <Button
@@ -299,7 +349,11 @@ const ProjectLauncher: React.FC = () => {
                     >
                       Launch
                     </Button>,
-                    <Dropdown key="more" menu={{ items: getProjectActions(project) }} trigger={['click']}>
+                    <Dropdown
+                      key="more"
+                      menu={{ items: getProjectActions(project) }}
+                      trigger={['click']}
+                    >
                       <Button type="text" icon={<MoreOutlined />} />
                     </Dropdown>,
                   ]}
@@ -323,14 +377,15 @@ const ProjectLauncher: React.FC = () => {
                         )}
                         {project.tags.length > 0 && (
                           <div style={{ marginTop: 8 }}>
-                            {project.tags.map(tag => (
+                            {project.tags.map((tag) => (
                               <Tag key={tag}>{tag}</Tag>
                             ))}
                           </div>
                         )}
                         <div style={{ marginTop: 8 }}>
                           <Text type="secondary" style={{ fontSize: '11px' }}>
-                            Last opened: {new Date(project.lastOpened).toLocaleDateString()}
+                            Last opened:{' '}
+                            {new Date(project.lastOpened).toLocaleDateString()}
                           </Text>
                         </div>
                       </div>
