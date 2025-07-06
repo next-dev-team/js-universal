@@ -7,8 +7,10 @@
 
 ## Development Environment
 
+- **Root Project Installation/Run Command:** Navigate to the `app` directory (`cd app`) and use `yarn` or just use any .sh file in the root
 - **Package Manager:** Always use `yarn` for installing dependencies and managing packages.
 - **Starting Development:** Use `./dev.sh` or `setup.sh` to start the development server.
+- **Testing:** Use `./test.sh` to run tests.
 
 ## Project Overview
 
@@ -31,8 +33,8 @@ Benefits of This Approach
 Implementation Strategy
 
 1. [] Project Launcher + Position Replacement
-2. [] Enhanced Project Management
-3. [] Smart UI with Quick Actions
-4. [] IDE Auto-Detection
-5. [] Project Templates or stater
-6. [] Workspace Management
+2. [] IDE Auto-Detection
+3. [] Enhanced Project Management
+4. [] Workspace Management
+5. [] Smart UI with Quick Actions
+6. [] Project Templates or stater
