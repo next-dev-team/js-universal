@@ -1,9 +1,9 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { initPreloadLogger } from '../common/logger/preload.ts';
 import checkUpdate from './ipc/check-update.ts';
+import projectManagerAPI from './ipc/project-manager.ts';
 import { getTestHandle1 } from './ipc/test.ts';
 import user32 from './ipc/user32.ts';
-import projectManagerAPI from './ipc/project-manager.ts';
 
 initPreloadLogger();
 
@@ -21,6 +21,7 @@ const api = {
   openProject: async () => {
     return ipcRenderer.invoke('open-project');
   },
+  ipcRenderer,
 };
 
 contextBridge.exposeInMainWorld(apiKey, api);

@@ -6,10 +6,9 @@ const ProjectLauncher = () => {
 
   const handleOpenProject = async (newWindow: boolean) => {
     try {
-      const path = await (window as any).electron.ipcRenderer.invoke(
-        'open-project',
-        { newWindow },
-      );
+      const path = await window.electron.ipcRenderer.invoke('open-project', {
+        newWindow,
+      });
       if (path) {
         setProjectPath(path);
         message.success(`Project opened: ${path}`);
