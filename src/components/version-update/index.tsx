@@ -3,12 +3,17 @@ import { Button, Modal, Progress } from 'antd';
 
 const VersionUpdate = () => {
   useEffect(() => {
-    const {
-      checkUpdate: { watchVersionUpdateMsg, confirmUpdate },
-    } = window.electronAPI;
+    if (!window.electronAPI?.checkUpdate) return;
+    
+    const { watchVersionUpdateMsg, confirmUpdate } = window.electronAPI.checkUpdate;
     let progressModal: ReturnType<typeof Modal.info> | undefined;
 
-    watchVersionUpdateMsg(async (arg) => {
+    watchVersionUpdateMsg(async (arg: {
+      state: number;
+      message: {
+        percent: number;
+      };
+    }) => {
       switch (arg.state) {
         case 3:
           if (!progressModal) {
@@ -40,8 +45,9 @@ const VersionUpdate = () => {
     });
   }, []);
   const onCheckUpdate = async () => {
-    const { checkUpdate } = window.electronAPI;
-    const data = await checkUpdate.checkUpdate();
+    if (!window.electronAPI?.checkUpdate) return;
+    
+    const data = await window.electronAPI.checkUpdate.checkUpdate();
     if (data.code !== 0) {
       Modal.error({
         title: `Update failed, reason: ${data.message}`,
@@ -59,7 +65,7 @@ const VersionUpdate = () => {
           title: 'Prompt',
           content: `New version V${data.data!.message} detected, update?`,
           onOk: async () => {
-            const result = await checkUpdate.confirmDownload();
+            const result = await window.electronAPI!.checkUpdate.confirmDownload();
             if (result.code !== 0) {
               Modal.error({
                 title: `Update failed, reason: ${result.message}`,

@@ -1,0 +1,265 @@
+.project-list-container {
+  padding: 16px;
+}
+
+.view-toggle {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+/* Grid View Styles */
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.project-card {
+  height: 200px;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.project-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.project-card .ant-card-body {
+  padding: 16px;
+  height: calc(100% - 57px); /* Subtract actions height */
+  display: flex;
+  flex-direction: column;
+}
+
+.project-card .ant-card-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.project-card .ant-card-meta-detail {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.project-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.project-description {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.project-description p {
+  margin: 0 0 12px 0;
+  color: #666;
+  font-size: 14px;
+  line-height: 1.4;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.last-opened {
+  color: #999;
+  font-size: 12px;
+}
+
+.favorite-badge {
+  color: #faad14;
+  font-size: 14px;
+}
+
+.favorite-icon.active {
+  color: #faad14;
+}
+
+.project-card .ant-card-actions {
+  border-top: 1px solid #f0f0f0;
+}
+
+.project-card .ant-card-actions > li {
+  margin: 8px 0;
+}
+
+.project-card .ant-card-actions > li > span {
+  color: #666;
+  font-size: 16px;
+  transition: color 0.3s ease;
+}
+
+.project-card .ant-card-actions > li > span:hover {
+  color: #1890ff;
+}
+
+/* List View Styles */
+.project-list {
+  background: #fff;
+  border-radius: 8px;
+}
+
+.project-list-item {
+  padding: 16px 24px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.project-list-item:hover {
+  background-color: #fafafa;
+}
+
+.project-list-item:last-child {
+  border-bottom: none;
+}
+
+.project-list-item .ant-list-item-meta {
+  align-items: center;
+}
+
+.project-list-item .ant-list-item-meta-content {
+  flex: 1;
+}
+
+.project-list-item .project-title {
+  margin-bottom: 4px;
+}
+
+.project-list-item .project-meta p {
+  margin: 0 0 8px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.project-path {
+  color: #999;
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+}
+
+.project-list-item .ant-list-item-action {
+  margin-left: 16px;
+}
+
+.project-list-item .ant-list-item-action > li {
+  padding: 0 4px;
+}
+
+/* Loading State */
+.project-list-loading {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  padding: 16px;
+}
+
+.project-list-loading .ant-card {
+  height: 200px;
+}
+
+/* Empty State */
+.project-list-empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  padding: 40px;
+}
+
+.project-list-empty .ant-empty {
+  margin: 0;
+}
+
+.project-list-empty .ant-empty-description {
+  color: #999;
+  font-size: 16px;
+  margin: 16px 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .project-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .project-card {
+    height: auto;
+    min-height: 180px;
+  }
+  
+  .view-toggle {
+    justify-content: center;
+  }
+  
+  .project-list-item {
+    padding: 12px 16px;
+  }
+  
+  .project-list-item .ant-list-item-action {
+    margin-left: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .project-list-container {
+    padding: 8px;
+  }
+  
+  .project-grid {
+    gap: 8px;
+  }
+  
+  .project-card .ant-card-body {
+    padding: 12px;
+  }
+  
+  .project-list-item {
+    padding: 8px 12px;
+  }
+}
+
+/* Dark theme support */
+[data-theme='dark'] .project-card {
+  background: #1f1f1f;
+  border-color: #303030;
+}
+
+[data-theme='dark'] .project-card:hover {
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='dark'] .project-list-item {
+  background: #1f1f1f;
+  border-color: #303030;
+}
+
+[data-theme='dark'] .project-list-item:hover {
+  background-color: #262626;
+}
+
+[data-theme='dark'] .project-description p {
+  color: #bfbfbf;
+}
+
+[data-theme='dark'] .last-opened {
+  color: #8c8c8c;
+}
+
+[data-theme='dark'] .project-path {
+  color: #8c8c8c;
+}
