@@ -51,6 +51,7 @@
     "kill-port": "kill-port 5173"
   },
   "dependencies": {
+    "ahooks": "^3.9.0",
     "better-sqlite3": "^12.2.0",
     "chokidar": "^4.0.3",
     "electron-log": "^5.3.3",
