@@ -1,7 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { initPreloadLogger } from '../common/logger/preload.ts';
 import checkUpdate from './ipc/check-update.ts';
-import projectManagerAPI from './ipc/project-manager.ts';
 import { getTestHandle1 } from './ipc/test.ts';
 import user32 from './ipc/user32.ts';
 
@@ -14,12 +13,8 @@ const api = {
   getTestHandle1,
   user32,
   checkUpdate,
-  projectManager: projectManagerAPI,
   send: (type: string, msg: unknown) => {
     ipcRenderer.send(type, msg);
-  },
-  openProject: async () => {
-    return ipcRenderer.invoke('open-project');
   },
   ipcRenderer,
 };
