@@ -6,13 +6,13 @@ import type { Project } from '@/types/project';
 
 const IndexPage: React.FC = () => {
   const { filters, searchProjects } = useProjectStore();
-  
+
   // Get filtered projects based on current filters
   const filteredProjects = searchProjects(filters);
 
   return (
     <DashboardLayout title="Project Dashboard">
-      <ProjectList 
+      <ProjectList
         projects={filteredProjects}
         viewMode="grid"
         onProjectAction={(action: string, project: Project) => {

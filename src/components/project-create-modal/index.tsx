@@ -1,59 +1,67 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  Modal,
-  Form,
-  Input,
-
-  Button,
-  Steps,
-  Card,
-  Row,
-  Col,
-  Space,
-  Typography,
-  message,
-  Divider,
-  Tooltip,
-
-  Switch
-} from 'antd';
-import {
-  FolderOutlined,
-  GlobalOutlined,
-  MobileOutlined,
-  DesktopOutlined,
   ApiOutlined,
   BookOutlined,
+  DesktopOutlined,
   FileOutlined,
   FolderOpenOutlined,
-
+  FolderOutlined,
   GithubOutlined,
+  GlobalOutlined,
+  InboxOutlined,
   InfoCircleOutlined,
-
+  MobileOutlined,
+  PlusOutlined,
 } from '@ant-design/icons';
+import {
+  Alert,
+  Button,
+  Card,
+  Col,
+  Divider,
+  Form,
+  Input,
+  Modal,
+  Row,
+  Space,
+  Steps,
+  Switch,
+  Tooltip,
+  Typography,
+  message,
+} from 'antd';
 import { useProjectStore } from '../../store/modules/use-project-store';
-import type { ProjectCreateModalProps, ProjectTemplate, ProjectCreateRequest } from '../../types/project';
+import type {
+  ProjectCreateModalProps,
+  ProjectCreateRequest,
+  ProjectTemplate,
+} from '../../types/project';
 import './styles.css';
 
-const { Title, Text, Paragraph } = Typography;
+const { Text, Paragraph, Title } = Typography;
 const { Step } = Steps;
 const { TextArea } = Input;
-
 
 const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
   open,
   onCancel,
-  onSuccess
+  onSuccess,
 }) => {
   const [form] = Form.useForm();
   const [currentStep, setCurrentStep] = useState(0);
-  const [selectedTemplate, setSelectedTemplate] = useState<ProjectTemplate | null>(null);
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<ProjectTemplate | null>(null);
   const [loading, setLoading] = useState(false);
-  
+  const [mode, setMode] = useState<'create' | 'open'>('create');
+  const [dragActive, setDragActive] = useState(false);
+  const dragCounter = useRef(0);
+
   const {
     createProject,
+    openExistingProject,
+    addExistingProject,
     templates,
-    loadTemplates
+    loadTemplates,
   } = useProjectStore();
 
   useEffect(() => {
@@ -70,38 +78,38 @@ const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
       key: 'web',
       label: 'Web Application',
       icon: <GlobalOutlined />,
-      description: 'Frontend, fullstack, or web-based applications'
+      description: 'Frontend, fullstack, or web-based applications',
     },
     {
       key: 'mobile',
       label: 'Mobile Application',
       icon: <MobileOutlined />,
-      description: 'iOS, Android, or cross-platform mobile apps'
+      description: 'iOS, Android, or cross-platform mobile apps',
     },
     {
       key: 'desktop',
       label: 'Desktop Application',
       icon: <DesktopOutlined />,
-      description: 'Native desktop applications for Windows, macOS, or Linux'
+      description: 'Native desktop applications for Windows, macOS, or Linux',
     },
     {
       key: 'api',
       label: 'API/Backend',
       icon: <ApiOutlined />,
-      description: 'REST APIs, GraphQL, microservices, or backend services'
+      description: 'REST APIs, GraphQL, microservices, or backend services',
     },
     {
       key: 'library',
       label: 'Library/Package',
       icon: <BookOutlined />,
-      description: 'Reusable libraries, packages, or components'
+      description: 'Reusable libraries, packages, or components',
     },
     {
       key: 'other',
       label: 'Other',
       icon: <FileOutlined />,
-      description: 'Scripts, tools, or other types of projects'
-    }
+      description: 'Scripts, tools, or other types of projects',
+    },
   ];
 
   const handleNext = async () => {
@@ -128,7 +136,7 @@ const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
     try {
       setLoading(true);
       const values = await form.validateFields();
-      
+
       const projectData: ProjectCreateRequest = {
         name: values.name,
         description: values.description,
@@ -137,16 +145,16 @@ const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
         template: selectedTemplate?.id,
         gitRepository: values.gitRepository,
         initializeGit: values.initializeGit || false,
-        installDependencies: values.installDependencies || false
+        installDependencies: values.installDependencies || false,
       };
 
       await createProject(projectData);
       message.success('Project created successfully!');
-      
+
       if (onSuccess) {
         onSuccess(projectData);
       }
-      
+
       handleCancel();
     } catch (error) {
       console.error('Failed to create project:', error);
@@ -169,13 +177,93 @@ const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
     setSelectedTemplate(template);
     form.setFieldsValue({
       type: template.type,
-      description: template.description
+      description: template.description,
     });
   };
 
   const handleBrowseFolder = () => {
     // TODO: Implement folder browser using Electron dialog
     message.info('Folder browser will be implemented with Electron dialog');
+  };
+
+  const handleOpenExistingProject = async () => {
+    try {
+      setLoading(true);
+      const project = await openExistingProject();
+
+      if (project) {
+        message.success(`Project "${project.name}" opened successfully!`);
+        onSuccess?.(project);
+        handleCancel();
+      }
+    } catch (error) {
+      message.error(
+        error instanceof Error ? error.message : 'Failed to open project',
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current++;
+    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+      setDragActive(true);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current--;
+    if (dragCounter.current === 0) {
+      setDragActive(false);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    dragCounter.current = 0;
+
+    try {
+      const files = Array.from(e.dataTransfer.files);
+
+      if (files.length === 0) {
+        message.warning('No files were dropped');
+        return;
+      }
+
+      // Get the first file/folder path
+      const file = files[0];
+      const folderPath = (file as any).path || file.name;
+
+      if (!folderPath) {
+        message.error('Invalid folder path');
+        return;
+      }
+
+      setLoading(true);
+      const project = await addExistingProject(folderPath);
+
+      message.success(`Project "${project.name}" added successfully!`);
+      onSuccess?.(project);
+      handleCancel();
+    } catch (error) {
+      message.error(
+        error instanceof Error ? error.message : 'Failed to add project',
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const renderStepContent = () => {
@@ -189,9 +277,19 @@ const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
               label="Project Name"
               rules={[
                 { required: true, message: 'Please enter project name' },
-                { min: 2, message: 'Project name must be at least 2 characters' },
-                { max: 50, message: 'Project name must be less than 50 characters' },
-                { pattern: /^[a-zA-Z0-9-_\s]+$/, message: 'Only letters, numbers, hyphens, underscores and spaces allowed' }
+                {
+                  min: 2,
+                  message: 'Project name must be at least 2 characters',
+                },
+                {
+                  max: 50,
+                  message: 'Project name must be less than 50 characters',
+                },
+                {
+                  pattern: /^[a-zA-Z0-9-_\s]+$/,
+                  message:
+                    'Only letters, numbers, hyphens, underscores and spaces allowed',
+                },
               ]}
             >
               <Input placeholder="Enter project name" size="large" />
@@ -202,11 +300,14 @@ const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
               label="Description"
               rules={[
                 { required: true, message: 'Please enter project description' },
-                { max: 200, message: 'Description must be less than 200 characters' }
+                {
+                  max: 200,
+                  message: 'Description must be less than 200 characters',
+                },
               ]}
             >
-              <TextArea 
-                placeholder="Describe your project" 
+              <TextArea
+                placeholder="Describe your project"
                 rows={3}
                 showCount
                 maxLength={200}
@@ -216,7 +317,9 @@ const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
             <Form.Item
               name="type"
               label="Project Type"
-              rules={[{ required: true, message: 'Please select project type' }]}
+              rules={[
+                { required: true, message: 'Please select project type' },
+              ]}
             >
               <div className="project-type-selector">
                 <Row gutter={[16, 16]}>
@@ -249,7 +352,7 @@ const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
         return (
           <div className="step-content">
             <Title level={4}>Project Setup</Title>
-            
+
             <Form.Item
               name="path"
               label={
@@ -261,16 +364,16 @@ const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
                 </Space>
               }
               rules={[
-                { required: true, message: 'Please specify project location' }
+                { required: true, message: 'Please specify project location' },
               ]}
             >
               <Input.Group compact>
-                <Input 
+                <Input
                   style={{ width: 'calc(100% - 100px)' }}
                   placeholder="/path/to/project"
                   size="large"
                 />
-                <Button 
+                <Button
                   size="large"
                   icon={<FolderOpenOutlined />}
                   onClick={handleBrowseFolder}
@@ -281,7 +384,7 @@ const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
             </Form.Item>
 
             <Divider>Template Selection (Optional)</Divider>
-            
+
             <div className="template-selector">
               <Row gutter={[16, 16]}>
                 <Col span={8}>
@@ -307,7 +410,9 @@ const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
                       onClick={() => handleTemplateSelect(template)}
                     >
                       <div className="template-content">
-                        <div className="template-icon"><FileOutlined /></div>
+                        <div className="template-icon">
+                          <FileOutlined />
+                        </div>
                         <Text strong>{template.name}</Text>
                         <Text className="template-description">
                           {template.description}
@@ -325,22 +430,16 @@ const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
         return (
           <div className="step-content">
             <Title level={4}>Additional Options</Title>
-            
-            <Form.Item
-              name="gitRepository"
-              label="Git Repository (Optional)"
-            >
-              <Input 
+
+            <Form.Item name="gitRepository" label="Git Repository (Optional)">
+              <Input
                 placeholder="https://github.com/username/repo.git"
                 prefix={<GithubOutlined />}
                 size="large"
               />
             </Form.Item>
 
-            <Form.Item
-              name="initializeGit"
-              valuePropName="checked"
-            >
+            <Form.Item name="initializeGit" valuePropName="checked">
               <div className="option-item">
                 <Switch />
                 <div className="option-content">
@@ -352,10 +451,7 @@ const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
               </div>
             </Form.Item>
 
-            <Form.Item
-              name="installDependencies"
-              valuePropName="checked"
-            >
+            <Form.Item name="installDependencies" valuePropName="checked">
               <div className="option-item">
                 <Switch />
                 <div className="option-content">
@@ -368,21 +464,25 @@ const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
             </Form.Item>
 
             <Divider />
-            
+
             <div className="project-summary">
               <Title level={5}>Project Summary</Title>
               <div className="summary-item">
-                <Text strong>Name:</Text> <Text>{form.getFieldValue('name')}</Text>
+                <Text strong>Name:</Text>{' '}
+                <Text>{form.getFieldValue('name')}</Text>
               </div>
               <div className="summary-item">
-                <Text strong>Type:</Text> <Text>{form.getFieldValue('type')}</Text>
+                <Text strong>Type:</Text>{' '}
+                <Text>{form.getFieldValue('type')}</Text>
               </div>
               <div className="summary-item">
-                <Text strong>Location:</Text> <Text>{form.getFieldValue('path')}</Text>
+                <Text strong>Location:</Text>{' '}
+                <Text>{form.getFieldValue('path')}</Text>
               </div>
               {selectedTemplate && (
                 <div className="summary-item">
-                  <Text strong>Template:</Text> <Text>{selectedTemplate.name}</Text>
+                  <Text strong>Template:</Text>{' '}
+                  <Text>{selectedTemplate.name}</Text>
                 </div>
               )}
             </div>
@@ -397,21 +497,21 @@ const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
   const steps = [
     {
       title: 'Project Info',
-      description: 'Basic information'
+      description: 'Basic information',
     },
     {
       title: 'Setup',
-      description: 'Location and template'
+      description: 'Location and template',
     },
     {
       title: 'Options',
-      description: 'Additional settings'
-    }
+      description: 'Additional settings',
+    },
   ];
 
   return (
     <Modal
-      title="Create New Project"
+      title={mode === 'create' ? 'Create New Project' : 'Open Existing Project'}
       open={open}
       onCancel={handleCancel}
       width={800}
@@ -419,50 +519,170 @@ const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
       footer={null}
       destroyOnClose
     >
-      <div className="modal-content">
-        <Steps current={currentStep} className="create-steps">
-          {steps.map((step, index) => (
-            <Step
-              key={index}
-              title={step.title}
-              description={step.description}
-            />
-          ))}
-        </Steps>
+      <div
+        className="modal-content"
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+      >
+        {/* Mode Selection */}
+        <div style={{ marginBottom: 24 }}>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Card
+                hoverable
+                className={mode === 'create' ? 'selected-card' : ''}
+                onClick={() => setMode('create')}
+                style={{
+                  border:
+                    mode === 'create'
+                      ? '2px solid #1890ff'
+                      : '1px solid #d9d9d9',
+                  cursor: 'pointer',
+                }}
+              >
+                <div style={{ textAlign: 'center' }}>
+                  <PlusOutlined style={{ fontSize: 24, marginBottom: 8 }} />
+                  <div>
+                    <strong>Create New Project</strong>
+                  </div>
+                  <Text type="secondary">
+                    Start from scratch or use a template
+                  </Text>
+                </div>
+              </Card>
+            </Col>
+            <Col span={12}>
+              <Card
+                hoverable
+                className={mode === 'open' ? 'selected-card' : ''}
+                onClick={() => setMode('open')}
+                style={{
+                  border:
+                    mode === 'open' ? '2px solid #1890ff' : '1px solid #d9d9d9',
+                  cursor: 'pointer',
+                }}
+              >
+                <div style={{ textAlign: 'center' }}>
+                  <FolderOpenOutlined
+                    style={{ fontSize: 24, marginBottom: 8 }}
+                  />
+                  <div>
+                    <strong>Open Existing Project</strong>
+                  </div>
+                  <Text type="secondary">
+                    Import an existing project folder
+                  </Text>
+                </div>
+              </Card>
+            </Col>
+          </Row>
+        </div>
 
-        <Form
-          form={form}
-          layout="vertical"
-          className="create-form"
-        >
-          {renderStepContent()}
-        </Form>
+        {mode === 'create' ? (
+          <>
+            <Steps current={currentStep} className="create-steps">
+              {steps.map((step, index) => (
+                <Step
+                  key={index}
+                  title={step.title}
+                  description={step.description}
+                />
+              ))}
+            </Steps>
 
-        <div className="modal-actions">
-          <Space>
-            <Button onClick={handleCancel}>
-              Cancel
-            </Button>
-            {currentStep > 0 && (
-              <Button onClick={handlePrev}>
-                Previous
-              </Button>
-            )}
-            {currentStep < steps.length - 1 ? (
-              <Button type="primary" onClick={handleNext}>
-                Next
-              </Button>
-            ) : (
-              <Button 
-                type="primary" 
-                onClick={handleSubmit}
+            <Form form={form} layout="vertical" className="create-form">
+              {renderStepContent()}
+            </Form>
+
+            <div className="modal-actions">
+              <Space>
+                <Button onClick={handleCancel}>Cancel</Button>
+                {currentStep > 0 && (
+                  <Button onClick={handlePrev}>Previous</Button>
+                )}
+                {currentStep < steps.length - 1 ? (
+                  <Button type="primary" onClick={handleNext}>
+                    Next
+                  </Button>
+                ) : (
+                  <Button
+                    type="primary"
+                    onClick={handleSubmit}
+                    loading={loading}
+                  >
+                    Create Project
+                  </Button>
+                )}
+              </Space>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Drag and Drop Area */}
+            <div
+              style={{
+                border: dragActive
+                  ? '2px dashed #1890ff'
+                  : '2px dashed #d9d9d9',
+                borderRadius: 8,
+                padding: 40,
+                textAlign: 'center',
+                backgroundColor: dragActive ? '#f0f8ff' : '#fafafa',
+                marginBottom: 24,
+                transition: 'all 0.3s ease',
+              }}
+            >
+              <InboxOutlined
+                style={{
+                  fontSize: 48,
+                  color: dragActive ? '#1890ff' : '#d9d9d9',
+                  marginBottom: 16,
+                }}
+              />
+              <div style={{ marginBottom: 16 }}>
+                <Text strong style={{ fontSize: 16 }}>
+                  {dragActive
+                    ? 'Drop your project folder here'
+                    : 'Drag & Drop Project Folder'}
+                </Text>
+              </div>
+              <Text type="secondary">
+                Drag and drop a project folder here to import it automatically
+              </Text>
+            </div>
+
+            {/* Manual Selection */}
+            <div style={{ textAlign: 'center', marginBottom: 24 }}>
+              <Text type="secondary">or</Text>
+            </div>
+
+            <div style={{ textAlign: 'center' }}>
+              <Button
+                type="primary"
+                size="large"
+                icon={<FolderOpenOutlined />}
+                onClick={handleOpenExistingProject}
                 loading={loading}
               >
-                Create Project
+                Browse for Project Folder
               </Button>
-            )}
-          </Space>
-        </div>
+            </div>
+
+            <Alert
+              message="Supported Project Types"
+              description="We support React, Vue, Angular, Node.js, Python, and many other project types. The system will automatically detect your project type and configuration."
+              type="info"
+              showIcon
+              style={{ marginTop: 24 }}
+            />
+
+            <div className="modal-actions">
+              <Button onClick={handleCancel}>Cancel</Button>
+            </div>
+          </>
+        )}
       </div>
     </Modal>
   );

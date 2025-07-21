@@ -18,7 +18,7 @@ export interface Project {
   metadata: ProjectMetadata;
 }
 
-export type ProjectType = 
+export type ProjectType =
   | 'web'
   | 'react'
   | 'vue'
@@ -39,11 +39,7 @@ export type ProjectType =
   | 'mobile'
   | 'other';
 
-export type ProjectStatus = 
-  | 'active'
-  | 'archived'
-  | 'template'
-  | 'draft';
+export type ProjectStatus = 'active' | 'archived' | 'template' | 'draft';
 
 export interface ProjectMetadata {
   framework?: string;
@@ -53,6 +49,7 @@ export interface ProjectMetadata {
   environment?: 'development' | 'staging' | 'production';
   buildTool?: string;
   packageManager?: 'npm' | 'yarn' | 'pnpm' | 'bun';
+  size?: number; // in bytes
 }
 
 export interface ProjectTemplate {
@@ -158,7 +155,7 @@ export interface ProjectStore {
   selectedProject?: Project;
   isLoading: boolean;
   error?: string;
-  
+
   // Actions
   loadProjects: () => Promise<void>;
   createProject: (request: ProjectCreateRequest) => Promise<Project>;

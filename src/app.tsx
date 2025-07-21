@@ -1,7 +1,7 @@
 import { RouterProvider } from 'react-router-dom';
 import { ConfigProvider, theme } from 'antd';
-import Router from '@/router';
 import AjaxLoading from '@/components/ajax-loading';
+import Router from '@/router';
 
 function App() {
   return (

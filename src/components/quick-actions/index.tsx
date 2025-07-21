@@ -1,21 +1,21 @@
 import React from 'react';
-import { Button, Tooltip, Dropdown, Space, message } from 'antd';
-import type { MenuProps } from 'antd';
 import {
-  FolderOpenOutlined,
-  ConsoleSqlOutlined,
-  PlayCircleOutlined,
   CodeOutlined,
-  MoreOutlined,
-  EditOutlined,
-  DeleteOutlined,
+  ConsoleSqlOutlined,
   CopyOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  FolderOpenOutlined,
+  MoreOutlined,
+  PlayCircleOutlined,
   SettingOutlined,
+  StarFilled,
   StarOutlined,
-  StarFilled
 } from '@ant-design/icons';
+import { Button, Dropdown, Space, Tooltip, message } from 'antd';
+import type { MenuProps } from 'antd';
 import { useProjectStore } from '../../store/modules/use-project-store';
-import type { QuickActionsProps, IDE } from '../../types/project';
+import type { IDE, QuickActionsProps } from '../../types/project';
 import './styles.css';
 
 const QuickActions: React.FC<QuickActionsProps> = ({
@@ -24,14 +24,17 @@ const QuickActions: React.FC<QuickActionsProps> = ({
   type = 'default',
   showLabels = false,
   actions = ['explorer', 'terminal', 'open', 'more'],
-  className
+  className,
 }) => {
   const {
     openProject,
     toggleFavorite,
     deleteProject,
     ides,
-    loadIDEs
+    loadIDEs,
+    openProjectInExplorer,
+    openProjectInTerminal,
+    openProjectInIDE,
   } = useProjectStore();
 
   React.useEffect(() => {
@@ -40,35 +43,17 @@ const QuickActions: React.FC<QuickActionsProps> = ({
 
   const handleOpenInExplorer = async () => {
     try {
-      // Use Electron's shell API to open folder in file explorer
-      if (window.electronAPI?.shell?.openPath) {
-        await window.electronAPI.shell.openPath(project.path);
-        message.success('Opened in file explorer');
-      } else {
-        // Fallback for development/web environment
-        console.log('Open in explorer:', project.path);
-        message.info('File explorer integration available in desktop app');
-      }
-    } catch (error) {
-      console.error('Failed to open in explorer:', error);
-      message.error('Failed to open in file explorer');
+      await openProjectInExplorer(project.path);
+    } catch (_error) {
+      // Error is already handled in the store
     }
   };
 
   const handleOpenInTerminal = async () => {
     try {
-      // Use Electron's IPC to open terminal
-      if (window.electronAPI?.terminal?.open) {
-        await window.electronAPI.terminal.open(project.path);
-        message.success('Opened in terminal');
-      } else {
-        // Fallback for development/web environment
-        console.log('Open in terminal:', project.path);
-        message.info('Terminal integration available in desktop app');
-      }
-    } catch (error) {
-      console.error('Failed to open in terminal:', error);
-      message.error('Failed to open in terminal');
+      await openProjectInTerminal(project.path);
+    } catch (_error) {
+      // Error is already handled in the store
     }
   };
 
@@ -79,26 +64,16 @@ const QuickActions: React.FC<QuickActionsProps> = ({
 
   const handleOpenInIDE = async (ide: IDE) => {
     try {
-      if (window.electronAPI?.ide?.open) {
-        await window.electronAPI.ide.open(project.path, ide.executable);
-        message.success(`Opened in ${ide.name}`);
-      } else {
-        // Fallback for development/web environment
-        console.log(`Open in ${ide.name}:`, project.path);
-        message.info(`${ide.name} integration available in desktop app`);
-      }
-    } catch (error) {
-      console.error(`Failed to open in ${ide.name}:`, error);
-      message.error(`Failed to open in ${ide.name}`);
+      await openProjectInIDE(project.path, ide.id);
+    } catch (_error) {
+      // Error is already handled in the store
     }
   };
 
   const handleToggleFavorite = () => {
     toggleFavorite(project.id);
     message.success(
-      project.isFavorite 
-        ? 'Removed from favorites' 
-        : 'Added to favorites'
+      project.isFavorite ? 'Removed from favorites' : 'Added to favorites',
     );
   };
 
@@ -133,26 +108,28 @@ const QuickActions: React.FC<QuickActionsProps> = ({
     const items: MenuProps['items'] = [
       {
         key: 'favorite',
-        label: project?.isFavorite ? 'Remove from Favorites' : 'Add to Favorites',
+        label: project?.isFavorite
+          ? 'Remove from Favorites'
+          : 'Add to Favorites',
         icon: project?.isFavorite ? <StarFilled /> : <StarOutlined />,
-        onClick: handleToggleFavorite
+        onClick: handleToggleFavorite,
       },
       {
-        type: 'divider'
+        type: 'divider',
       },
       {
         key: 'copy-path',
         label: 'Copy Path',
         icon: <CopyOutlined />,
-        onClick: handleCopyPath
-      }
+        onClick: handleCopyPath,
+      },
     ];
 
     // Add IDE options if available
     if (ides.length > 0) {
       items.push(
         {
-          type: 'divider'
+          type: 'divider',
         },
         {
           key: 'open-in',
@@ -162,15 +139,15 @@ const QuickActions: React.FC<QuickActionsProps> = ({
             key: `ide-${ide.id}`,
             label: ide.name,
             icon: <div className="ide-icon">{ide.icon}</div>,
-            onClick: () => handleOpenInIDE(ide)
-          }))
-        }
+            onClick: () => handleOpenInIDE(ide),
+          })),
+        },
       );
     }
 
     items.push(
       {
-        type: 'divider'
+        type: 'divider',
       },
       {
         key: 'settings',
@@ -179,15 +156,15 @@ const QuickActions: React.FC<QuickActionsProps> = ({
         onClick: () => {
           // TODO: Implement project settings
           message.info('Project settings coming soon');
-        }
+        },
       },
       {
         key: 'delete',
         label: 'Remove Project',
         icon: <DeleteOutlined />,
         danger: true,
-        onClick: handleDeleteProject
-      }
+        onClick: handleDeleteProject,
+      },
     );
 
     return items;
@@ -260,11 +237,21 @@ const QuickActions: React.FC<QuickActionsProps> = ({
 
       case 'favorite':
         return (
-          <Tooltip title={project?.isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}>
+          <Tooltip
+            title={
+              project?.isFavorite ? 'Remove from Favorites' : 'Add to Favorites'
+            }
+          >
             <Button
               type={type}
               size={size}
-              icon={project?.isFavorite ? <StarFilled className="favorite-active" /> : <StarOutlined />}
+              icon={
+                project?.isFavorite ? (
+                  <StarFilled className="favorite-active" />
+                ) : (
+                  <StarOutlined />
+                )
+              }
               onClick={handleToggleFavorite}
               className="quick-action-btn"
             >

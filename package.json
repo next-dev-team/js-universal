@@ -35,6 +35,7 @@
     "dev:pro": "electron-vite -m pro",
     "dev:test": "electron-vite -m test",
     "postinstall": "npx patch-package",
+    "kill-port": "kill-port 5173",
     "lint:all": "npm run lint:eslint && npm run lint:style && npm run lint:format",
     "lint:eslint": "eslint --max-warnings 0  \"**/*.{ts,tsx,js,jsx,cjs,mjs}\" --fix",
     "lint:format": "prettier --write \"**/*.{ts,tsx,js,jsx,cjs,mjs,html,less,scss,css,json}\"",
@@ -43,12 +44,11 @@
     "preview:dev": "npm run electron-vite preview -m dev",
     "preview:pro": "npm run electron-vite preview -m pro",
     "preview:test": "npm run electron-vite preview -m test",
+    "rebuild:native": "electron-rebuild",
     "test": "vitest run",
     "test-u": "vitest -u run",
     "typecheck": "tsc --noEmit",
-    "update:deps": "yarn upgrade-interactive --latest",
-    "rebuild:native": "electron-rebuild",
-    "kill-port": "kill-port 5173"
+    "update:deps": "yarn upgrade-interactive --latest"
   },
   "dependencies": {
     "ahooks": "^3.9.0",

@@ -1,15 +1,15 @@
 import { createStore, useStore } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import type {
+  IDE,
   Project,
   ProjectCreateRequest,
-  ProjectUpdateRequest,
   ProjectSearchFilters,
-  ProjectTemplate,
-  QuickAction,
-  IDE,
   ProjectStats,
-  ProjectType
+  ProjectTemplate,
+  ProjectType,
+  ProjectUpdateRequest,
+  QuickAction,
 } from '@/types/project';
 
 type State = {
@@ -29,25 +29,32 @@ type Actions = {
   createProject: (request: ProjectCreateRequest) => Promise<Project>;
   updateProject: (request: ProjectUpdateRequest) => Promise<Project>;
   deleteProject: (id: string) => Promise<void>;
-  
+
   // Project operations
   searchProjects: (filters: ProjectSearchFilters) => Project[];
   toggleFavorite: (id: string) => Promise<void>;
   openProject: (id: string, ideId?: string) => Promise<void>;
-  
+
+  // New project operations
+  openExistingProject: () => Promise<Project | null>;
+  addExistingProject: (folderPath: string) => Promise<Project>;
+  openProjectInExplorer: (projectPath: string) => Promise<void>;
+  openProjectInTerminal: (projectPath: string) => Promise<void>;
+  openProjectInIDE: (projectPath: string, ideId?: string) => Promise<void>;
+
   // Filter operations
   setFilters: (filters: Partial<ProjectSearchFilters>) => void;
   clearFilters: () => void;
-  
+
   // Utility operations
   getProjectStats: () => ProjectStats;
   setSelectedProject: (project?: Project) => void;
   setLoading: (loading: boolean) => void;
   setError: (error?: string) => void;
-  
+
   // Template operations
   loadTemplates: () => Promise<void>;
-  
+
   // Quick actions and IDE operations
   loadQuickActions: () => Promise<void>;
   loadIDEs: () => Promise<void>;
@@ -58,7 +65,7 @@ type ProjectStore = State & Actions;
 const defaultFilters: ProjectSearchFilters = {
   query: '',
   sortBy: 'updatedAt',
-  sortOrder: 'desc'
+  sortOrder: 'desc',
 };
 
 // Mock data for initial development
@@ -79,8 +86,8 @@ const mockProjects: Project[] = [
       framework: 'React',
       version: '18.2.0',
       packageManager: 'yarn',
-      buildTool: 'Vite'
-    }
+      buildTool: 'Vite',
+    },
   },
   {
     id: '2',
@@ -96,9 +103,9 @@ const mockProjects: Project[] = [
     metadata: {
       framework: 'Express',
       version: '4.18.0',
-      packageManager: 'npm'
-    }
-  }
+      packageManager: 'npm',
+    },
+  },
 ];
 
 const mockTemplates: ProjectTemplate[] = [
@@ -108,7 +115,14 @@ const mockTemplates: ProjectTemplate[] = [
     description: 'Modern React application with TypeScript and Vite',
     type: 'react',
     files: [],
-    dependencies: ['react', 'react-dom', '@types/react', '@types/react-dom', 'typescript', 'vite']
+    dependencies: [
+      'react',
+      'react-dom',
+      '@types/react',
+      '@types/react-dom',
+      'typescript',
+      'vite',
+    ],
   },
   {
     id: 'nodejs-express',
@@ -116,8 +130,8 @@ const mockTemplates: ProjectTemplate[] = [
     description: 'RESTful API with Express and TypeScript',
     type: 'nodejs',
     files: [],
-    dependencies: ['express', '@types/express', 'typescript', 'ts-node']
-  }
+    dependencies: ['express', '@types/express', 'typescript', 'ts-node'],
+  },
 ];
 
 const mockQuickActions: QuickAction[] = [
@@ -127,7 +141,7 @@ const mockQuickActions: QuickAction[] = [
     icon: 'vscode',
     command: 'code',
     args: ['.'],
-    requiresProject: true
+    requiresProject: true,
   },
   {
     id: 'open-terminal',
@@ -135,15 +149,15 @@ const mockQuickActions: QuickAction[] = [
     icon: 'terminal',
     command: 'cmd',
     args: ['/c', 'start'],
-    requiresProject: true
+    requiresProject: true,
   },
   {
     id: 'open-explorer',
     label: 'Open in Explorer',
     icon: 'folder',
     command: 'explorer',
-    requiresProject: true
-  }
+    requiresProject: true,
+  },
 ];
 
 const mockIDEs: IDE[] = [
@@ -152,371 +166,615 @@ const mockIDEs: IDE[] = [
     name: 'Visual Studio Code',
     executable: 'code',
     args: ['.'],
-    icon: 'vscode'
+    icon: 'vscode',
   },
   {
     id: 'webstorm',
     name: 'WebStorm',
     executable: 'webstorm',
     args: ['.'],
-    icon: 'webstorm'
-  }
+    icon: 'webstorm',
+  },
 ];
 
-export const projectStore = createStore<ProjectStore>()(immer((set, get) => ({
-  // Initial state
-  projects: [],
-  templates: [],
-  quickActions: [],
-  ides: [],
-  filters: defaultFilters,
-  selectedProject: undefined,
-  isLoading: false,
-  error: undefined,
+export const projectStore = createStore<ProjectStore>()(
+  immer((set, get) => ({
+    // Initial state
+    projects: [],
+    templates: [],
+    quickActions: [],
+    ides: [],
+    filters: defaultFilters,
+    selectedProject: undefined,
+    isLoading: false,
+    error: undefined,
 
-  // Project CRUD operations
-  loadProjects: async () => {
-    set((state) => {
-      state.isLoading = true;
-      state.error = undefined;
-    });
-
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
+    // Project CRUD operations
+    loadProjects: async () => {
       set((state) => {
-        state.projects = mockProjects;
-        state.isLoading = false;
-      });
-    } catch (error) {
-      set((state) => {
-        state.error = error instanceof Error ? error.message : 'Failed to load projects';
-        state.isLoading = false;
-      });
-    }
-  },
-
-  createProject: async (request: ProjectCreateRequest): Promise<Project> => {
-    set((state) => {
-      state.isLoading = true;
-      state.error = undefined;
-    });
-
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const newProject: Project = {
-        id: Date.now().toString(),
-        name: request.name,
-        description: request.description,
-        type: request.type,
-        path: request.path,
-        tags: request.tags || [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        isFavorite: false,
-        status: 'active',
-        metadata: {
-          packageManager: 'yarn' // Default based on project rules
-        }
-      };
-
-      set((state) => {
-        state.projects.unshift(newProject);
-        state.isLoading = false;
+        state.isLoading = true;
+        state.error = undefined;
       });
 
-      return newProject;
-    } catch (error) {
-      set((state) => {
-        state.error = error instanceof Error ? error.message : 'Failed to create project';
-        state.isLoading = false;
-      });
-      throw error;
-    }
-  },
+      try {
+        // Simulate API call
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
-  updateProject: async (request: ProjectUpdateRequest): Promise<Project> => {
-    set((state) => {
-      state.isLoading = true;
-      state.error = undefined;
-    });
-
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      let updatedProject: Project | undefined;
-      
-      set((state) => {
-        const index = state.projects.findIndex(p => p.id === request.id);
-        if (index !== -1) {
-          const project = state.projects[index];
-          updatedProject = {
-            ...project,
-            ...request,
-            updatedAt: new Date()
-          };
-          state.projects[index] = updatedProject;
-        }
-        state.isLoading = false;
-      });
-
-      if (!updatedProject) {
-        throw new Error('Project not found');
-      }
-
-      return updatedProject;
-    } catch (error) {
-      set((state) => {
-        state.error = error instanceof Error ? error.message : 'Failed to update project';
-        state.isLoading = false;
-      });
-      throw error;
-    }
-  },
-
-  deleteProject: async (id: string): Promise<void> => {
-    set((state) => {
-      state.isLoading = true;
-      state.error = undefined;
-    });
-
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      set((state) => {
-        state.projects = state.projects.filter(p => p.id !== id);
-        if (state.selectedProject?.id === id) {
-          state.selectedProject = undefined;
-        }
-        state.isLoading = false;
-      });
-    } catch (error) {
-      set((state) => {
-        state.error = error instanceof Error ? error.message : 'Failed to delete project';
-        state.isLoading = false;
-      });
-      throw error;
-    }
-  },
-
-  // Project operations
-  searchProjects: (filters: ProjectSearchFilters): Project[] => {
-    const { projects } = get();
-    let filtered = [...projects];
-
-    // Apply text search
-    if (filters.query) {
-      const query = filters.query.toLowerCase();
-      filtered = filtered.filter(project => 
-        project.name.toLowerCase().includes(query) ||
-        project.description?.toLowerCase().includes(query) ||
-        project.tags.some(tag => tag.toLowerCase().includes(query))
-      );
-    }
-
-    // Apply type filter
-    if (filters.type) {
-      filtered = filtered.filter(project => project.type === filters.type);
-    }
-
-    // Apply status filter
-    if (filters.status) {
-      filtered = filtered.filter(project => project.status === filters.status);
-    }
-
-    // Apply favorite filter
-    if (filters.isFavorite !== undefined) {
-      filtered = filtered.filter(project => project.isFavorite === filters.isFavorite);
-    }
-
-    // Apply tags filter
-    if (filters.tags && filters.tags.length > 0) {
-      filtered = filtered.filter(project => 
-        filters.tags!.some(tag => project.tags.includes(tag))
-      );
-    }
-
-    // Apply sorting
-    if (filters.sortBy) {
-      filtered.sort((a, b) => {
-        const aValue = a[filters.sortBy!];
-        const bValue = b[filters.sortBy!];
-        
-        if (aValue instanceof Date && bValue instanceof Date) {
-          const result = aValue.getTime() - bValue.getTime();
-          return filters.sortOrder === 'desc' ? -result : result;
-        }
-        
-        if (typeof aValue === 'string' && typeof bValue === 'string') {
-          const result = aValue.localeCompare(bValue);
-          return filters.sortOrder === 'desc' ? -result : result;
-        }
-        
-        if (typeof aValue === 'number' && typeof bValue === 'number') {
-          const result = aValue - bValue;
-          return filters.sortOrder === 'desc' ? -result : result;
-        }
-        
-        return 0;
-      });
-    }
-
-    return filtered;
-  },
-
-  toggleFavorite: async (id: string): Promise<void> => {
-    try {
-      const project = get().projects.find(p => p.id === id);
-      if (project) {
-        await get().updateProject({
-          id,
-          isFavorite: !project.isFavorite
+        set((state) => {
+          state.projects = mockProjects;
+          state.isLoading = false;
+        });
+      } catch (error) {
+        set((state) => {
+          state.error =
+            error instanceof Error ? error.message : 'Failed to load projects';
+          state.isLoading = false;
         });
       }
-    } catch (error) {
-      set((state) => {
-        state.error = error instanceof Error ? error.message : 'Failed to toggle favorite';
-      });
-    }
-  },
+    },
 
-  openProject: async (id: string, ideId?: string): Promise<void> => {
-    try {
-      const project = get().projects.find(p => p.id === id);
-      if (!project) {
-        throw new Error('Project not found');
+    createProject: async (request: ProjectCreateRequest): Promise<Project> => {
+      set((state) => {
+        state.isLoading = true;
+        state.error = undefined;
+      });
+
+      try {
+        // Simulate API call
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        const newProject: Project = {
+          id: Date.now().toString(),
+          name: request.name,
+          description: request.description,
+          type: request.type,
+          path: request.path,
+          tags: request.tags || [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          isFavorite: false,
+          status: 'active',
+          metadata: {
+            packageManager: 'yarn', // Default based on project rules
+          },
+        };
+
+        set((state) => {
+          state.projects.unshift(newProject);
+          state.isLoading = false;
+        });
+
+        return newProject;
+      } catch (error) {
+        set((state) => {
+          state.error =
+            error instanceof Error ? error.message : 'Failed to create project';
+          state.isLoading = false;
+        });
+        throw error;
+      }
+    },
+
+    updateProject: async (request: ProjectUpdateRequest): Promise<Project> => {
+      set((state) => {
+        state.isLoading = true;
+        state.error = undefined;
+      });
+
+      try {
+        // Simulate API call
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        let updatedProject: Project | undefined;
+
+        set((state) => {
+          const index = state.projects.findIndex((p) => p.id === request.id);
+          if (index !== -1) {
+            const project = state.projects[index];
+            updatedProject = {
+              ...project,
+              ...request,
+              updatedAt: new Date(),
+            };
+            state.projects[index] = updatedProject;
+          }
+          state.isLoading = false;
+        });
+
+        if (!updatedProject) {
+          throw new Error('Project not found');
+        }
+
+        return updatedProject;
+      } catch (error) {
+        set((state) => {
+          state.error =
+            error instanceof Error ? error.message : 'Failed to update project';
+          state.isLoading = false;
+        });
+        throw error;
+      }
+    },
+
+    deleteProject: async (id: string): Promise<void> => {
+      set((state) => {
+        state.isLoading = true;
+        state.error = undefined;
+      });
+
+      try {
+        // Simulate API call
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        set((state) => {
+          state.projects = state.projects.filter((p) => p.id !== id);
+          if (state.selectedProject?.id === id) {
+            state.selectedProject = undefined;
+          }
+          state.isLoading = false;
+        });
+      } catch (error) {
+        set((state) => {
+          state.error =
+            error instanceof Error ? error.message : 'Failed to delete project';
+          state.isLoading = false;
+        });
+        throw error;
+      }
+    },
+
+    // Project operations
+    searchProjects: (filters: ProjectSearchFilters): Project[] => {
+      const { projects } = get();
+      let filtered = [...projects];
+
+      // Apply text search
+      if (filters.query) {
+        const query = filters.query.toLowerCase();
+        filtered = filtered.filter(
+          (project) =>
+            project.name.toLowerCase().includes(query) ||
+            project.description?.toLowerCase().includes(query) ||
+            project.tags.some((tag) => tag.toLowerCase().includes(query)),
+        );
       }
 
-      // Update last opened time
-      await get().updateProject({
-        id,
-        lastOpenedAt: new Date()
-      });
+      // Apply type filter
+      if (filters.type) {
+        filtered = filtered.filter((project) => project.type === filters.type);
+      }
 
-      // Here you would implement the actual opening logic
-      // For now, we'll just simulate it
-      console.log(`Opening project ${project.name} with IDE ${ideId || 'default'}`);
-      
+      // Apply status filter
+      if (filters.status) {
+        filtered = filtered.filter(
+          (project) => project.status === filters.status,
+        );
+      }
+
+      // Apply favorite filter
+      if (filters.isFavorite !== undefined) {
+        filtered = filtered.filter(
+          (project) => project.isFavorite === filters.isFavorite,
+        );
+      }
+
+      // Apply tags filter
+      if (filters.tags && filters.tags.length > 0) {
+        filtered = filtered.filter((project) =>
+          filters.tags!.some((tag) => project.tags.includes(tag)),
+        );
+      }
+
+      // Apply sorting
+      if (filters.sortBy) {
+        filtered.sort((a, b) => {
+          const aValue = a[filters.sortBy!];
+          const bValue = b[filters.sortBy!];
+
+          if (aValue instanceof Date && bValue instanceof Date) {
+            const result = aValue.getTime() - bValue.getTime();
+            return filters.sortOrder === 'desc' ? -result : result;
+          }
+
+          if (typeof aValue === 'string' && typeof bValue === 'string') {
+            const result = aValue.localeCompare(bValue);
+            return filters.sortOrder === 'desc' ? -result : result;
+          }
+
+          if (typeof aValue === 'number' && typeof bValue === 'number') {
+            const result = aValue - bValue;
+            return filters.sortOrder === 'desc' ? -result : result;
+          }
+
+          return 0;
+        });
+      }
+
+      return filtered;
+    },
+
+    toggleFavorite: async (id: string): Promise<void> => {
+      try {
+        const project = get().projects.find((p) => p.id === id);
+        if (project) {
+          await get().updateProject({
+            id,
+            isFavorite: !project.isFavorite,
+          });
+        }
+      } catch (error) {
+        set((state) => {
+          state.error =
+            error instanceof Error
+              ? error.message
+              : 'Failed to toggle favorite';
+        });
+      }
+    },
+
+    openProject: async (id: string, ideId?: string): Promise<void> => {
+      try {
+        const project = get().projects.find((p) => p.id === id);
+        if (!project) {
+          throw new Error('Project not found');
+        }
+
+        // Update last opened time
+        await get().updateProject({
+          id,
+          lastOpenedAt: new Date(),
+        });
+
+        // Here you would implement the actual opening logic
+        // For now, we'll just simulate it
+        console.log(
+          `Opening project ${project.name} with IDE ${ideId || 'default'}`,
+        );
+
+        set((state) => {
+          state.selectedProject = project;
+        });
+      } catch (error) {
+        set((state) => {
+          state.error =
+            error instanceof Error ? error.message : 'Failed to open project';
+        });
+      }
+    },
+
+    // Filter operations
+    setFilters: (filters: Partial<ProjectSearchFilters>) => {
+      set((state) => {
+        state.filters = { ...state.filters, ...filters };
+      });
+    },
+
+    clearFilters: () => {
+      set((state) => {
+        state.filters = defaultFilters;
+      });
+    },
+
+    // Utility operations
+    getProjectStats: (): ProjectStats => {
+      const { projects } = get();
+
+      const projectsByType = projects.reduce(
+        (acc, project) => {
+          acc[project.type] = (acc[project.type] || 0) + 1;
+          return acc;
+        },
+        {} as Record<ProjectType, number>,
+      );
+
+      const recentProjects = projects
+        .filter((p) => p.lastOpenedAt)
+        .sort((a, b) => b.lastOpenedAt!.getTime() - a.lastOpenedAt!.getTime())
+        .slice(0, 5);
+
+      const favoriteProjects = projects.filter((p) => p.isFavorite);
+
+      const totalSize = projects.reduce(
+        (acc, project) => acc + (project.size || 0),
+        0,
+      );
+
+      return {
+        totalProjects: projects.length,
+        projectsByType,
+        recentProjects,
+        favoriteProjects,
+        totalSize,
+      };
+    },
+
+    setSelectedProject: (project?: Project) => {
       set((state) => {
         state.selectedProject = project;
       });
-    } catch (error) {
+    },
+
+    setLoading: (loading: boolean) => {
       set((state) => {
-        state.error = error instanceof Error ? error.message : 'Failed to open project';
+        state.isLoading = loading;
       });
-    }
-  },
+    },
 
-  // Filter operations
-  setFilters: (filters: Partial<ProjectSearchFilters>) => {
-    set((state) => {
-      state.filters = { ...state.filters, ...filters };
-    });
-  },
-
-  clearFilters: () => {
-    set((state) => {
-      state.filters = defaultFilters;
-    });
-  },
-
-  // Utility operations
-  getProjectStats: (): ProjectStats => {
-    const { projects } = get();
-    
-    const projectsByType = projects.reduce((acc, project) => {
-      acc[project.type] = (acc[project.type] || 0) + 1;
-      return acc;
-    }, {} as Record<ProjectType, number>);
-
-    const recentProjects = projects
-      .filter(p => p.lastOpenedAt)
-      .sort((a, b) => (b.lastOpenedAt!.getTime() - a.lastOpenedAt!.getTime()))
-      .slice(0, 5);
-
-    const favoriteProjects = projects.filter(p => p.isFavorite);
-
-    const totalSize = projects.reduce((acc, project) => acc + (project.size || 0), 0);
-
-    return {
-      totalProjects: projects.length,
-      projectsByType,
-      recentProjects,
-      favoriteProjects,
-      totalSize
-    };
-  },
-
-  setSelectedProject: (project?: Project) => {
-    set((state) => {
-      state.selectedProject = project;
-    });
-  },
-
-  setLoading: (loading: boolean) => {
-    set((state) => {
-      state.isLoading = loading;
-    });
-  },
-
-  setError: (error?: string) => {
-    set((state) => {
-      state.error = error;
-    });
-  },
-
-  // Template operations
-  loadTemplates: async () => {
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
+    setError: (error?: string) => {
       set((state) => {
-        state.templates = mockTemplates;
+        state.error = error;
       });
-    } catch (error) {
-      set((state) => {
-        state.error = error instanceof Error ? error.message : 'Failed to load templates';
-      });
-    }
-  },
+    },
 
-  // Quick actions and IDE operations
-  loadQuickActions: async () => {
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
-      set((state) => {
-        state.quickActions = mockQuickActions;
-      });
-    } catch (error) {
-      set((state) => {
-        state.error = error instanceof Error ? error.message : 'Failed to load quick actions';
-      });
-    }
-  },
+    // Template operations
+    loadTemplates: async () => {
+      try {
+        // Simulate API call
+        await new Promise((resolve) => setTimeout(resolve, 300));
 
-  loadIDEs: async () => {
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
-      set((state) => {
-        state.ides = mockIDEs;
-      });
-    } catch (error) {
-      set((state) => {
-        state.error = error instanceof Error ? error.message : 'Failed to load IDEs';
-      });
-    }
-  }
-})));
+        set((state) => {
+          state.templates = mockTemplates;
+        });
+      } catch (error) {
+        set((state) => {
+          state.error =
+            error instanceof Error ? error.message : 'Failed to load templates';
+        });
+      }
+    },
+
+    // Quick actions and IDE operations
+    loadQuickActions: async () => {
+      try {
+        // Simulate API call
+        await new Promise((resolve) => setTimeout(resolve, 200));
+
+        set((state) => {
+          state.quickActions = mockQuickActions;
+        });
+      } catch (error) {
+        set((state) => {
+          state.error =
+            error instanceof Error
+              ? error.message
+              : 'Failed to load quick actions';
+        });
+      }
+    },
+
+    loadIDEs: async () => {
+      try {
+        let availableIDEs = mockIDEs;
+
+        // Try to get IDEs from Electron if available
+        if (window.electronAPI?.project?.getAvailableIDEs) {
+          try {
+            const electronIDEs =
+              await window.electronAPI.project.getAvailableIDEs();
+            availableIDEs = [...mockIDEs, ...electronIDEs];
+          } catch (error) {
+            console.warn('Failed to get IDEs from Electron:', error);
+          }
+        }
+
+        set((state) => {
+          state.ides = availableIDEs;
+        });
+      } catch (error) {
+        set((state) => {
+          state.error =
+            error instanceof Error ? error.message : 'Failed to load IDEs';
+        });
+      }
+    },
+
+    // New project operations
+    openExistingProject: async (): Promise<Project | null> => {
+      try {
+        if (!window.electronAPI?.project?.selectFolder) {
+          throw new Error('File selection not available in web environment');
+        }
+
+        set((state) => {
+          state.isLoading = true;
+          state.error = undefined;
+        });
+
+        const projectInfo = await window.electronAPI.project.selectFolder();
+
+        if (!projectInfo) {
+          set((state) => {
+            state.isLoading = false;
+          });
+          return null;
+        }
+
+        // Check if project already exists
+        const existingProject = get().projects.find(
+          (p) => p.path === projectInfo.path,
+        );
+        if (existingProject) {
+          set((state) => {
+            state.isLoading = false;
+          });
+          return existingProject;
+        }
+
+        // Create new project entry
+        const newProject: Project = {
+          id: Date.now().toString(),
+          name: projectInfo.name,
+          description: `Imported ${projectInfo.type} project`,
+          type: projectInfo.type as ProjectType,
+          path: projectInfo.path,
+          tags: [projectInfo.type, projectInfo.framework || ''].filter(Boolean),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          lastOpenedAt: new Date(),
+          isFavorite: false,
+          status: 'active',
+          metadata: {
+            framework: projectInfo.framework,
+            packageManager: projectInfo.packageManager as any,
+            size: projectInfo.size,
+          },
+        };
+
+        set((state) => {
+          state.projects.unshift(newProject);
+          state.isLoading = false;
+        });
+
+        return newProject;
+      } catch (error) {
+        set((state) => {
+          state.error =
+            error instanceof Error
+              ? error.message
+              : 'Failed to open existing project';
+          state.isLoading = false;
+        });
+        throw error;
+      }
+    },
+
+    addExistingProject: async (folderPath: string): Promise<Project> => {
+      try {
+        if (!window.electronAPI?.project?.analyzeFolder) {
+          throw new Error('Folder analysis not available in web environment');
+        }
+
+        set((state) => {
+          state.isLoading = true;
+          state.error = undefined;
+        });
+
+        const projectInfo =
+          await window.electronAPI.project.analyzeFolder(folderPath);
+
+        // Check if project already exists
+        const existingProject = get().projects.find(
+          (p) => p.path === projectInfo.path,
+        );
+        if (existingProject) {
+          set((state) => {
+            state.isLoading = false;
+          });
+          return existingProject;
+        }
+
+        // Create new project entry
+        const newProject: Project = {
+          id: Date.now().toString(),
+          name: projectInfo.name,
+          description: `Imported ${projectInfo.type} project`,
+          type: projectInfo.type as ProjectType,
+          path: projectInfo.path,
+          tags: [projectInfo.type, projectInfo.framework || ''].filter(Boolean),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          lastOpenedAt: new Date(),
+          isFavorite: false,
+          status: 'active',
+          metadata: {
+            framework: projectInfo.framework,
+            packageManager: projectInfo.packageManager as any,
+            size: projectInfo.size,
+          },
+        };
+
+        set((state) => {
+          state.projects.unshift(newProject);
+          state.isLoading = false;
+        });
+
+        return newProject;
+      } catch (error) {
+        set((state) => {
+          state.error =
+            error instanceof Error
+              ? error.message
+              : 'Failed to add existing project';
+          state.isLoading = false;
+        });
+        throw error;
+      }
+    },
+
+    openProjectInExplorer: async (projectPath: string): Promise<void> => {
+      try {
+        if (window.electronAPI?.project?.openInExplorer) {
+          await window.electronAPI.project.openInExplorer(projectPath);
+        } else {
+          console.log('Open in explorer:', projectPath);
+          throw new Error('File explorer integration available in desktop app');
+        }
+      } catch (error) {
+        set((state) => {
+          state.error =
+            error instanceof Error
+              ? error.message
+              : 'Failed to open in explorer';
+        });
+        throw error;
+      }
+    },
+
+    openProjectInTerminal: async (projectPath: string): Promise<void> => {
+      try {
+        if (window.electronAPI?.project?.openInTerminal) {
+          await window.electronAPI.project.openInTerminal(projectPath);
+        } else {
+          console.log('Open in terminal:', projectPath);
+          throw new Error('Terminal integration available in desktop app');
+        }
+      } catch (error) {
+        set((state) => {
+          state.error =
+            error instanceof Error
+              ? error.message
+              : 'Failed to open in terminal';
+        });
+        throw error;
+      }
+    },
+
+    openProjectInIDE: async (
+      projectPath: string,
+      ideId?: string,
+    ): Promise<void> => {
+      try {
+        const { ides } = get();
+        let ide = ides.find((i) => i.id === ideId);
+
+        // Default to first available IDE if none specified
+        if (!ide && ides.length > 0) {
+          ide = ides[0];
+        }
+
+        if (!ide) {
+          throw new Error('No IDE available');
+        }
+
+        if (window.electronAPI?.project?.openInIDE) {
+          await window.electronAPI.project.openInIDE(
+            projectPath,
+            ide.executable,
+          );
+        } else {
+          console.log(`Open in ${ide.name}:`, projectPath);
+          throw new Error(`${ide.name} integration available in desktop app`);
+        }
+      } catch (error) {
+        set((state) => {
+          state.error =
+            error instanceof Error ? error.message : 'Failed to open in IDE';
+        });
+        throw error;
+      }
+    },
+  })),
+);
 
 export const useProjectStore = () => {
   return useStore(projectStore);

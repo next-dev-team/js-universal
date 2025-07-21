@@ -6,7 +6,16 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist', 'dist*', 'node_modules', 'coverage'] },
+  {
+    ignores: [
+      'dist',
+      'dist*',
+      'node_modules',
+      'coverage',
+      'vitest.config.ts',
+      'vitest.setup.ts',
+    ],
+  },
   {
     settings: { react: { version: '19.0' } },
     extends: [js.configs.recommended, ...tseslint.configs.recommended],

@@ -37,7 +37,6 @@ function createMainWindow() {
       preload: path.join(__dirname, '../preload/index.cjs'),
       nodeIntegrationInSubFrames: true,
       contextIsolation: true,
-
     },
     titleBarStyle: 'default',
     icon: path.join(__dirname, '../../../resources/icon.png'), // Add app icon
@@ -49,7 +48,7 @@ function createMainWindow() {
       mainWindow.webContents.openDevTools();
     }
   });
-  
+
   checkUpdate(mainWindow);
   context.mainWindow = mainWindow;
   context.mainWindow.on('close', (event) => {
@@ -74,12 +73,12 @@ function createMainWindow() {
       `app://../renderer/index.html#${import.meta.env.VITE_BASE_ROUTER_PREFIX}`,
     );
   }
-  
+
   // Handle window closed
   mainWindow.on('closed', () => {
     context.mainWindow = undefined;
   });
-  
+
   return mainWindow;
 }
 

@@ -1,29 +1,29 @@
 .quick-actions {
   display: flex;
-  align-items: center;
   gap: 4px;
+  align-items: center;
 }
 
 .quick-action-btn {
-  transition: all 0.3s ease;
   border-radius: 6px;
-  
+  transition: all 0.3s ease;
+
   &:hover {
+    box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   }
-  
+
   &:active {
     transform: translateY(0);
   }
-  
+
   &.primary {
     background: linear-gradient(135deg, #1890ff, #096dd9);
     border: none;
-    
+
     &:hover {
       background: linear-gradient(135deg, #40a9ff, #1890ff);
-      box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+      box-shadow: 0 4px 12px rgb(24 144 255 / 30%);
     }
   }
 }
@@ -31,7 +31,7 @@
 /* Icon Styling */
 .quick-action-btn .anticon {
   font-size: 14px;
-  
+
   &.favorite-active {
     color: #faad14;
   }
@@ -39,11 +39,11 @@
 
 /* IDE Icon */
 .ide-icon {
-  width: 14px;
-  height: 14px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 14px;
+  height: 14px;
   font-size: 12px;
 }
 
@@ -51,22 +51,22 @@
 .quick-actions {
   &.size-small {
     .quick-action-btn {
-      padding: 4px 8px;
       height: 24px;
+      padding: 4px 8px;
       font-size: 12px;
-      
+
       .anticon {
         font-size: 12px;
       }
     }
   }
-  
+
   &.size-large {
     .quick-action-btn {
-      padding: 8px 16px;
       height: 40px;
+      padding: 8px 16px;
       font-size: 16px;
-      
+
       .anticon {
         font-size: 16px;
       }
@@ -86,42 +86,42 @@
 /* Dropdown Menu Styling */
 .ant-dropdown {
   .ant-dropdown-menu {
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     padding: 4px;
-    
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
+
     .ant-dropdown-menu-item {
-      border-radius: 4px;
-      margin: 2px 0;
       padding: 8px 12px;
+      margin: 2px 0;
+      border-radius: 4px;
       transition: all 0.2s ease;
-      
+
       &:hover {
         background-color: #f5f5f5;
       }
-      
+
       &.ant-dropdown-menu-item-danger {
         color: #ff4d4f;
-        
+
         &:hover {
-          background-color: #fff2f0;
           color: #ff4d4f;
+          background-color: #fff2f0;
         }
       }
     }
-    
+
     .ant-dropdown-menu-submenu {
       .ant-dropdown-menu-submenu-title {
-        border-radius: 4px;
-        margin: 2px 0;
         padding: 8px 12px;
-        
+        margin: 2px 0;
+        border-radius: 4px;
+
         &:hover {
           background-color: #f5f5f5;
         }
       }
     }
-    
+
     .ant-dropdown-menu-item-divider {
       margin: 4px 0;
       background-color: #f0f0f0;
@@ -130,11 +130,11 @@
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .quick-actions {
     .quick-action-btn {
       padding: 6px 8px;
-      
+
       /* Hide labels on mobile for space */
       span:not(.anticon) {
         display: none;
@@ -143,16 +143,16 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (width <= 480px) {
   .quick-actions {
     .ant-space {
       gap: 2px !important;
     }
-    
+
     .quick-action-btn {
-      padding: 4px 6px;
       min-width: 32px;
-      
+      padding: 4px 6px;
+
       .anticon {
         font-size: 12px;
       }
@@ -168,12 +168,12 @@
 
 /* Disabled State */
 .quick-action-btn:disabled {
-  opacity: 0.5;
   cursor: not-allowed;
-  
+  opacity: 0.5;
+
   &:hover {
-    transform: none;
     box-shadow: none;
+    transform: none;
   }
 }
 
@@ -186,54 +186,54 @@
 /* Dark Theme Support */
 [data-theme='dark'] {
   .quick-action-btn {
+    color: #fff;
     background: #1f1f1f;
     border-color: #303030;
-    color: #fff;
-    
+
     &:hover {
       background: #262626;
       border-color: #1890ff;
-      box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
+      box-shadow: 0 2px 8px rgb(255 255 255 / 10%);
     }
-    
+
     &.primary {
       background: linear-gradient(135deg, #1890ff, #096dd9);
-      
+
       &:hover {
         background: linear-gradient(135deg, #40a9ff, #1890ff);
       }
     }
   }
-  
+
   .ant-dropdown-menu {
     background: #1f1f1f;
     border-color: #303030;
-    
+
     .ant-dropdown-menu-item {
       color: #fff;
-      
+
       &:hover {
         background-color: #262626;
       }
-      
+
       &.ant-dropdown-menu-item-danger {
         color: #ff7875;
-        
+
         &:hover {
-          background-color: #2a1215;
           color: #ff7875;
+          background-color: #2a1215;
         }
       }
     }
-    
+
     .ant-dropdown-menu-submenu-title {
       color: #fff;
-      
+
       &:hover {
         background-color: #262626;
       }
     }
-    
+
     .ant-dropdown-menu-item-divider {
       background-color: #303030;
     }
@@ -250,6 +250,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -259,8 +260,8 @@
 /* Tooltip Styling */
 .ant-tooltip {
   .ant-tooltip-inner {
-    border-radius: 4px;
     font-size: 12px;
+    border-radius: 4px;
   }
 }
 
@@ -274,9 +275,9 @@
 /* Compact Mode */
 .quick-actions.compact {
   .quick-action-btn {
-    padding: 4px;
     min-width: 28px;
-    
+    padding: 4px;
+
     span:not(.anticon) {
       display: none;
     }
@@ -288,11 +289,11 @@
   .ant-space {
     flex-direction: column;
   }
-  
+
   .quick-action-btn {
-    width: 100%;
     justify-content: flex-start;
-    
+    width: 100%;
+
     .anticon {
       margin-right: 8px;
     }

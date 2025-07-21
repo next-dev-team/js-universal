@@ -1,8 +1,6 @@
 import { ipcRenderer } from 'electron';
 import type { LogFunctions } from 'electron-log';
 
- 
-
 type ILog = LogFunctions & { scope: (label: string) => LogFunctions };
 
 const initializeLogger = () => {

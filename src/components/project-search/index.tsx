@@ -1,18 +1,21 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Input, Select, Button, Space, Tag, Dropdown, Checkbox } from 'antd';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
-  SearchOutlined,
-  FilterOutlined,
+  CalendarOutlined,
   ClearOutlined,
+  ClockCircleOutlined,
+  FilterOutlined,
+  FolderOutlined,
+  SearchOutlined,
   SortAscendingOutlined,
   SortDescendingOutlined,
-  CalendarOutlined,
-  FolderOutlined,
   StarOutlined,
-  ClockCircleOutlined
 } from '@ant-design/icons';
+import { Button, Checkbox, Dropdown, Input, Select, Space, Tag } from 'antd';
 import { useProjectStore } from '../../store/modules/use-project-store';
-import type { ProjectSearchFilters, ProjectSearchProps } from '../../types/project';
+import type {
+  ProjectSearchFilters,
+  ProjectSearchProps,
+} from '../../types/project';
 import './styles.css';
 
 const { Option } = Select;
@@ -23,14 +26,10 @@ const ProjectSearch: React.FC<ProjectSearchProps> = ({
   onSort,
   className = '',
   showAdvancedFilters = true,
-  compact = false
+  compact = false,
 }) => {
-  const {
-    filters,
-    setFilters,
-    clearFilters,
-    getProjectStats
-  } = useProjectStore();
+  const { filters, setFilters, clearFilters, getProjectStats } =
+    useProjectStore();
 
   const [localQuery, setLocalQuery] = useState(filters.query || '');
   const [showFilters, setShowFilters] = useState(false);
@@ -49,26 +48,33 @@ const ProjectSearch: React.FC<ProjectSearchProps> = ({
   }, [localQuery, setFilters, onSearch]);
 
   // Project type options
-  const projectTypeOptions = useMemo(() => [
-    { label: 'React', value: 'react', color: '#61dafb' },
-    { label: 'Vue', value: 'vue', color: '#4fc08d' },
-    { label: 'Angular', value: 'angular', color: '#dd0031' },
-    { label: 'Node.js', value: 'nodejs', color: '#339933' },
-    { label: 'Python', value: 'python', color: '#3776ab' },
-    { label: 'Java', value: 'java', color: '#ed8b00' },
-    { label: 'C#', value: 'csharp', color: '#239120' },
-    { label: 'Go', value: 'go', color: '#00add8' },
-    { label: 'Rust', value: 'rust', color: '#000000' },
-    { label: 'Other', value: 'other', color: '#666666' }
-  ], []);
+  const projectTypeOptions = useMemo(
+    () => [
+      { label: 'React', value: 'react', color: '#61dafb' },
+      { label: 'Vue', value: 'vue', color: '#4fc08d' },
+      { label: 'Angular', value: 'angular', color: '#dd0031' },
+      { label: 'Node.js', value: 'nodejs', color: '#339933' },
+      { label: 'Python', value: 'python', color: '#3776ab' },
+      { label: 'Java', value: 'java', color: '#ed8b00' },
+      { label: 'C#', value: 'csharp', color: '#239120' },
+      { label: 'Go', value: 'go', color: '#00add8' },
+      { label: 'Rust', value: 'rust', color: '#000000' },
+      { label: 'Other', value: 'other', color: '#666666' },
+    ],
+    [],
+  );
 
   // Sort options
   const sortOptions = [
     { label: 'Name', value: 'name', icon: <FolderOutlined /> },
-    { label: 'Last Opened', value: 'lastOpened', icon: <ClockCircleOutlined /> },
+    {
+      label: 'Last Opened',
+      value: 'lastOpened',
+      icon: <ClockCircleOutlined />,
+    },
     { label: 'Created Date', value: 'createdAt', icon: <CalendarOutlined /> },
     { label: 'Project Type', value: 'type', icon: <FolderOutlined /> },
-    { label: 'Favorites', value: 'favorite', icon: <StarOutlined /> }
+    { label: 'Favorites', value: 'favorite', icon: <StarOutlined /> },
   ];
 
   const handleFilterChange = (key: keyof ProjectSearchFilters, value: any) => {
@@ -90,7 +96,7 @@ const ProjectSearch: React.FC<ProjectSearchProps> = ({
       tags: [],
       isFavorite: undefined,
       sortBy: 'name',
-      sortOrder: 'asc'
+      sortOrder: 'asc',
     };
     setTempFilters(emptyFilters);
     setFilters(emptyFilters);
@@ -101,31 +107,43 @@ const ProjectSearch: React.FC<ProjectSearchProps> = ({
   const handleSortChange = (value: string) => {
     setFilters({ sortBy: value as any });
     // Map sortBy values to SortOption field values
-    const fieldMap: Record<string, 'name' | 'lastOpened' | 'createdAt' | 'type' | 'favorite'> = {
-      'name': 'name',
-      'updatedAt': 'lastOpened',
-      'createdAt': 'createdAt',
-      'lastOpenedAt': 'lastOpened',
-      'size': 'name',
-      'type': 'type',
-      'favorite': 'favorite'
+    const fieldMap: Record<
+      string,
+      'name' | 'lastOpened' | 'createdAt' | 'type' | 'favorite'
+    > = {
+      name: 'name',
+      updatedAt: 'lastOpened',
+      createdAt: 'createdAt',
+      lastOpenedAt: 'lastOpened',
+      size: 'name',
+      type: 'type',
+      favorite: 'favorite',
     };
-    onSort?.({ field: fieldMap[value] || 'name', order: filters.sortOrder || 'asc' });
+    onSort?.({
+      field: fieldMap[value] || 'name',
+      order: filters.sortOrder || 'asc',
+    });
   };
 
   const toggleSortOrder = () => {
     const newOrder = filters.sortOrder === 'asc' ? 'desc' : 'asc';
     setFilters({ sortOrder: newOrder });
-    const fieldMap: Record<string, 'name' | 'lastOpened' | 'createdAt' | 'type' | 'favorite'> = {
-      'name': 'name',
-      'updatedAt': 'lastOpened',
-      'createdAt': 'createdAt',
-      'lastOpenedAt': 'lastOpened',
-      'size': 'name',
-      'type': 'type',
-      'favorite': 'favorite'
+    const fieldMap: Record<
+      string,
+      'name' | 'lastOpened' | 'createdAt' | 'type' | 'favorite'
+    > = {
+      name: 'name',
+      updatedAt: 'lastOpened',
+      createdAt: 'createdAt',
+      lastOpenedAt: 'lastOpened',
+      size: 'name',
+      type: 'type',
+      favorite: 'favorite',
     };
-    onSort?.({ field: fieldMap[filters.sortBy || 'name'] || 'name', order: newOrder });
+    onSort?.({
+      field: fieldMap[filters.sortBy || 'name'] || 'name',
+      order: newOrder,
+    });
   };
 
   const getActiveFilterCount = () => {
@@ -145,7 +163,7 @@ const ProjectSearch: React.FC<ProjectSearchProps> = ({
           onChange={(values) => handleFilterChange('type', values[0])}
         >
           <div className="checkbox-grid">
-            {projectTypeOptions.map(type => (
+            {projectTypeOptions.map((type) => (
               <Checkbox key={type.value} value={type.value}>
                 <Tag color={type.color} style={{ margin: 0 }}>
                   {type.label}
@@ -162,13 +180,13 @@ const ProjectSearch: React.FC<ProjectSearchProps> = ({
             <h4>Favorites</h4>
             <Checkbox
               checked={tempFilters.isFavorite}
-              onChange={(e) => handleFilterChange('isFavorite', e.target.checked)}
+              onChange={(e) =>
+                handleFilterChange('isFavorite', e.target.checked)
+              }
             >
               Show only favorites
             </Checkbox>
           </div>
-
-
         </>
       )}
 
@@ -245,7 +263,7 @@ const ProjectSearch: React.FC<ProjectSearchProps> = ({
             style={{ width: 140 }}
             placeholder="Sort by"
           >
-            {sortOptions.map(option => (
+            {sortOptions.map((option) => (
               <Option key={option.value} value={option.value}>
                 <Space>
                   {option.icon}
@@ -256,7 +274,13 @@ const ProjectSearch: React.FC<ProjectSearchProps> = ({
           </Select>
 
           <Button
-            icon={filters.sortOrder === 'asc' ? <SortAscendingOutlined /> : <SortDescendingOutlined />}
+            icon={
+              filters.sortOrder === 'asc' ? (
+                <SortAscendingOutlined />
+              ) : (
+                <SortDescendingOutlined />
+              )
+            }
             onClick={toggleSortOrder}
             title={`Sort ${filters.sortOrder === 'asc' ? 'Ascending' : 'Descending'}`}
           />
@@ -283,17 +307,21 @@ const ProjectSearch: React.FC<ProjectSearchProps> = ({
         <div className="active-filters">
           <Space wrap>
             <span className="filter-label">Active filters:</span>
-            
+
             {filters.type && (
               <Tag
                 closable
-                color={projectTypeOptions.find(opt => opt.value === filters.type)?.color}
+                color={
+                  projectTypeOptions.find((opt) => opt.value === filters.type)
+                    ?.color
+                }
                 onClose={() => {
                   handleFilterChange('type', undefined);
                   applyFilters();
                 }}
               >
-                {projectTypeOptions.find(opt => opt.value === filters.type)?.label || filters.type}
+                {projectTypeOptions.find((opt) => opt.value === filters.type)
+                  ?.label || filters.type}
               </Tag>
             )}
 
@@ -310,8 +338,6 @@ const ProjectSearch: React.FC<ProjectSearchProps> = ({
                 Favorites
               </Tag>
             )}
-
-
 
             <Button
               type="link"
@@ -331,7 +357,8 @@ const ProjectSearch: React.FC<ProjectSearchProps> = ({
           <span className="stats-text">
             {stats.totalProjects} projects
             {localQuery && ` • Searching for "${localQuery}"`}
-            {getActiveFilterCount() > 0 && ` • ${getActiveFilterCount()} filter${getActiveFilterCount() > 1 ? 's' : ''} active`}
+            {getActiveFilterCount() > 0 &&
+              ` • ${getActiveFilterCount()} filter${getActiveFilterCount() > 1 ? 's' : ''} active`}
           </span>
         </Space>
       </div>
