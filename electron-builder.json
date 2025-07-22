@@ -14,10 +14,12 @@
     "node_modules/@cocktailpeanut/**/*"
   ],
   "mac": {
+    "icon": "build/icon.icns",
     "artifactName": "${productName}_${version}.${ext}",
     "target": ["dmg", "zip"]
   },
   "win": {
+    "icon": "build/icon.ico",
     "target": [
       {
         "target": "nsis",

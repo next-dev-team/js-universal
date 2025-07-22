@@ -9,7 +9,7 @@ export type IconProps = {
 const Icon = (props: IconProps) => {
   const { name, ...svgProps } = props;
 
-  const SvgIcon = svgModules[`/src/icons/${name}.svg`];
+  const SvgIcon = svgModules[`/src/icons/${name}.svg`] || svgModules[`/src/icons/missing-icon.svg`];
 
   return <>{SvgIcon && <SvgIcon {...svgProps} />}</>;
 };
