@@ -44,6 +44,7 @@ coverage/
 htmlcov/
 .tox/
 .nox/
+app.db
 .coverage
 dist-release
 .coverage.*

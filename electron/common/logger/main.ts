@@ -9,7 +9,6 @@ let isInitialized = false;
 const initMainLogger = () => {
   if (!isInitialized) {
     logger.initialize({ preload: true });
-    const version = app.getVersion();
 
     logger.errorHandler.startCatching();
     logger.eventLogger.startLogging();
@@ -18,7 +17,22 @@ const initMainLogger = () => {
     logger.transports.console.level = false;
     logger.transports.file.maxSize = 1024 * 1024 * 2;
     logger.transports.file.archiveLogFn = archiveLogFn;
-    logger.variables.version = version;
+    
+    // Set version when app is ready
+    if (app.isReady()) {
+      logger.variables.version = app.getVersion();
+    } else {
+      app.on('ready', () => {
+        logger.variables.version = app.getVersion();
+        console.info(
+          'app ready,platform:',
+          `${process.platform}@${process.getSystemVersion()}`,
+          'process.versions:',
+          process.versions,
+        );
+      });
+    }
+    
     logger.transports.file.resolvePathFn = (
       variables: PathVariables,
       message?: LogMessage,
@@ -30,14 +44,6 @@ const initMainLogger = () => {
     logger.transports.file.format =
       '[{y}-{m}-{d} {h}:{i}:{s}.{ms}] [v{version}] [{processType}] [{level}]{scope} {text}';
 
-    app.on('ready', () => {
-      console.info(
-        'app ready,platform:',
-        `${process.platform}@${process.getSystemVersion()}`,
-        'process.versions:',
-        process.versions,
-      );
-    });
     isInitialized = true;
     Object.assign(console, logger.functions);
     console.log('initMainLogger success');

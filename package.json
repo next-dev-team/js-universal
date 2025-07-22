@@ -33,6 +33,7 @@
     "dev:mock:web": "vite -m dev-mock",
     "dev:pro": "electron-vite -m pro",
     "dev:test": "electron-vite -m test",
+    "e2e": "playwright test",
     "postinstall": "npx patch-package",
     "kill-port": "kill-port 5174",
     "lint:all": "npm run lint:eslint && npm run lint:style && npm run lint:format",

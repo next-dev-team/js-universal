@@ -1,5 +1,4 @@
 import Database from 'better-sqlite3';
-import { app } from 'electron';
 import path from 'node:path';
 import { getMainLogger } from '../../common/logger/main';
 
@@ -13,8 +12,10 @@ export class DatabaseService {
     // Initialize logger when database service is created
     logger = getMainLogger().scope('database');
 
-    const userDataPath = app.getPath('userData');
-    this.dbPath = path.join(userDataPath, 'project-launcher.db');
+    const projectRoot = process.cwd();
+    const electronFolderPath = path.join(projectRoot, 'electron');
+    this.dbPath = path.join(electronFolderPath, 'app.db');
+
     this.db = new Database(this.dbPath);
     this.initializeTables();
     logger.info(`Database initialized at: ${this.dbPath}`);
@@ -41,6 +42,9 @@ export class DatabaseService {
         metadata TEXT DEFAULT '{}'
       )
     `);
+
+    // Add missing columns for existing databases (migration)
+    this.migrateDatabase();
 
     // IDEs table
     this.db.exec(`
@@ -93,6 +97,42 @@ export class DatabaseService {
     }
   }
 
+  private migrateDatabase() {
+    try {
+      // Get current table schema
+      const tableInfo = this.db
+        .prepare('PRAGMA table_info(projects)')
+        .all() as any[];
+      const existingColumns = tableInfo.map((col) => col.name);
+
+      // Define all expected columns with their definitions
+      const expectedColumns = [
+        { name: 'isFavorite', definition: 'INTEGER DEFAULT 0' },
+        { name: 'lastOpenedAt', definition: 'DATETIME' },
+        { name: 'size', definition: 'INTEGER DEFAULT 0' },
+        { name: 'status', definition: 'TEXT DEFAULT "active"' },
+        { name: 'metadata', definition: 'TEXT DEFAULT "{}"' },
+        { name: 'thumbnail', definition: 'TEXT' },
+        { name: 'gitRepository', definition: 'TEXT' },
+      ];
+
+      // Add missing columns
+      for (const column of expectedColumns) {
+        if (!existingColumns.includes(column.name)) {
+          logger.info(`Adding ${column.name} column to projects table`);
+          this.db.exec(
+            `ALTER TABLE projects ADD COLUMN ${column.name} ${column.definition}`,
+          );
+        }
+      }
+
+      logger.info('Database migration completed successfully');
+    } catch (error) {
+      logger.error(`Database migration failed: ${error}`);
+      // Don't throw error, continue with existing schema
+    }
+  }
+
   // Project CRUD operations
   createProject(project: {
     id: string;
@@ -115,7 +155,7 @@ export class DatabaseService {
           thumbnail, gitRepository, size, status, metadata
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
-      
+
       stmt.run(
         project.id,
         project.name,
@@ -128,9 +168,9 @@ export class DatabaseService {
         project.gitRepository || null,
         project.size || 0,
         project.status || 'active',
-        JSON.stringify(project.metadata || {})
+        JSON.stringify(project.metadata || {}),
       );
-      
+
       logger.info(`Project created: ${project.name}`);
       return this.getProjectById(project.id);
     } catch (error) {
@@ -146,7 +186,7 @@ export class DatabaseService {
         ORDER BY isFavorite DESC, lastOpenedAt DESC, updatedAt DESC
       `);
       const rows = stmt.all();
-      
+
       return rows.map(this.mapProjectRow);
     } catch (error) {
       logger.error(`Failed to get all projects: ${error}`);
@@ -158,7 +198,7 @@ export class DatabaseService {
     try {
       const stmt = this.db.prepare('SELECT * FROM projects WHERE id = ?');
       const row = stmt.get(id);
-      
+
       return row ? this.mapProjectRow(row) : null;
     } catch (error) {
       logger.error(`Failed to get project by id: ${error}`);
@@ -166,19 +206,22 @@ export class DatabaseService {
     }
   }
 
-  updateProject(id: string, updates: {
-    name?: string;
-    description?: string;
-    tags?: string[];
-    isFavorite?: boolean;
-    lastOpenedAt?: Date;
-    status?: string;
-    metadata?: any;
-  }) {
+  updateProject(
+    id: string,
+    updates: {
+      name?: string;
+      description?: string;
+      tags?: string[];
+      isFavorite?: boolean;
+      lastOpenedAt?: Date;
+      status?: string;
+      metadata?: any;
+    },
+  ) {
     try {
       const fields = [];
       const values = [];
-      
+
       if (updates.name !== undefined) {
         fields.push('name = ?');
         values.push(updates.name);
@@ -207,20 +250,20 @@ export class DatabaseService {
         fields.push('metadata = ?');
         values.push(JSON.stringify(updates.metadata));
       }
-      
+
       fields.push('updatedAt = CURRENT_TIMESTAMP');
       values.push(id);
-      
+
       const stmt = this.db.prepare(`
         UPDATE projects SET ${fields.join(', ')} WHERE id = ?
       `);
-      
+
       const result = stmt.run(...values);
-      
+
       if (result.changes === 0) {
         throw new Error('Project not found');
       }
-      
+
       logger.info(`Project updated: ${id}`);
       return this.getProjectById(id);
     } catch (error) {
@@ -233,11 +276,11 @@ export class DatabaseService {
     try {
       const stmt = this.db.prepare('DELETE FROM projects WHERE id = ?');
       const result = stmt.run(id);
-      
+
       if (result.changes === 0) {
         throw new Error('Project not found');
       }
-      
+
       logger.info(`Project deleted: ${id}`);
       return { deleted: true, id };
     } catch (error) {
@@ -257,36 +300,36 @@ export class DatabaseService {
     try {
       let sql = 'SELECT * FROM projects WHERE 1=1';
       const params: any[] = [];
-      
+
       if (filters.query) {
         sql += ' AND (name LIKE ? OR description LIKE ? OR path LIKE ?)';
         const searchTerm = `%${filters.query}%`;
         params.push(searchTerm, searchTerm, searchTerm);
       }
-      
+
       if (filters.type) {
         sql += ' AND type = ?';
         params.push(filters.type);
       }
-      
+
       if (filters.status) {
         sql += ' AND status = ?';
         params.push(filters.status);
       }
-      
+
       if (filters.isFavorite !== undefined) {
         sql += ' AND isFavorite = ?';
         params.push(filters.isFavorite ? 1 : 0);
       }
-      
+
       // Add sorting
       const sortBy = filters.sortBy || 'updatedAt';
       const sortOrder = filters.sortOrder || 'desc';
       sql += ` ORDER BY ${sortBy} ${sortOrder.toUpperCase()}`;
-      
+
       const stmt = this.db.prepare(sql);
       const rows = stmt.all(...params);
-      
+
       return rows.map(this.mapProjectRow);
     } catch (error) {
       logger.error(`Failed to search projects: ${error}`);
@@ -310,7 +353,7 @@ export class DatabaseService {
       gitRepository: row.gitRepository,
       size: row.size,
       status: row.status,
-      metadata: JSON.parse(row.metadata || '{}')
+      metadata: JSON.parse(row.metadata || '{}'),
     };
   }
 
