@@ -48,6 +48,7 @@ htmlcov/
 dist-release
 .coverage.*
 .cache
+playwright-report
 nosetests.xml
 coverage.xml
 *.cover

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Button, Modal, Progress } from 'antd';
+import type { IUpdateType } from '../../../electron/common/ipc/check-update';
 
 const VersionUpdate = () => {
   useEffect(() => {
@@ -9,22 +10,16 @@ const VersionUpdate = () => {
       window.electronAPI.checkUpdate;
     let progressModal: ReturnType<typeof Modal.info> | undefined;
 
-    watchVersionUpdateMsg(
-      async (arg: {
-        state: number;
-        message: {
-          percent: number;
-        };
-      }) => {
-        switch (arg.state) {
-          case 3:
+    watchVersionUpdateMsg(async (arg: IUpdateType) => {
+      switch (arg.state) {
+        case 3:
+          if ('percent' in arg.message) {
+            const percent = +arg.message.percent.toFixed(0);
             if (!progressModal) {
-              const percent = +arg.message.percent.toFixed(0);
               progressModal = Modal.info({
                 content: <Progress percent={percent} />,
               });
             } else {
-              const percent = +arg.message.percent.toFixed(0);
               progressModal.update((prevConfig) => {
                 return {
                   ...prevConfig,
@@ -32,20 +27,20 @@ const VersionUpdate = () => {
                 };
               });
             }
-            break;
-          case 4: {
-            progressModal?.destroy();
-            const result = await confirmUpdate();
-            if (result.code !== 0) {
-              Modal.error({
-                title: `Update failed, reason: ${result.message}`,
-              });
-            }
-            break;
           }
+          break;
+        case 4: {
+          progressModal?.destroy();
+          const result = await confirmUpdate();
+          if (result.code !== 0) {
+            Modal.error({
+              title: `Update failed, reason: ${result.message}`,
+            });
+          }
+          break;
         }
-      },
-    );
+      }
+    });
   }, []);
   const onCheckUpdate = async () => {
     if (!window.electronAPI?.checkUpdate) return;

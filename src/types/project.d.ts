@@ -81,6 +81,7 @@ export interface ProjectCreateRequest {
   initializeGit?: boolean;
   installDependencies?: boolean;
   tags?: string[];
+  metadata?: Record<string, any>;
 }
 
 export interface ProjectUpdateRequest {

@@ -13,12 +13,12 @@ export default {
   importOrderSeparation: false,
   importOrderSortSpecifiers: true,
   importOrder: [
-    '^react(.*)$', // React 相关放在最前面
-    '<THIRD_PARTY_MODULES>', // 其他第三方模块
-    '^@/components/(.*)$', // 全局组件
-    '^@/(hooks|store)(.*)$', // 自定义 hooks 和 store 统一分组
-    '^@/services/(.*)$', // 接口模块
-    '^@/(.*)$', // 其他 @/ 开头的模块
-    '^[./]', // 当前文件夹和父文件夹的相对导入
+    '^react(.*)$', // React related modules first
+    '<THIRD_PARTY_MODULES>', // Other third party modules
+    '^@/components/(.*)$', // Global components
+    '^@/(hooks|store)(.*)$', // Custom hooks and store grouped together
+    '^@/services/(.*)$', // API services module
+    '^@/(.*)$', // Other modules starting with @/
+    '^[./]', // Relative imports from current and parent folders
   ],
 };

@@ -1,4 +1,4 @@
 export default {
-  // 继承默认配置
+  // Extend default configuration
   extends: ['@commitlint/config-conventional'],
 };

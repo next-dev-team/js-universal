@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import {
   AppstoreOutlined,
   ConsoleSqlOutlined,
+  DeleteOutlined,
+  EditOutlined,
   FolderOpenOutlined,
   FolderOutlined,
   MoreOutlined,
@@ -10,7 +12,18 @@ import {
   StarOutlined,
   UnorderedListOutlined,
 } from '@ant-design/icons';
-import { Avatar, Button, Card, Empty, List, Space, Tag, Tooltip } from 'antd';
+import {
+  Avatar,
+  Button,
+  Card,
+  Dropdown,
+  Empty,
+  List,
+  Modal,
+  Space,
+  Tag,
+  Tooltip,
+} from 'antd';
 import { useProjectStore } from '../../store/modules/use-project-store';
 import type { Project, ProjectListProps } from '../../types/project';
 import './styles.css';
@@ -30,6 +43,8 @@ const ProjectList: React.FC<ProjectListProps> = ({
     'grid',
   );
   const viewMode = propViewMode || internalViewMode;
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
 
   const handleViewModeChange = (mode: 'grid' | 'list') => {
     if (onViewModeChange) {
@@ -37,6 +52,24 @@ const ProjectList: React.FC<ProjectListProps> = ({
     } else {
       setInternalViewMode(mode);
     }
+  };
+
+  const confirmDelete = (project: Project) => {
+    setProjectToDelete(project);
+    setDeleteModalVisible(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (projectToDelete) {
+      deleteProject(projectToDelete.id);
+      setDeleteModalVisible(false);
+      setProjectToDelete(null);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModalVisible(false);
+    setProjectToDelete(null);
   };
 
   const getProjectTypeColor = (type: string) => {
@@ -63,16 +96,17 @@ const ProjectList: React.FC<ProjectListProps> = ({
     return icons[type] || '📁';
   };
 
-  const formatLastOpened = (date: Date) => {
+  const formatLastOpened = (date: Date | string) => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
     const now = new Date();
-    const diff = now.getTime() - date.getTime();
+    const diff = now.getTime() - dateObj.getTime();
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
     if (days === 0) return 'Today';
     if (days === 1) return 'Yesterday';
     if (days < 7) return `${days} days ago`;
     if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
-    return date.toLocaleDateString();
+    return dateObj.toLocaleDateString();
   };
 
   const handleQuickAction = (
@@ -90,23 +124,48 @@ const ProjectList: React.FC<ProjectListProps> = ({
         toggleFavorite(project.id);
         break;
       case 'explorer':
-        // TODO: Implement file explorer opening
+        // In a real implementation, this would use the Electron API
         console.log('Open in explorer:', project.path);
         break;
       case 'terminal':
-        // TODO: Implement terminal opening
+        // In a real implementation, this would use the Electron API
         console.log('Open in terminal:', project.path);
         break;
+      case 'edit':
+        // In a real implementation, this would open an edit form
+        console.log('Edit project:', project.name);
+        break;
       case 'delete':
-        // TODO: Add confirmation modal
-        deleteProject(project.id);
+        confirmDelete(project);
         break;
     }
   };
 
+  const getMoreMenuItems = (project: Project) => [
+    {
+      key: 'edit',
+      label: 'Edit Project',
+      icon: <EditOutlined />,
+      onClick: () => {
+        const e = new MouseEvent('click') as unknown as React.MouseEvent;
+        handleQuickAction('edit', project, e);
+      },
+    },
+    {
+      key: 'delete',
+      label: 'Delete Project',
+      icon: <DeleteOutlined />,
+      danger: true,
+      onClick: () => {
+        const e = new MouseEvent('click') as unknown as React.MouseEvent;
+        handleQuickAction('delete', project, e);
+      },
+    },
+  ];
+
   const renderGridView = () => (
     <div className="project-grid">
-      {projects.map((project) => (
+      {projects.map((project: Project) => (
         <Card
           key={project.id}
           className="project-card"
@@ -115,7 +174,9 @@ const ProjectList: React.FC<ProjectListProps> = ({
           actions={[
             <Tooltip key="explorer" title="Open in File Explorer">
               <FolderOpenOutlined
-                onClick={(e) => handleQuickAction('explorer', project, e)}
+                onClick={(e: React.MouseEvent) =>
+                  handleQuickAction('explorer', project, e)
+                }
               />
             </Tooltip>,
             <Tooltip key="terminal" title="Open in Terminal">
@@ -137,18 +198,31 @@ const ProjectList: React.FC<ProjectListProps> = ({
                 <StarFilled
                   key="star-filled"
                   className="favorite-icon active"
-                  onClick={(e) => handleQuickAction('favorite', project, e)}
+                  onClick={(e: React.MouseEvent) =>
+                    handleQuickAction('favorite', project, e)
+                  }
                 />
               ) : (
                 <StarOutlined
                   key="star-outlined"
-                  onClick={(e) => handleQuickAction('favorite', project, e)}
+                  onClick={(e: React.MouseEvent) =>
+                    handleQuickAction('favorite', project, e)
+                  }
                 />
               )}
             </Tooltip>,
-            <Tooltip key="more" title="More Actions">
-              <MoreOutlined />
-            </Tooltip>,
+            <Dropdown
+              key="more"
+              menu={{ items: getMoreMenuItems(project) }}
+              trigger={['click']}
+              placement="bottomRight"
+            >
+              <Tooltip title="More Actions">
+                <MoreOutlined
+                  onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                />
+              </Tooltip>
+            </Dropdown>,
           ]}
         >
           <Meta
@@ -178,7 +252,7 @@ const ProjectList: React.FC<ProjectListProps> = ({
                   <span className="last-opened">
                     {project.lastOpenedAt
                       ? formatLastOpened(project.lastOpenedAt)
-                      : 'Never'}
+                      : 'Never opened'}
                   </span>
                 </Space>
               </div>
@@ -194,8 +268,9 @@ const ProjectList: React.FC<ProjectListProps> = ({
       className="project-list"
       itemLayout="horizontal"
       dataSource={projects}
-      renderItem={(project) => (
+      renderItem={(project: Project) => (
         <List.Item
+          key={project.id}
           className="project-list-item"
           onClick={() => openProject(project.id)}
           actions={[
@@ -203,14 +278,18 @@ const ProjectList: React.FC<ProjectListProps> = ({
               <Button
                 type="text"
                 icon={<FolderOpenOutlined />}
-                onClick={(e) => handleQuickAction('explorer', project, e)}
+                onClick={(e: React.MouseEvent) =>
+                  handleQuickAction('explorer', project, e)
+                }
               />
             </Tooltip>,
             <Tooltip key="terminal" title="Open in Terminal">
               <Button
                 type="text"
                 icon={<ConsoleSqlOutlined />}
-                onClick={(e) => handleQuickAction('terminal', project, e)}
+                onClick={(e: React.MouseEvent) =>
+                  handleQuickAction('terminal', project, e)
+                }
               />
             </Tooltip>,
             <Tooltip
@@ -230,10 +309,23 @@ const ProjectList: React.FC<ProjectListProps> = ({
                     <StarOutlined />
                   )
                 }
-                onClick={(e) => handleQuickAction('favorite', project, e)}
+                onClick={(e: React.MouseEvent) =>
+                  handleQuickAction('favorite', project, e)
+                }
               />
             </Tooltip>,
-            <Button key="more" type="text" icon={<MoreOutlined />} />,
+            <Dropdown
+              key="more"
+              menu={{ items: getMoreMenuItems(project) }}
+              trigger={['click']}
+              placement="bottomRight"
+            >
+              <Button
+                type="text"
+                icon={<MoreOutlined />}
+                onClick={(e: React.MouseEvent) => e.stopPropagation()}
+              />
+            </Dropdown>,
           ]}
         >
           <List.Item.Meta
@@ -264,7 +356,7 @@ const ProjectList: React.FC<ProjectListProps> = ({
                   <span className="last-opened">
                     Last opened:{' '}
                     {project.lastOpenedAt
-                      ? formatLastOpened(project.lastOpenedAt)
+                      ? formatLastOpened(new Date(project.lastOpenedAt))
                       : 'Never'}
                   </span>
                 </Space>
@@ -325,6 +417,21 @@ const ProjectList: React.FC<ProjectListProps> = ({
       )}
 
       {viewMode === 'grid' ? renderGridView() : renderListView()}
+
+      <Modal
+        title="Delete Project"
+        open={deleteModalVisible}
+        onOk={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+        okText="Delete"
+        cancelText="Cancel"
+        okButtonProps={{ danger: true }}
+      >
+        <p>
+          Are you sure you want to delete the project &quot;{projectToDelete?.name}&quot;?
+          This action cannot be undone.
+        </p>
+      </Modal>
     </div>
   );
 };

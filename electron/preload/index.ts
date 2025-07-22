@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer, shell } from 'electron';
+import { contextBridge, ipcRenderer } from 'electron';
 import { initPreloadLogger } from '../common/logger/preload.ts';
 import checkUpdate from './ipc/check-update.ts';
 import projectAPI from './ipc/project.ts';
@@ -10,7 +10,6 @@ initPreloadLogger();
 const apiKey = 'electronAPI';
 
 const api = {
-  shell,
   versions: process.versions,
   getTestHandle1,
   user32,

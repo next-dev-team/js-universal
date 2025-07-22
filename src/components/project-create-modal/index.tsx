@@ -181,9 +181,20 @@ const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
     });
   };
 
-  const handleBrowseFolder = () => {
-    // TODO: Implement folder browser using Electron dialog
-    message.info('Folder browser will be implemented with Electron dialog');
+  const handleBrowseFolder = async () => {
+    try {
+      const projectInfo = await window.electronAPI?.project?.selectFolder();
+      if (projectInfo) {
+        form.setFieldsValue({
+          path: projectInfo.path,
+          name: projectInfo.name || form.getFieldValue('name'),
+        });
+        message.success('Project folder selected successfully!');
+      }
+    } catch (error) {
+      console.error('Failed to select folder:', error);
+      message.error('Failed to select folder. Please try again.');
+    }
   };
 
   const handleOpenExistingProject = async () => {
@@ -517,7 +528,7 @@ const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
       width={800}
       className="project-create-modal"
       footer={null}
-      destroyOnClose
+      destroyOnHidden={true}
     >
       <div
         className="modal-content"

@@ -40,7 +40,7 @@
   "publish": {
     "provider": "generic",
     "channel": "latest",
-    "url": "http://localhost:5173/sub/download/"
+    "url": "http://localhost:5174/sub/download/"
   },
   "buildDependenciesFromSource": true
 }

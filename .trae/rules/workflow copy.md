@@ -1,26 +1,21 @@
 # AI Agent Development Workflow
 
 ## Core Rules
-
 1. Atomic Development: Complete features end-to-end before moving on
 2. Follow CRUD sequence with tests at each step
 3. Verify with `npm run type:check && npm test && npm run e2e`
 
 ## Pre-Flight
-
 - Review project_rules.md & plan.md
 - Run verification commands
 
 ## Project Structure
-
 Key directories:
-
 - main/: Electron main process
 - renderer/: UI components & pages
 - e2e/: End-to-end tests
 
 Each feature page includes:
-
 - Component, types, tests (unit & e2e), styles
 
 ### File Naming Conventions
@@ -28,7 +23,6 @@ Each feature page includes:
 - **Pages**: PascalCase folders (`UserManagement/`)
 - **Components**: PascalCase folders (`CreateUserForm/`)
 - **Services**: camelCase files (`userService.ts`)
-- **Styles**: `.less` for components, `tailwind.config.js` for utilities can be @apply bg-primary etc
 - **Tests**: Match source file (`index.test.tsx`, `index.e2e.ts`)
 
 ## Implementation Flow
@@ -42,7 +36,9 @@ Create `README.md` with checklist:
 
 ## Create: [ ] Database [ ] IPC [ ] Service [ ] Component [ ] Unit Tests [ ] E2E Tests
 
-other ...
+## Read: [ ] Database [ ] IPC [ ] Service [ ] List [ ] Unit Tests [ ] E2E Tests
+
+...
 ```
 
 ### 2. Database Setup (better-sqlite3)
@@ -183,7 +179,6 @@ test('user CRUD workflow', async ({ page }) => {
 
 After each CRUD step:
 
-- [ ] `npm run lint:eslint` (0 warnings)
 - [ ] `npm run type:check` (0 errors)
 - [ ] `npm test -- --testPathPattern=[feature]` (80%+ coverage)
 - [ ] `npm run e2e -- --grep=[feature]` (all scenarios pass)

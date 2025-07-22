@@ -2,15 +2,15 @@
 
 root = true
 
-[*] # 表示所有文件适用
-charset = utf-8 # 设置文件字符集为 utf-8
-end_of_line = lf # 控制换行类型(lf | cr | crlf)
-insert_final_newline = true # 始终在文件末尾插入一个新行
-indent_style = space # 缩进风格（tab | space）
-indent_size = 2 # 缩进大小
-max_line_length = 100 # 最大行长度
+[*] # Applies to all files
+charset = utf-8 # Set file character encoding to utf-8
+end_of_line = lf # Control line ending type (lf | cr | crlf)
+insert_final_newline = true # Always insert a new line at end of file
+indent_style = space # Indentation style (tab | space)
+indent_size = 2 # Indentation size
+max_line_length = 100 # Maximum line length
 
-[*.md] # 表示仅 md 文件适用以下规则
-insert_final_newline = false # 关闭末尾新行插入
-max_line_length = off # 关闭最大行长度限制
-trim_trailing_whitespace = false # 关闭末尾空格修剪
+[*.md] # Rules only apply to md files
+insert_final_newline = false # Disable new line insertion at end of file
+max_line_length = off # Disable maximum line length limit
+trim_trailing_whitespace = false # Disable trailing whitespace trimming

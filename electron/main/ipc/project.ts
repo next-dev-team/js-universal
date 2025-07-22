@@ -3,6 +3,8 @@ import { dialog, ipcMain, shell } from 'electron';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { promisify } from 'util';
+import { v4 as uuidv4 } from 'uuid';
+import { getDatabaseService } from '../services/database';
 
 const execAsync = promisify(exec);
 
@@ -166,6 +168,257 @@ const analyzeProject = async (projectPath: string): Promise<ProjectInfo> => {
 };
 
 export const initProjectIpcMain = () => {
+  const db = getDatabaseService();
+
+  // CRUD Operations
+  // Create project
+  ipcMain.handle(
+    'project:create',
+    async (
+      _,
+      projectData: {
+        name: string;
+        description?: string;
+        type: string;
+        path: string;
+        tags?: string[];
+        isFavorite?: boolean;
+        gitRepository?: string;
+        metadata?: any;
+      },
+    ) => {
+      try {
+        const projectInfo = await analyzeProject(projectData.path);
+
+        const project = {
+          id: uuidv4(),
+          name: projectData.name,
+          description: projectData.description,
+          type: projectData.type,
+          path: projectData.path,
+          tags: projectData.tags || [],
+          isFavorite: projectData.isFavorite || false,
+          gitRepository: projectData.gitRepository,
+          size: projectInfo.size,
+          metadata: {
+            ...projectData.metadata,
+            framework: projectInfo.framework,
+            packageManager: projectInfo.packageManager,
+            hasGit: projectInfo.hasGit,
+          },
+        };
+
+        return db.createProject(project);
+      } catch (error) {
+        console.error('Failed to create project:', error);
+        throw error;
+      }
+    },
+  );
+
+  // Read all projects
+  ipcMain.handle('project:get-all', async () => {
+    try {
+      return db.getAllProjects();
+    } catch (error) {
+      console.error('Failed to get all projects:', error);
+      throw error;
+    }
+  });
+
+  // Read project by ID
+  ipcMain.handle('project:get-by-id', async (_, id: string) => {
+    try {
+      return db.getProjectById(id);
+    } catch (error) {
+      console.error('Failed to get project by id:', error);
+      throw error;
+    }
+  });
+
+  // Update project
+  ipcMain.handle(
+    'project:update',
+    async (
+      _,
+      {
+        id,
+        updates,
+      }: {
+        id: string;
+        updates: {
+          name?: string;
+          description?: string;
+          tags?: string[];
+          isFavorite?: boolean;
+          status?: string;
+          metadata?: any;
+        };
+      },
+    ) => {
+      try {
+        return db.updateProject(id, updates);
+      } catch (error) {
+        console.error('Failed to update project:', error);
+        throw error;
+      }
+    },
+  );
+
+  // Delete project
+  ipcMain.handle('project:delete', async (_, id: string) => {
+    try {
+      return db.deleteProject(id);
+    } catch (error) {
+      console.error('Failed to delete project:', error);
+      throw error;
+    }
+  });
+
+  // Search projects
+  ipcMain.handle(
+    'project:search',
+    async (
+      _,
+      filters: {
+        query?: string;
+        type?: string;
+        status?: string;
+        isFavorite?: boolean;
+        sortBy?: string;
+        sortOrder?: string;
+      },
+    ) => {
+      try {
+        return db.searchProjects(filters);
+      } catch (error) {
+        console.error('Failed to search projects:', error);
+        throw error;
+      }
+    },
+  );
+
+  // Toggle favorite
+  ipcMain.handle('project:toggle-favorite', async (_, id: string) => {
+    try {
+      const project = db.getProjectById(id);
+      if (!project) {
+        throw new Error('Project not found');
+      }
+
+      return db.updateProject(id, { isFavorite: !project.isFavorite });
+    } catch (error) {
+      console.error('Failed to toggle favorite:', error);
+      throw error;
+    }
+  });
+
+  // Open project (updates lastOpenedAt)
+  ipcMain.handle('project:open', async (_, id: string, ideId?: string) => {
+    try {
+      const project = db.getProjectById(id);
+      if (!project) {
+        throw new Error('Project not found');
+      }
+
+      // Update last opened time
+      const updatedProject = db.updateProject(id, { lastOpenedAt: new Date() });
+
+      // Open in IDE if specified
+      if (ideId) {
+        // Get IDE info and open project
+        const ides = await getAvailableIDEs();
+        const ide = ides.find((i) => i.id === ideId);
+        if (ide) {
+          await execAsync(`"${ide.executable}" "${project.path}"`);
+        }
+      }
+
+      return updatedProject;
+    } catch (error) {
+      console.error('Failed to open project:', error);
+      throw error;
+    }
+  });
+
+  // Add existing project from folder
+  ipcMain.handle('project:add-existing', async (_, folderPath: string) => {
+    try {
+      const projectInfo = await analyzeProject(folderPath);
+
+      const project = {
+        id: uuidv4(),
+        name: projectInfo.name,
+        description: `${projectInfo.framework || projectInfo.type} project`,
+        type: projectInfo.type,
+        path: projectInfo.path,
+        tags: [projectInfo.type],
+        isFavorite: false,
+        gitRepository: projectInfo.hasGit ? undefined : undefined,
+        size: projectInfo.size,
+        metadata: {
+          framework: projectInfo.framework,
+          packageManager: projectInfo.packageManager,
+          hasGit: projectInfo.hasGit,
+        },
+      };
+
+      return db.createProject(project);
+    } catch (error) {
+      console.error('Failed to add existing project:', error);
+      throw error;
+    }
+  });
+
+  // Helper function to get available IDEs
+  const getAvailableIDEs = async () => {
+    const ides = [];
+
+    try {
+      if (process.platform === 'win32') {
+        const commonPaths = [
+          'C:\\Users\\%USERNAME%\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe',
+          'C:\\Program Files\\Microsoft VS Code\\Code.exe',
+          'C:\\Program Files (x86)\\Microsoft VS Code\\Code.exe',
+        ];
+
+        for (const idePath of commonPaths) {
+          try {
+            const expandedPath = idePath.replace(
+              '%USERNAME%',
+              process.env.USERNAME || '',
+            );
+            await fs.access(expandedPath);
+            ides.push({
+              id: 'vscode',
+              name: 'Visual Studio Code',
+              executable: expandedPath,
+              icon: 'vscode',
+            });
+            break;
+          } catch {
+            // Continue checking
+          }
+        }
+      }
+
+      try {
+        await execAsync('code --version');
+        ides.push({
+          id: 'vscode-path',
+          name: 'Visual Studio Code',
+          executable: 'code',
+          icon: 'vscode',
+        });
+      } catch {
+        // VS Code not in PATH
+      }
+    } catch (error) {
+      console.error('Failed to detect IDEs:', error);
+    }
+
+    return ides;
+  };
   // Open folder dialog to select existing project
   ipcMain.handle('project:select-folder', async () => {
     try {

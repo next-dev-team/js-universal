@@ -27,7 +27,6 @@
     "build:pro:win": "npm run build:pro && electron-builder --win",
     "build:test": "npm run electron-vite build -m test",
     "coverage": "vitest run --coverage",
-    "deps:check": "npm run outdated -r",
     "dev": "electron-vite -m dev",
     "dev:mock": "electron-vite -m dev-mock",
     "dev:mock-server": "npm run mock-server -c mock.config.ts",
@@ -35,7 +34,7 @@
     "dev:pro": "electron-vite -m pro",
     "dev:test": "electron-vite -m test",
     "postinstall": "npx patch-package",
-    "kill-port": "kill-port 5173",
+    "kill-port": "kill-port 5174",
     "lint:all": "npm run lint:eslint && npm run lint:style && npm run lint:format",
     "lint:eslint": "eslint --max-warnings 0  \"**/*.{ts,tsx,js,jsx,cjs,mjs}\" --fix",
     "lint:format": "prettier --write \"**/*.{ts,tsx,js,jsx,cjs,mjs,html,less,scss,css,json}\"",
@@ -51,6 +50,7 @@
     "update:deps": "yarn upgrade-interactive --latest"
   },
   "dependencies": {
+    "@types/uuid": "^10.0.0",
     "ahooks": "^3.9.0",
     "better-sqlite3": "^12.2.0",
     "chokidar": "^4.0.3",
@@ -59,7 +59,8 @@
     "electron-updater": "^6.6.2",
     "fast-glob": "^3.3.2",
     "koffi": "^2.11.0",
-    "react-router-dom": "^7.6.3"
+    "react-router-dom": "^7.6.3",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@ant-design/v5-patch-for-react-19": "^1.0.3",
@@ -70,6 +71,7 @@
     "@eslint/js": "^9.24.0",
     "@liangskyli/axios-request": "^0.2.0",
     "@liangskyli/mock": "^6.0.0",
+    "@playwright/test": "^1.54.1",
     "@tailwindcss/postcss": "^4.1.4",
     "@tailwindcss/vite": "^4.1.4",
     "@testing-library/dom": "^10.4.0",
@@ -104,6 +106,7 @@
     "lint-staged": "^16.1.2",
     "optics-ts": "^2.4.1",
     "patch-package": "^8.0.0",
+    "playwright": "^1.54.1",
     "prettier": "^3.5.3",
     "prettier-plugin-packagejson": "^2.5.10",
     "prettier-plugin-tailwindcss": "^0.6.11",

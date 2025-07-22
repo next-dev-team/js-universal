@@ -12,6 +12,24 @@ import type {
   QuickAction,
 } from '@/types/project';
 
+// IPC API for communicating with Electron main process
+const ipcApi = {
+  createProject: (projectData: any) => window.electronAPI?.project?.createProject?.(projectData) || Promise.reject('API not available'),
+  getAllProjects: () => window.electronAPI?.project?.getAllProjects?.() || Promise.resolve([]),
+  getProjectById: (id: string) => window.electronAPI?.project?.getProjectById?.(id) || Promise.resolve(null),
+  updateProject: (id: string, updates: any) => window.electronAPI?.project?.updateProject?.(id, updates) || Promise.reject('API not available'),
+  deleteProject: (id: string) => window.electronAPI?.project?.deleteProject?.(id) || Promise.resolve(false),
+  searchProjects: (filters: any) => window.electronAPI?.project?.searchProjects?.(filters?.query || '') || Promise.resolve([]),
+  toggleFavorite: (id: string) => window.electronAPI?.project?.toggleFavorite?.(id) || Promise.reject('API not available'),
+  openProject: (id: string, ideId?: string) => window.electronAPI?.project?.openProject?.(id, ideId) || Promise.reject('API not available'),
+  addExistingProject: (folderPath: string) => window.electronAPI?.project?.addExistingProject?.(folderPath) || Promise.reject('API not available'),
+  selectFolder: () => window.electronAPI?.project?.selectFolder?.() || Promise.resolve(null),
+  openInExplorer: (path: string) => window.electronAPI?.project?.openInExplorer?.(path) || Promise.resolve(false),
+  openInTerminal: (path: string) => window.electronAPI?.project?.openInTerminal?.(path) || Promise.resolve(false),
+  openInIDE: (path: string, ideId: string) => window.electronAPI?.project?.openInIDE?.(path, ideId) || Promise.resolve(false),
+  getAvailableIDEs: () => window.electronAPI?.project?.getAvailableIDEs?.() || Promise.resolve([]),
+};
+
 type State = {
   projects: Project[];
   templates: ProjectTemplate[];
@@ -68,45 +86,7 @@ const defaultFilters: ProjectSearchFilters = {
   sortOrder: 'desc',
 };
 
-// Mock data for initial development
-const mockProjects: Project[] = [
-  {
-    id: '1',
-    name: 'My React App',
-    description: 'A modern React application with TypeScript',
-    type: 'react',
-    path: '/Users/user/projects/my-react-app',
-    tags: ['react', 'typescript', 'frontend'],
-    createdAt: new Date('2024-01-15'),
-    updatedAt: new Date('2024-01-20'),
-    lastOpenedAt: new Date('2024-01-20'),
-    isFavorite: true,
-    status: 'active',
-    metadata: {
-      framework: 'React',
-      version: '18.2.0',
-      packageManager: 'yarn',
-      buildTool: 'Vite',
-    },
-  },
-  {
-    id: '2',
-    name: 'Node.js API',
-    description: 'RESTful API built with Express and TypeScript',
-    type: 'nodejs',
-    path: '/Users/user/projects/nodejs-api',
-    tags: ['nodejs', 'express', 'api', 'backend'],
-    createdAt: new Date('2024-01-10'),
-    updatedAt: new Date('2024-01-18'),
-    isFavorite: false,
-    status: 'active',
-    metadata: {
-      framework: 'Express',
-      version: '4.18.0',
-      packageManager: 'npm',
-    },
-  },
-];
+
 
 const mockTemplates: ProjectTemplate[] = [
   {
@@ -197,14 +177,14 @@ export const projectStore = createStore<ProjectStore>()(
       });
 
       try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        const projects = await ipcApi.getAllProjects();
 
         set((state) => {
-          state.projects = mockProjects;
+          state.projects = projects;
           state.isLoading = false;
         });
       } catch (error) {
+        console.error('Failed to load projects:', error);
         set((state) => {
           state.error =
             error instanceof Error ? error.message : 'Failed to load projects';
@@ -220,24 +200,15 @@ export const projectStore = createStore<ProjectStore>()(
       });
 
       try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        const newProject: Project = {
-          id: Date.now().toString(),
+        const newProject = await ipcApi.createProject({
           name: request.name,
           description: request.description,
           type: request.type,
           path: request.path,
           tags: request.tags || [],
-          createdAt: new Date(),
-          updatedAt: new Date(),
           isFavorite: false,
-          status: 'active',
-          metadata: {
-            packageManager: 'yarn', // Default based on project rules
-          },
-        };
+          metadata: request.metadata || {},
+        });
 
         set((state) => {
           state.projects.unshift(newProject);
@@ -246,6 +217,7 @@ export const projectStore = createStore<ProjectStore>()(
 
         return newProject;
       } catch (error) {
+        console.error('Failed to create project:', error);
         set((state) => {
           state.error =
             error instanceof Error ? error.message : 'Failed to create project';
@@ -262,31 +234,19 @@ export const projectStore = createStore<ProjectStore>()(
       });
 
       try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        let updatedProject: Project | undefined;
+        const updatedProject = await ipcApi.updateProject(request.id, request);
 
         set((state) => {
           const index = state.projects.findIndex((p) => p.id === request.id);
           if (index !== -1) {
-            const project = state.projects[index];
-            updatedProject = {
-              ...project,
-              ...request,
-              updatedAt: new Date(),
-            };
             state.projects[index] = updatedProject;
           }
           state.isLoading = false;
         });
 
-        if (!updatedProject) {
-          throw new Error('Project not found');
-        }
-
         return updatedProject;
       } catch (error) {
+        console.error('Failed to update project:', error);
         set((state) => {
           state.error =
             error instanceof Error ? error.message : 'Failed to update project';
@@ -303,8 +263,7 @@ export const projectStore = createStore<ProjectStore>()(
       });
 
       try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        await ipcApi.deleteProject(id);
 
         set((state) => {
           state.projects = state.projects.filter((p) => p.id !== id);
@@ -314,6 +273,7 @@ export const projectStore = createStore<ProjectStore>()(
           state.isLoading = false;
         });
       } catch (error) {
+        console.error('Failed to delete project:', error);
         set((state) => {
           state.error =
             error instanceof Error ? error.message : 'Failed to delete project';
@@ -395,50 +355,46 @@ export const projectStore = createStore<ProjectStore>()(
 
     toggleFavorite: async (id: string): Promise<void> => {
       try {
-        const project = get().projects.find((p) => p.id === id);
-        if (project) {
-          await get().updateProject({
-            id,
-            isFavorite: !project.isFavorite,
-          });
-        }
+        await ipcApi.toggleFavorite(id);
+        
+        set((state) => {
+          const project = state.projects.find((p) => p.id === id);
+          if (project) {
+            project.isFavorite = !project.isFavorite;
+            project.updatedAt = new Date();
+          }
+        });
       } catch (error) {
+        console.error('Failed to toggle favorite:', error);
         set((state) => {
           state.error =
             error instanceof Error
               ? error.message
               : 'Failed to toggle favorite';
         });
+        throw error;
       }
     },
 
     openProject: async (id: string, ideId?: string): Promise<void> => {
       try {
-        const project = get().projects.find((p) => p.id === id);
-        if (!project) {
-          throw new Error('Project not found');
-        }
-
-        // Update last opened time
-        await get().updateProject({
-          id,
-          lastOpenedAt: new Date(),
-        });
-
-        // Here you would implement the actual opening logic
-        // For now, we'll just simulate it
-        console.log(
-          `Opening project ${project.name} with IDE ${ideId || 'default'}`,
-        );
-
+        const updatedProject = await ipcApi.openProject(id, ideId);
+        
         set((state) => {
-          state.selectedProject = project;
+          const index = state.projects.findIndex((p) => p.id === id);
+          if (index !== -1) {
+            state.projects[index] = updatedProject;
+          }
+          state.selectedProject = updatedProject;
+          state.error = undefined;
         });
       } catch (error) {
+        console.error('Failed to open project:', error);
         set((state) => {
           state.error =
             error instanceof Error ? error.message : 'Failed to open project';
         });
+        throw error;
       }
     },
 
@@ -544,24 +500,17 @@ export const projectStore = createStore<ProjectStore>()(
 
     loadIDEs: async () => {
       try {
-        let availableIDEs = mockIDEs;
-
-        // Try to get IDEs from Electron if available
-        if (window.electronAPI?.project?.getAvailableIDEs) {
-          try {
-            const electronIDEs =
-              await window.electronAPI.project.getAvailableIDEs();
-            availableIDEs = [...mockIDEs, ...electronIDEs];
-          } catch (error) {
-            console.warn('Failed to get IDEs from Electron:', error);
-          }
-        }
+        const availableIDEs = await ipcApi.getAvailableIDEs();
 
         set((state) => {
-          state.ides = availableIDEs;
+          state.ides = [...mockIDEs, ...availableIDEs];
+          state.error = undefined;
         });
       } catch (error) {
+        console.error('Failed to load IDEs:', error);
+        // Fallback to mock IDEs if real ones fail to load
         set((state) => {
+          state.ides = mockIDEs;
           state.error =
             error instanceof Error ? error.message : 'Failed to load IDEs';
         });
@@ -571,18 +520,14 @@ export const projectStore = createStore<ProjectStore>()(
     // New project operations
     openExistingProject: async (): Promise<Project | null> => {
       try {
-        if (!window.electronAPI?.project?.selectFolder) {
-          throw new Error('File selection not available in web environment');
-        }
-
         set((state) => {
           state.isLoading = true;
           state.error = undefined;
         });
 
-        const projectInfo = await window.electronAPI.project.selectFolder();
+        const folderResult = await ipcApi.selectFolder();
 
-        if (!projectInfo) {
+        if (!folderResult || !folderResult.path) {
           set((state) => {
             state.isLoading = false;
           });
@@ -591,7 +536,7 @@ export const projectStore = createStore<ProjectStore>()(
 
         // Check if project already exists
         const existingProject = get().projects.find(
-          (p) => p.path === projectInfo.path,
+          (p) => p.path === folderResult.path,
         );
         if (existingProject) {
           set((state) => {
@@ -600,29 +545,13 @@ export const projectStore = createStore<ProjectStore>()(
           return existingProject;
         }
 
-        // Create new project entry
-        const newProject: Project = {
-          id: Date.now().toString(),
-          name: projectInfo.name,
-          description: `Imported ${projectInfo.type} project`,
-          type: projectInfo.type as ProjectType,
-          path: projectInfo.path,
-          tags: [projectInfo.type, projectInfo.framework || ''].filter(Boolean),
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          lastOpenedAt: new Date(),
-          isFavorite: false,
-          status: 'active',
-          metadata: {
-            framework: projectInfo.framework,
-            packageManager: projectInfo.packageManager as any,
-            size: projectInfo.size,
-          },
-        };
+        // Add existing project to database
+        const newProject = await ipcApi.addExistingProject(folderResult.path);
 
         set((state) => {
           state.projects.unshift(newProject);
           state.isLoading = false;
+          state.error = undefined;
         });
 
         return newProject;
@@ -640,21 +569,14 @@ export const projectStore = createStore<ProjectStore>()(
 
     addExistingProject: async (folderPath: string): Promise<Project> => {
       try {
-        if (!window.electronAPI?.project?.analyzeFolder) {
-          throw new Error('Folder analysis not available in web environment');
-        }
-
         set((state) => {
           state.isLoading = true;
           state.error = undefined;
         });
 
-        const projectInfo =
-          await window.electronAPI.project.analyzeFolder(folderPath);
-
         // Check if project already exists
         const existingProject = get().projects.find(
-          (p) => p.path === projectInfo.path,
+          (p) => p.path === folderPath,
         );
         if (existingProject) {
           set((state) => {
@@ -663,33 +585,18 @@ export const projectStore = createStore<ProjectStore>()(
           return existingProject;
         }
 
-        // Create new project entry
-        const newProject: Project = {
-          id: Date.now().toString(),
-          name: projectInfo.name,
-          description: `Imported ${projectInfo.type} project`,
-          type: projectInfo.type as ProjectType,
-          path: projectInfo.path,
-          tags: [projectInfo.type, projectInfo.framework || ''].filter(Boolean),
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          lastOpenedAt: new Date(),
-          isFavorite: false,
-          status: 'active',
-          metadata: {
-            framework: projectInfo.framework,
-            packageManager: projectInfo.packageManager as any,
-            size: projectInfo.size,
-          },
-        };
+        // Add existing project to database
+        const newProject = await ipcApi.addExistingProject(folderPath);
 
         set((state) => {
           state.projects.unshift(newProject);
           state.isLoading = false;
+          state.error = undefined;
         });
 
         return newProject;
       } catch (error) {
+        console.error('Failed to add existing project:', error);
         set((state) => {
           state.error =
             error instanceof Error
@@ -703,13 +610,9 @@ export const projectStore = createStore<ProjectStore>()(
 
     openProjectInExplorer: async (projectPath: string): Promise<void> => {
       try {
-        if (window.electronAPI?.project?.openInExplorer) {
-          await window.electronAPI.project.openInExplorer(projectPath);
-        } else {
-          console.log('Open in explorer:', projectPath);
-          throw new Error('File explorer integration available in desktop app');
-        }
+        await ipcApi.openInExplorer(projectPath);
       } catch (error) {
+        console.error('Failed to open in explorer:', error);
         set((state) => {
           state.error =
             error instanceof Error
@@ -722,13 +625,9 @@ export const projectStore = createStore<ProjectStore>()(
 
     openProjectInTerminal: async (projectPath: string): Promise<void> => {
       try {
-        if (window.electronAPI?.project?.openInTerminal) {
-          await window.electronAPI.project.openInTerminal(projectPath);
-        } else {
-          console.log('Open in terminal:', projectPath);
-          throw new Error('Terminal integration available in desktop app');
-        }
+        await ipcApi.openInTerminal(projectPath);
       } catch (error) {
+        console.error('Failed to open in terminal:', error);
         set((state) => {
           state.error =
             error instanceof Error
@@ -756,16 +655,9 @@ export const projectStore = createStore<ProjectStore>()(
           throw new Error('No IDE available');
         }
 
-        if (window.electronAPI?.project?.openInIDE) {
-          await window.electronAPI.project.openInIDE(
-            projectPath,
-            ide.executable,
-          );
-        } else {
-          console.log(`Open in ${ide.name}:`, projectPath);
-          throw new Error(`${ide.name} integration available in desktop app`);
-        }
+        await ipcApi.openInIDE(projectPath, ide.id);
       } catch (error) {
+        console.error('Failed to open in IDE:', error);
         set((state) => {
           state.error =
             error instanceof Error ? error.message : 'Failed to open in IDE';
