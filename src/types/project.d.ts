@@ -25,6 +25,7 @@ export type ProjectType =
   | 'angular'
   | 'nodejs'
   | 'python'
+  | 'typescript'
   | 'java'
   | 'csharp'
   | 'cpp'

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
   AppstoreOutlined,
+  CodeOutlined,
   ConsoleSqlOutlined,
   DeleteOutlined,
   EditOutlined,
@@ -35,6 +36,7 @@ const ProjectList: React.FC<ProjectListProps> = ({
   onViewModeChange,
   showViewToggle = true,
   className,
+  onProjectAction,
 }) => {
   const {
     projects,
@@ -137,6 +139,11 @@ const ProjectList: React.FC<ProjectListProps> = ({
       case 'terminal':
         openProjectInTerminal(project.path);
         break;
+      case 'editor':
+        if (onProjectAction) {
+          onProjectAction('editor', project);
+        }
+        break;
       case 'edit':
         setSelectedProject(project);
         // Note: Edit functionality would typically open a modal or navigate to edit page
@@ -189,6 +196,13 @@ const ProjectList: React.FC<ProjectListProps> = ({
               <ConsoleSqlOutlined
                 onClick={(e: React.MouseEvent) =>
                   handleQuickAction('terminal', project, e)
+                }
+              />
+            </Tooltip>,
+            <Tooltip key="editor" title="Open in Editor">
+              <CodeOutlined
+                onClick={(e: React.MouseEvent) =>
+                  handleQuickAction('editor', project, e)
                 }
               />
             </Tooltip>,
@@ -295,6 +309,15 @@ const ProjectList: React.FC<ProjectListProps> = ({
                 icon={<ConsoleSqlOutlined />}
                 onClick={(e: React.MouseEvent) =>
                   handleQuickAction('terminal', project, e)
+                }
+              />
+            </Tooltip>,
+            <Tooltip key="editor" title="Open in Editor">
+              <Button
+                type="text"
+                icon={<CodeOutlined />}
+                onClick={(e: React.MouseEvent) =>
+                  handleQuickAction('editor', project, e)
                 }
               />
             </Tooltip>,

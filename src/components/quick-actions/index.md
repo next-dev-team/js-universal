@@ -133,3 +133,56 @@ When running in web environment (development), the component:
 - User feedback via message notifications
 - Console logging for debugging
 - Non-blocking error recovery
+
+## Enhanced Features Roadmap
+
+### Enhanced IDE Support
+- [ ] Add VS Code IDE integration
+- [ ] Add Cursor IDE integration  
+- [ ] Add Windsurf IDE integration
+- [ ] Add Trae IDE integration
+- [ ] Update IDE detection logic
+- [ ] Add IDE icons and branding
+
+### Monaco Editor Integration
+- [ ] Install Monaco Editor dependencies
+- [ ] Create Monaco Editor component
+- [ ] Add file editing capabilities
+- [ ] Implement syntax highlighting
+- [ ] Add file save/load functionality
+- [ ] Create editor modal/window
+
+### Context Menu Actions
+- [ ] Add "Open in Browser" context action
+- [ ] Implement file preview in browser
+- [ ] Add "Copy and Open" functionality
+- [ ] Create new window for browser preview
+- [ ] Add support for UI file types (.tsx, .jsx, .vue)
+
+### Database Updates
+- [ ] Update IDE schema in database
+- [ ] Add editor preferences storage
+- [ ] Implement user settings for default editors
+
+### IPC Handlers
+- [ ] Add IPC handlers for new IDE operations
+- [ ] Implement file system operations for editor
+- [ ] Add browser preview IPC handlers
+
+### UI Components
+- [ ] Update QuickActions component
+- [ ] Create Monaco Editor wrapper
+- [ ] Add context menu component
+- [ ] Implement editor settings panel
+
+### Testing
+- [ ] Unit tests for new IDE integrations
+- [ ] E2E tests for Monaco editor
+- [ ] Test context menu functionality
+- [ ] Test browser preview features
+
+### Verification
+- [ ] TypeScript compilation
+- [ ] ESLint checks
+- [ ] Build verification
+- [ ] Manual testing of all features

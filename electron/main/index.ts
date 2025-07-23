@@ -3,6 +3,7 @@ import { BrowserWindow, app, dialog, ipcMain, shell } from 'electron';
 import { join } from 'path';
 import { getMainLogger, initMainLogger } from '../common/logger/main';
 import initIpcMain from '../main/ipc';
+import { setupFileHandlers, cleanupFileWatchers } from '../../src/main/file-handlers';
 
 let indexLog: ReturnType<typeof getMainLogger>;
 
@@ -60,6 +61,7 @@ app.whenReady().then(() => {
   initMainLogger();
   indexLog = getMainLogger();
   initIpcMain();
+  setupFileHandlers();
 
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron');
@@ -93,4 +95,5 @@ app.on('quit', () => {
   if (indexLog) {
     indexLog.info('quit app');
   }
+  cleanupFileWatchers();
 });

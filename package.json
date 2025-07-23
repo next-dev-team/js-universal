@@ -51,6 +51,7 @@
     "update:deps": "yarn upgrade-interactive --latest"
   },
   "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
     "@types/uuid": "^10.0.0",
     "ahooks": "^3.9.0",
     "better-sqlite3": "^12.2.0",
@@ -60,6 +61,7 @@
     "electron-updater": "^6.6.2",
     "fast-glob": "^3.3.2",
     "koffi": "^2.11.0",
+    "monaco-editor": "^0.52.2",
     "react-router-dom": "^7.6.3",
     "uuid": "^11.1.0"
   },

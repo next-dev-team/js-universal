@@ -1,9 +1,4 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { initPreloadLogger } from '../common/logger/preload.ts';
-import checkUpdate from './ipc/check-update.ts';
-import projectAPI from './ipc/project.ts';
-import { getTestHandle1 } from './ipc/test.ts';
-import user32 from './ipc/user32.ts';
 
 // File operations API
 const fileAPI = {
@@ -28,7 +23,7 @@ const fileAPI = {
   watchFile: (filePath: string, callback: (content: string) => void): void => {
     const watcherId = `file-watcher-${Date.now()}`;
     
-    ipcRenderer.on(`file-changed-${filePath}`, (_, content: string) => {
+    ipcRenderer.on(`file-changed-${filePath}`, (_event, content: string) => {
       callback(content);
     });
     
@@ -40,6 +35,7 @@ const fileAPI = {
     ipcRenderer.removeAllListeners(`file-changed-${filePath}`);
   },
 
+  // Additional file operations
   fileExists: async (filePath: string): Promise<boolean> => {
     try {
       return await ipcRenderer.invoke('file-exists', filePath);
@@ -76,23 +72,7 @@ const fileAPI = {
   }
 };
 
-initPreloadLogger();
+// Expose the API to the renderer process
+contextBridge.exposeInMainWorld('electronAPI', fileAPI);
 
-const apiKey = 'electronAPI';
-
-const api = {
-  versions: process.versions,
-  getTestHandle1,
-  user32,
-  checkUpdate,
-  project: projectAPI,
-  file: fileAPI,
-  send: (type: string, msg: unknown) => {
-    ipcRenderer.send(type, msg);
-  },
-  ipcRenderer,
-};
-
-contextBridge.exposeInMainWorld(apiKey, api);
-
-export type IElectronAPI = typeof api;
+export type FileAPI = typeof fileAPI;
