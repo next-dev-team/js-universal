@@ -25,6 +25,7 @@ import {
   Dropdown,
   Layout,
   Menu,
+  message,
   Space,
   Tooltip,
   Typography,
@@ -186,22 +187,27 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const handleUserMenuClick = ({ key }: { key: string }) => {
     switch (key) {
       case 'profile':
-        console.log('Open profile');
+        // TODO: Open profile modal or navigate to profile page
+        message.info('Profile feature coming soon');
         break;
       case 'settings':
-        console.log('Open settings');
+        // TODO: Open settings modal or navigate to settings page
+        message.info('Settings feature coming soon');
         break;
       case 'help':
-        console.log('Open help');
+        // TODO: Open help modal or navigate to help page
+        message.info('Help feature coming soon');
         break;
       case 'github':
         window.open('https://github.com', '_blank');
         break;
       case 'report':
-        console.log('Report issue');
+        // TODO: Open issue reporting modal or external link
+        message.info('Issue reporting feature coming soon');
         break;
       case 'logout':
-        console.log('Logout');
+        // TODO: Implement logout functionality
+        message.info('Logout feature coming soon');
         break;
       default:
         break;

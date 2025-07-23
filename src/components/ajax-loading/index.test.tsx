@@ -19,7 +19,7 @@ describe('AjaxLoading Component', () => {
 
   it('does not render when visible is false', () => {
     render(<AjaxLoading visible={false} />);
-    expect(screen.queryByText('Loading...')).not.toBeDefined();
+    expect(screen.queryByText('Loading...')).toBeNull();
   });
 
   it('renders with a custom loading message', () => {
@@ -35,9 +35,9 @@ describe('AjaxLoading Component', () => {
 
   it('handles null or undefined visible prop', () => {
     render(<AjaxLoading visible={null} />);
-    expect(screen.queryByText('Loading...')).not.toBeDefined();
+    expect(screen.queryByText('Loading...')).toBeNull();
 
     render(<AjaxLoading visible={undefined} />);
-    expect(screen.queryByText('Loading...')).not.toBeDefined();
+    expect(screen.queryByText('Loading...')).toBeNull();
   });
 });

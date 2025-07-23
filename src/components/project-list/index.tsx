@@ -36,8 +36,16 @@ const ProjectList: React.FC<ProjectListProps> = ({
   showViewToggle = true,
   className,
 }) => {
-  const { projects, isLoading, toggleFavorite, openProject, deleteProject } =
-    useProjectStore();
+  const {
+    projects,
+    isLoading,
+    toggleFavorite,
+    openProject,
+    deleteProject,
+    openProjectInExplorer,
+    openProjectInTerminal,
+    setSelectedProject,
+  } = useProjectStore();
 
   const [internalViewMode, setInternalViewMode] = useState<'grid' | 'list'>(
     'grid',
@@ -124,16 +132,14 @@ const ProjectList: React.FC<ProjectListProps> = ({
         toggleFavorite(project.id);
         break;
       case 'explorer':
-        // In a real implementation, this would use the Electron API
-        console.log('Open in explorer:', project.path);
+        openProjectInExplorer(project.path);
         break;
       case 'terminal':
-        // In a real implementation, this would use the Electron API
-        console.log('Open in terminal:', project.path);
+        openProjectInTerminal(project.path);
         break;
       case 'edit':
-        // In a real implementation, this would open an edit form
-        console.log('Edit project:', project.name);
+        setSelectedProject(project);
+        // Note: Edit functionality would typically open a modal or navigate to edit page
         break;
       case 'delete':
         confirmDelete(project);

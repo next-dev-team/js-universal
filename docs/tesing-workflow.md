@@ -1,16 +1,20 @@
 ## Testing Workflow Requirements
 
-The testing workflow must strictly adhere to the following requirements:
+here is workflow must strictly adhere to the following requirements:
 
 1. Maintain 95% or higher must match with workflow.md
 2. Implement complete functionality including:
    - User interface components
    - Database integration
    - Business logic
-
+   - E2e testing
+   - eslint
+   - typecheck
+   - build ensure no more error
+  
 For index.md:
 
-1. Analyze requirements and update features
+1. Analyze requirements and update features as check list in index.md
 2. Implement full feature functionality
 3. Verify all components are working properly
 4. Ensure no mock or static implementations remain

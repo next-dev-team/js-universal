@@ -26,7 +26,7 @@ describe('Icon Component', () => {
 
   it('does not render when an invalid icon name is provided', () => {
     render(<Icon name="invalid-icon" />);
-    expect(screen.queryByText('Test Icon')).not.toBeDefined();
+    expect(screen.queryByText('Test Icon')).toBeNull();
   });
 
   it('renders with another valid icon name', () => {
