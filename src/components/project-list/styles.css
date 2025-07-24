@@ -190,6 +190,40 @@
   color: #999;
 }
 
+/* IDE Modal Styles */
+.ide-card {
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.ide-card:hover {
+  border-color: #1890ff;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.ide-card .ide-icon {
+  transition: transform 0.2s ease;
+}
+
+.ide-card:hover .ide-icon {
+  transform: scale(1.1);
+}
+
+/* Dark theme support for IDE cards */
+@media (prefers-color-scheme: dark) {
+  .ide-card {
+    background-color: #1f1f1f;
+    border-color: #434343;
+  }
+
+  .ide-card:hover {
+    border-color: #1890ff;
+    background-color: #262626;
+  }
+}
+
 /* Responsive Design */
 @media (width <= 768px) {
   .project-grid {

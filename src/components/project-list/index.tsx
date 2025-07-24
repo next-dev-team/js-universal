@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   AppstoreOutlined,
   CodeOutlined,
@@ -8,7 +8,6 @@ import {
   FolderOpenOutlined,
   FolderOutlined,
   MoreOutlined,
-  PlayCircleOutlined,
   StarFilled,
   StarOutlined,
   UnorderedListOutlined,
@@ -17,10 +16,12 @@ import {
   Avatar,
   Button,
   Card,
+  Col,
   Dropdown,
   Empty,
   List,
   Modal,
+  Row,
   Space,
   Tag,
   Tooltip,
@@ -46,7 +47,10 @@ const ProjectList: React.FC<ProjectListProps> = ({
     deleteProject,
     openProjectInExplorer,
     openProjectInTerminal,
+    openProjectInIDE,
     setSelectedProject,
+    ides,
+    loadIDEs,
   } = useProjectStore();
 
   const [internalViewMode, setInternalViewMode] = useState<'grid' | 'list'>(
@@ -55,6 +59,13 @@ const ProjectList: React.FC<ProjectListProps> = ({
   const viewMode = propViewMode || internalViewMode;
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+  const [ideModalVisible, setIdeModalVisible] = useState(false);
+  const [selectedProjectForIDE, setSelectedProjectForIDE] =
+    useState<Project | null>(null);
+
+  useEffect(() => {
+    loadIDEs();
+  }, [loadIDEs]);
 
   const handleViewModeChange = (mode: 'grid' | 'list') => {
     if (onViewModeChange) {
@@ -80,6 +91,23 @@ const ProjectList: React.FC<ProjectListProps> = ({
   const handleDeleteCancel = () => {
     setDeleteModalVisible(false);
     setProjectToDelete(null);
+  };
+
+  const handleOpenWithIDEs = (project: Project) => {
+    setSelectedProjectForIDE(project);
+    setIdeModalVisible(true);
+  };
+
+  const handleIDESelect = async (ideId: string) => {
+    if (selectedProjectForIDE) {
+      try {
+        await openProjectInIDE(selectedProjectForIDE.path, ideId);
+        setIdeModalVisible(false);
+        setSelectedProjectForIDE(null);
+      } catch (error) {
+        console.error('Failed to open project in IDE:', error);
+      }
+    }
   };
 
   const getProjectTypeColor = (type: string) => {
@@ -155,6 +183,17 @@ const ProjectList: React.FC<ProjectListProps> = ({
   };
 
   const getMoreMenuItems = (project: Project) => [
+    {
+      key: 'open-with-ides',
+      label: 'Open with IDEs',
+      icon: <AppstoreOutlined />,
+      onClick: () => {
+        handleOpenWithIDEs(project);
+      },
+    },
+    {
+      type: 'divider' as const,
+    },
     {
       key: 'edit',
       label: 'Edit Project',
@@ -413,11 +452,7 @@ const ProjectList: React.FC<ProjectListProps> = ({
         <Empty
           image={<FolderOutlined style={{ fontSize: 64, color: '#d9d9d9' }} />}
           description="No projects found"
-        >
-          <Button type="primary" icon={<PlayCircleOutlined />}>
-            Create Your First Project
-          </Button>
-        </Empty>
+        ></Empty>
       </div>
     );
   }
@@ -457,9 +492,68 @@ const ProjectList: React.FC<ProjectListProps> = ({
         okButtonProps={{ danger: true }}
       >
         <p>
-          Are you sure you want to delete the project &quot;{projectToDelete?.name}&quot;?
-          This action cannot be undone.
+          Are you sure you want to delete the project &quot;
+          {projectToDelete?.name}&quot;? This action cannot be undone.
         </p>
+      </Modal>
+
+      <Modal
+        title={`Open "${selectedProjectForIDE?.name}" with IDE`}
+        open={ideModalVisible}
+        onCancel={() => {
+          setIdeModalVisible(false);
+          setSelectedProjectForIDE(null);
+        }}
+        footer={null}
+        width={600}
+      >
+        <div style={{ padding: '16px 0' }}>
+          {ides.length === 0 ? (
+            <Empty
+              description="No IDEs detected"
+              style={{ margin: '40px 0' }}
+            />
+          ) : (
+            <Row gutter={[16, 16]}>
+              {ides.map((ide) => (
+                <Col key={ide.id} xs={12} sm={8} md={6}>
+                  <Card
+                    hoverable
+                    className="ide-card"
+                    onClick={() => handleIDESelect(ide.id)}
+                    style={{
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                    }}
+                    bodyStyle={{ padding: '16px 8px' }}
+                  >
+                    <div
+                      className="ide-icon"
+                      style={{
+                        fontSize: '32px',
+                        marginBottom: '8px',
+                        transition: 'transform 0.2s ease',
+                      }}
+                    >
+                      {ide.icon}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: '12px',
+                        fontWeight: 500,
+                        color: '#666',
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      {ide.name}
+                    </div>
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+          )}
+        </div>
       </Modal>
     </div>
   );

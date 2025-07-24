@@ -313,34 +313,6 @@ export const initProjectIpcMain = () => {
     }
   });
 
-  // Open project (updates lastOpenedAt)
-  ipcMain.handle('project:open', async (_, id: string, ideId?: string) => {
-    try {
-      const project = db.getProjectById(id);
-      if (!project) {
-        throw new Error('Project not found');
-      }
-
-      // Update last opened time
-      const updatedProject = db.updateProject(id, { lastOpenedAt: new Date() });
-
-      // Open in IDE if specified
-      if (ideId) {
-        // Get IDE info and open project
-        const ides = await getAvailableIDEs();
-        const ide = ides.find((i) => i.id === ideId);
-        if (ide) {
-          await execAsync(`"${ide.executable}" "${project.path}"`);
-        }
-      }
-
-      return updatedProject;
-    } catch (error) {
-      console.error('Failed to open project:', error);
-      throw error;
-    }
-  });
-
   // Add existing project from folder
   ipcMain.handle('project:add-existing', async (_, folderPath: string) => {
     try {
@@ -370,55 +342,71 @@ export const initProjectIpcMain = () => {
     }
   });
 
-  // Helper function to get available IDEs
-  const getAvailableIDEs = async () => {
-    const ides = [];
+  // Helper function to get available IDEs (reuse the logic from the main handler)
+  // const getAvailableIDEs = async () => {
+  //   const ides = [];
+  //   const detectedIds = new Set();
 
-    try {
-      if (process.platform === 'win32') {
-        const commonPaths = [
-          'C:\\Users\\%USERNAME%\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe',
-          'C:\\Program Files\\Microsoft VS Code\\Code.exe',
-          'C:\\Program Files (x86)\\Microsoft VS Code\\Code.exe',
-        ];
+  //   try {
+  //     const ideConfigs = [
+  //       {
+  //         id: 'vscode',
+  //         name: 'Visual Studio Code',
+  //         commands: ['code'],
+  //         args: ['.'],
+  //         icon: '🔵',
+  //       },
+  //       {
+  //         id: 'cursor',
+  //         name: 'Cursor',
+  //         commands: ['cursor'],
+  //         args: ['.'],
+  //         icon: '⚡',
+  //       },
+  //       {
+  //         id: 'windsurf',
+  //         name: 'Windsurf',
+  //         commands: ['windsurf'],
+  //         args: ['.'],
+  //         icon: '🌊',
+  //       },
+  //     ];
 
-        for (const idePath of commonPaths) {
-          try {
-            const expandedPath = idePath.replace(
-              '%USERNAME%',
-              process.env.USERNAME || '',
-            );
-            await fs.access(expandedPath);
-            ides.push({
-              id: 'vscode',
-              name: 'Visual Studio Code',
-              executable: expandedPath,
-              icon: 'vscode',
-            });
-            break;
-          } catch {
-            // Continue checking
-          }
-        }
-      }
+  //     for (const config of ideConfigs) {
+  //       for (const command of config.commands) {
+  //         try {
+  //           await execAsync(`${command} --version`);
+  //           if (!detectedIds.has(config.id)) {
+  //             ides.push({
+  //               id: config.id,
+  //               name: config.name,
+  //               executable: command,
+  //               args: config.args,
+  //               icon: config.icon,
+  //               supportedTypes: [
+  //                 'web',
+  //                 'react',
+  //                 'vue',
+  //                 'angular',
+  //                 'nodejs',
+  //                 'python',
+  //                 'typescript',
+  //               ],
+  //             });
+  //             detectedIds.add(config.id);
+  //           }
+  //           break;
+  //         } catch {
+  //           // Command not in PATH, continue
+  //         }
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error('Failed to detect IDEs:', error);
+  //   }
 
-      try {
-        await execAsync('code --version');
-        ides.push({
-          id: 'vscode-path',
-          name: 'Visual Studio Code',
-          executable: 'code',
-          icon: 'vscode',
-        });
-      } catch {
-        // VS Code not in PATH
-      }
-    } catch (error) {
-      console.error('Failed to detect IDEs:', error);
-    }
-
-    return ides;
-  };
+  //   return ides;
+  // };
   // Open folder dialog to select existing project
   ipcMain.handle('project:select-folder', async () => {
     try {
@@ -486,65 +474,82 @@ export const initProjectIpcMain = () => {
     }
   });
 
-  // Open project in IDE
-  ipcMain.handle(
-    'project:open-in-ide',
-    async (_, projectPath: string, ideExecutable: string) => {
-      try {
-        await execAsync(`"${ideExecutable}" "${projectPath}"`);
-        return true;
-      } catch (error) {
-        console.error(`Failed to open in IDE (${ideExecutable}):`, error);
-        throw error;
-      }
-    },
-  );
-
   // Get available IDEs on the system
   ipcMain.handle('project:get-available-ides', async () => {
     const ides = [];
+    const detectedIds = new Set(); // Prevent duplicates
 
     try {
-      // Check for common IDEs based on platform
-      if (process.platform === 'win32') {
-        // Windows IDE detection
-        const commonPaths = [
-          'C:\\Users\\%USERNAME%\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe',
-          'C:\\Program Files\\Microsoft VS Code\\Code.exe',
-          'C:\\Program Files (x86)\\Microsoft VS Code\\Code.exe',
-        ];
+      // Define IDE configurations
+      const ideConfigs = [
+        {
+          id: 'trae',
+          name: 'Trae AI',
+          commands: ['trae'],
+          args: ['.'],
+          icon: '🤖',
+        },
+        {
+          id: 'vscode',
+          name: 'Visual Studio Code',
+          commands: ['code'],
+          args: ['.'],
+          icon: '🔵',
+        },
+        {
+          id: 'cursor',
+          name: 'Cursor',
+          commands: ['cursor'],
+          args: ['.'],
+          icon: '⚡',
+        },
+        {
+          id: 'windsurf',
+          name: 'Windsurf',
+          commands: ['windsurf'],
+          args: ['.'],
+          icon: '🌊',
+        },
 
-        for (const idePath of commonPaths) {
+        {
+          id: 'webstorm',
+          name: 'WebStorm',
+          commands: ['webstorm'],
+          args: ['.'],
+          icon: '🟡',
+        },
+      ];
+
+      // Check each IDE configuration
+      for (const config of ideConfigs) {
+        // Try command in PATH
+        for (const command of config.commands) {
           try {
-            const expandedPath = idePath.replace(
-              '%USERNAME%',
-              process.env.USERNAME || '',
-            );
-            await fs.access(expandedPath);
-            ides.push({
-              id: 'vscode',
-              name: 'Visual Studio Code',
-              executable: expandedPath,
-              icon: 'vscode',
-            });
+            await execAsync(`${command} --version`);
+            if (!detectedIds.has(config.id)) {
+              ides.push({
+                id: config.id,
+                name: config.name,
+                executable: command,
+                args: config.args,
+                icon: config.icon,
+                supportedTypes: [
+                  'web',
+                  'react',
+                  'vue',
+                  'angular',
+                  'nodejs',
+                  'python',
+                  'typescript',
+                ],
+              });
+              detectedIds.add(config.id);
+            }
             break;
           } catch {
-            // Continue checking
+            // Command not in PATH, continue
           }
         }
-      }
-
-      // Try to find code in PATH
-      try {
-        await execAsync('code --version');
-        ides.push({
-          id: 'vscode-path',
-          name: 'Visual Studio Code',
-          executable: 'code',
-          icon: 'vscode',
-        });
-      } catch {
-        // VS Code not in PATH
       }
     } catch (error) {
       console.error('Failed to detect IDEs:', error);

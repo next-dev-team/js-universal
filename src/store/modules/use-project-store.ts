@@ -14,20 +14,43 @@ import type {
 
 // IPC API for communicating with Electron main process
 const ipcApi = {
-  createProject: (projectData: any) => window.electronAPI?.project?.createProject?.(projectData) || Promise.reject('API not available'),
-  getAllProjects: () => window.electronAPI?.project?.getAllProjects?.() || Promise.resolve([]),
-  getProjectById: (id: string) => window.electronAPI?.project?.getProjectById?.(id) || Promise.resolve(null),
-  updateProject: (id: string, updates: any) => window.electronAPI?.project?.updateProject?.(id, updates) || Promise.reject('API not available'),
-  deleteProject: (id: string) => window.electronAPI?.project?.deleteProject?.(id) || Promise.resolve(false),
-  searchProjects: (filters: any) => window.electronAPI?.project?.searchProjects?.(filters?.query || '') || Promise.resolve([]),
-  toggleFavorite: (id: string) => window.electronAPI?.project?.toggleFavorite?.(id) || Promise.reject('API not available'),
-  openProject: (id: string, ideId?: string) => window.electronAPI?.project?.openProject?.(id, ideId) || Promise.reject('API not available'),
-  addExistingProject: (folderPath: string) => window.electronAPI?.project?.addExistingProject?.(folderPath) || Promise.reject('API not available'),
-  selectFolder: () => window.electronAPI?.project?.selectFolder?.() || Promise.resolve(null),
-  openInExplorer: (path: string) => window.electronAPI?.project?.openInExplorer?.(path) || Promise.resolve(false),
-  openInTerminal: (path: string) => window.electronAPI?.project?.openInTerminal?.(path) || Promise.resolve(false),
-  openInIDE: (path: string, ideId: string) => window.electronAPI?.project?.openInIDE?.(path, ideId) || Promise.resolve(false),
-  getAvailableIDEs: () => window.electronAPI?.project?.getAvailableIDEs?.() || Promise.resolve([]),
+  createProject: (projectData: any) =>
+    window.electronAPI?.project?.createProject?.(projectData) ||
+    Promise.reject('API not available'),
+  getAllProjects: () =>
+    window.electronAPI?.project?.getAllProjects?.() || Promise.resolve([]),
+  getProjectById: (id: string) =>
+    window.electronAPI?.project?.getProjectById?.(id) || Promise.resolve(null),
+  updateProject: (id: string, updates: any) =>
+    window.electronAPI?.project?.updateProject?.(id, updates) ||
+    Promise.reject('API not available'),
+  deleteProject: (id: string) =>
+    window.electronAPI?.project?.deleteProject?.(id) || Promise.resolve(false),
+  searchProjects: (filters: any) =>
+    window.electronAPI?.project?.searchProjects?.(filters?.query || '') ||
+    Promise.resolve([]),
+  toggleFavorite: (id: string) =>
+    window.electronAPI?.project?.toggleFavorite?.(id) ||
+    Promise.reject('API not available'),
+  openProject: (id: string, ideId?: string) =>
+    window.electronAPI?.project?.openProject?.(id, ideId) ||
+    Promise.reject('API not available'),
+  addExistingProject: (folderPath: string) =>
+    window.electronAPI?.project?.addExistingProject?.(folderPath) ||
+    Promise.reject('API not available'),
+  selectFolder: () =>
+    window.electronAPI?.project?.selectFolder?.() || Promise.resolve(null),
+  openInExplorer: (path: string) =>
+    window.electronAPI?.project?.openInExplorer?.(path) ||
+    Promise.resolve(false),
+  openInTerminal: (path: string) =>
+    window.electronAPI?.project?.openInTerminal?.(path) ||
+    Promise.resolve(false),
+  openInIDE: (path: string, ideId: string) =>
+    window.electronAPI?.project?.openInIDE?.(path, ideId) ||
+    Promise.resolve(false),
+  getAvailableIDEs: () =>
+    window.electronAPI?.project?.getAvailableIDEs?.() || Promise.resolve([]),
 };
 
 type State = {
@@ -86,8 +109,6 @@ const defaultFilters: ProjectSearchFilters = {
   sortOrder: 'desc',
 };
 
-
-
 const mockTemplates: ProjectTemplate[] = [
   {
     id: 'react-ts',
@@ -123,7 +144,15 @@ const mockQuickActions: QuickAction[] = [
     args: ['.'],
     workingDirectory: undefined,
     requiresProject: true,
-    projectTypes: ['web', 'react', 'vue', 'angular', 'nodejs', 'python', 'typescript'],
+    projectTypes: [
+      'web',
+      'react',
+      'vue',
+      'angular',
+      'nodejs',
+      'python',
+      'typescript',
+    ],
   },
   {
     id: 'open-cursor',
@@ -133,7 +162,15 @@ const mockQuickActions: QuickAction[] = [
     args: ['.'],
     workingDirectory: undefined,
     requiresProject: true,
-    projectTypes: ['web', 'react', 'vue', 'angular', 'nodejs', 'python', 'typescript'],
+    projectTypes: [
+      'web',
+      'react',
+      'vue',
+      'angular',
+      'nodejs',
+      'python',
+      'typescript',
+    ],
   },
   {
     id: 'open-windsurf',
@@ -153,7 +190,15 @@ const mockQuickActions: QuickAction[] = [
     args: ['.'],
     workingDirectory: undefined,
     requiresProject: true,
-    projectTypes: ['web', 'react', 'vue', 'angular', 'nodejs', 'python', 'typescript'],
+    projectTypes: [
+      'web',
+      'react',
+      'vue',
+      'angular',
+      'nodejs',
+      'python',
+      'typescript',
+    ],
   },
   {
     id: 'open-terminal',
@@ -163,7 +208,15 @@ const mockQuickActions: QuickAction[] = [
     args: ['/c', 'start'],
     workingDirectory: undefined,
     requiresProject: true,
-    projectTypes: ['web', 'react', 'vue', 'angular', 'nodejs', 'python', 'typescript'],
+    projectTypes: [
+      'web',
+      'react',
+      'vue',
+      'angular',
+      'nodejs',
+      'python',
+      'typescript',
+    ],
   },
   {
     id: 'open-explorer',
@@ -173,7 +226,15 @@ const mockQuickActions: QuickAction[] = [
     args: [],
     workingDirectory: undefined,
     requiresProject: true,
-    projectTypes: ['web', 'react', 'vue', 'angular', 'nodejs', 'python', 'typescript'],
+    projectTypes: [
+      'web',
+      'react',
+      'vue',
+      'angular',
+      'nodejs',
+      'python',
+      'typescript',
+    ],
   },
   {
     id: 'open-browser',
@@ -193,7 +254,15 @@ const mockQuickActions: QuickAction[] = [
     args: [],
     workingDirectory: undefined,
     requiresProject: true,
-    projectTypes: ['web', 'react', 'vue', 'angular', 'nodejs', 'python', 'typescript'],
+    projectTypes: [
+      'web',
+      'react',
+      'vue',
+      'angular',
+      'nodejs',
+      'python',
+      'typescript',
+    ],
   },
 ];
 
@@ -204,7 +273,15 @@ const mockIDEs: IDE[] = [
     executable: 'code',
     args: ['.'],
     icon: '🔵',
-    supportedTypes: ['web', 'react', 'vue', 'angular', 'nodejs', 'python', 'typescript'],
+    supportedTypes: [
+      'web',
+      'react',
+      'vue',
+      'angular',
+      'nodejs',
+      'python',
+      'typescript',
+    ],
   },
   {
     id: 'cursor',
@@ -212,7 +289,15 @@ const mockIDEs: IDE[] = [
     executable: 'cursor',
     args: ['.'],
     icon: '⚡',
-    supportedTypes: ['web', 'react', 'vue', 'angular', 'nodejs', 'python', 'typescript'],
+    supportedTypes: [
+      'web',
+      'react',
+      'vue',
+      'angular',
+      'nodejs',
+      'python',
+      'typescript',
+    ],
   },
   {
     id: 'windsurf',
@@ -228,7 +313,15 @@ const mockIDEs: IDE[] = [
     executable: 'trae',
     args: ['.'],
     icon: '🤖',
-    supportedTypes: ['web', 'react', 'vue', 'angular', 'nodejs', 'python', 'typescript'],
+    supportedTypes: [
+      'web',
+      'react',
+      'vue',
+      'angular',
+      'nodejs',
+      'python',
+      'typescript',
+    ],
   },
   {
     id: 'webstorm',
@@ -439,7 +532,7 @@ export const projectStore = createStore<ProjectStore>()(
     toggleFavorite: async (id: string): Promise<void> => {
       try {
         await ipcApi.toggleFavorite(id);
-        
+
         set((state) => {
           const project = state.projects.find((p) => p.id === id);
           if (project) {
@@ -462,7 +555,7 @@ export const projectStore = createStore<ProjectStore>()(
     openProject: async (id: string, ideId?: string): Promise<void> => {
       try {
         const updatedProject = await ipcApi.openProject(id, ideId);
-        
+
         set((state) => {
           const index = state.projects.findIndex((p) => p.id === id);
           if (index !== -1) {
@@ -586,7 +679,7 @@ export const projectStore = createStore<ProjectStore>()(
         const availableIDEs = await ipcApi.getAvailableIDEs();
 
         set((state) => {
-          state.ides = [...mockIDEs, ...availableIDEs];
+          state.ides = [...availableIDEs];
           state.error = undefined;
         });
       } catch (error) {
