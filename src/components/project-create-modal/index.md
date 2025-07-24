@@ -1,19 +1,32 @@
 # Project Create Modal Component
 
-A comprehensive project creation wizard modal with multi-step form validation and template selection.
+A comprehensive project creation wizard modal with multi-step form validation, template selection, and advanced project starter builder capabilities.
 
 ## Features
 
-- **Multi-Step Wizard**: 3-step process for project creation
-- **Form Validation**: Comprehensive validation for all input fields
-- **Project Type Selection**: Visual cards for different project types
-- **Template System**: Support for project templates with preview
-- **Path Browser**: Integration with Electron file dialog (planned)
-- **Git Integration**: Options for Git repository initialization
-- **Dependency Management**: Auto-install dependencies option
-- **Project Summary**: Review before creation
-- **Responsive Design**: Mobile-friendly layout
-- **Dark Theme Support**: Automatic dark theme styling
+### Core Features
+- [x] **Multi-Step Wizard**: 4-step process for project creation
+- [x] **Form Validation**: Comprehensive validation for all input fields
+- [x] **Project Type Selection**: Visual cards for different project types
+- [x] **Template System**: Support for project templates with preview
+- [x] **Path Browser**: Integration with Electron file dialog
+- [x] **Git Integration**: Options for Git repository initialization
+- [x] **Dependency Management**: Auto-install dependencies option
+- [x] **Project Summary**: Review before creation
+- [x] **Responsive Design**: Mobile-friendly layout
+- [x] **Dark Theme Support**: Automatic dark theme styling
+
+### Advanced Project Starter Builder
+- [x] **Better T Stack Integration**: Full support for Better T Stack CLI
+- [x] **Visual Configuration Builder**: Interactive UI for stack selection
+- [x] **Live Command Preview**: Real-time CLI command generation
+- [x] **Smart Defaults**: Intelligent configuration suggestions
+- [x] **Progressive Enhancement**: Step-by-step configuration flow
+- [x] **CLI Command Execution**: Automated project scaffolding
+- [x] **Error Handling**: Comprehensive error management and recovery
+- [ ] **Template Validation**: Ensure compatibility with selected stack
+- [ ] **Configuration Persistence**: Save and reuse configurations
+- [ ] **Stack Documentation**: Integrated help and documentation
 
 ## Usage
 
@@ -48,16 +61,33 @@ const handleSuccess = (projectData) => {
 - Project type selection (web, mobile, desktop, api, library, other)
 
 ### Step 2: Project Setup
-- Project location path (required)
-- Template selection (optional)
-  - Empty project
-  - Available templates from store
+- **Standard Projects**:
+  - Project location path (required)
+  - Template selection (optional)
+    - Empty project
+    - Available templates from store
+- **Better T Stack Projects**:
+  - Base directory (optional, defaults to current working directory)
+  - Better T Stack toggle to enable advanced configuration
 
-### Step 3: Additional Options
+### Step 3: Better T Stack Configuration (when enabled)
+- **Frontend Framework**: React, Vue, Svelte, SolidJS, Nuxt, Next.js
+- **API Framework**: tRPC, ORPC, Elysia, Hono
+- **Database**: Turso, PostgreSQL, MySQL, SQLite, PlanetScale
+- **ORM**: Drizzle, Prisma
+- **Runtime**: Node.js, Bun, Deno
+- **Authentication**: Clerk, Auth0, Supabase, Firebase
+- **Add-ons**: Starlight, Storybook, Tailwind CSS, shadcn/ui
+- **Examples**: Todo, AI, Blog, E-commerce
+- **Package Manager**: npm, yarn, pnpm, bun
+- **Live Command Preview**: Real-time generated CLI command display
+- **Copy Command**: One-click command copying to clipboard
+
+### Step 4: Additional Options
 - Git repository URL (optional)
-- Initialize Git repository (checkbox)
-- Install dependencies automatically (checkbox)
-- Project summary review
+- Initialize Git repository (checkbox, hidden for Better T Stack)
+- Install dependencies automatically (checkbox, hidden for Better T Stack)
+- Project summary review with Better T Stack configuration details
 
 ## Project Types
 

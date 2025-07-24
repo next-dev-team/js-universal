@@ -167,6 +167,34 @@ const analyzeProject = async (projectPath: string): Promise<ProjectInfo> => {
   };
 };
 
+// Execute Better T Stack command
+const executeBetterTStackCommand = async (
+  command: string,
+  baseDir: string,
+): Promise<{ success: boolean; output: string; error?: string }> => {
+  try {
+    console.log(`Executing Better T Stack command: ${command}`);
+    console.log(`In directory: ${baseDir}`);
+    
+    const { stdout, stderr } = await execAsync(command, {
+      cwd: baseDir,
+      timeout: 300000, // 5 minutes timeout
+    });
+    
+    return {
+      success: true,
+      output: stdout + (stderr ? `\nWarnings: ${stderr}` : ''),
+    };
+  } catch (error: any) {
+    console.error('Better T Stack command failed:', error);
+    return {
+      success: false,
+      output: '',
+      error: error.message || 'Unknown error occurred',
+    };
+  }
+};
+
 export const initProjectIpcMain = () => {
   const db = getDatabaseService();
 
@@ -185,17 +213,62 @@ export const initProjectIpcMain = () => {
         isFavorite?: boolean;
         gitRepository?: string;
         metadata?: any;
+        useBetterTStack?: boolean;
+        generatedCommand?: string;
+        betterTStackConfig?: any;
+        initializeGit?: boolean;
+        installDependencies?: boolean;
       },
     ) => {
       try {
-        const projectInfo = await analyzeProject(projectData.path);
+        let finalProjectPath = projectData.path;
+        let betterTStackOutput = '';
+
+        if (projectData.useBetterTStack && projectData.generatedCommand) {
+          // For Better T Stack projects, execute the command first
+          const baseDir = projectData.path || process.cwd();
+          
+          // Ensure the base directory exists
+          try {
+            await fs.access(baseDir);
+          } catch {
+            await fs.mkdir(baseDir, { recursive: true });
+          }
+
+          const result = await executeBetterTStackCommand(
+            projectData.generatedCommand,
+            baseDir,
+          );
+
+          if (!result.success) {
+            throw new Error(`Better T Stack failed: ${result.error}`);
+          }
+
+          betterTStackOutput = result.output;
+          
+          // The project will be created in a subdirectory with the project name
+          finalProjectPath = path.join(baseDir, projectData.name);
+          
+          // Wait a bit for the project to be fully created
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // Verify the project was created
+          try {
+            await fs.access(finalProjectPath);
+          } catch {
+            throw new Error('Better T Stack project creation failed - directory not found');
+          }
+        }
+
+        // Analyze the project (either existing or newly created)
+        const projectInfo = await analyzeProject(finalProjectPath);
 
         const project = {
           id: uuidv4(),
           name: projectData.name,
           description: projectData.description,
           type: projectData.type,
-          path: projectData.path,
+          path: finalProjectPath,
           tags: projectData.tags || [],
           isFavorite: projectData.isFavorite || false,
           gitRepository: projectData.gitRepository,
@@ -205,10 +278,19 @@ export const initProjectIpcMain = () => {
             framework: projectInfo.framework,
             packageManager: projectInfo.packageManager,
             hasGit: projectInfo.hasGit,
+            useBetterTStack: projectData.useBetterTStack,
+            betterTStackConfig: projectData.betterTStackConfig,
+            generatedCommand: projectData.generatedCommand,
+            betterTStackOutput,
           },
         };
 
-        return db.createProject(project);
+        const createdProject = await db.createProject(project);
+        
+        return {
+          ...createdProject,
+          betterTStackOutput,
+        };
       } catch (error) {
         console.error('Failed to create project:', error);
         throw error;

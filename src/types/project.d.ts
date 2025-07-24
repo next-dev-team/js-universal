@@ -71,6 +71,20 @@ export interface TemplateFile {
   isDirectory?: boolean;
 }
 
+export interface BetterTStackConfig {
+  frontend?: 'react' | 'vue' | 'svelte' | 'solid' | 'nuxt' | 'next';
+  api?: 'trpc' | 'orpc' | 'elysia' | 'hono';
+  database?: 'turso' | 'postgres' | 'mysql' | 'sqlite' | 'planetscale';
+  orm?: 'drizzle' | 'prisma';
+  runtime?: 'node' | 'bun' | 'deno';
+  auth?: 'clerk' | 'auth0' | 'supabase' | 'firebase';
+  addons?: ('starlight' | 'storybook' | 'tailwind' | 'shadcn')[];
+  examples?: 'todo' | 'ai' | 'blog' | 'ecommerce';
+  packageManager?: 'npm' | 'yarn' | 'pnpm' | 'bun';
+  installDeps?: boolean;
+  gitInit?: boolean;
+}
+
 export interface ProjectCreateRequest {
   name: string;
   description?: string;
@@ -83,6 +97,9 @@ export interface ProjectCreateRequest {
   installDependencies?: boolean;
   tags?: string[];
   metadata?: Record<string, any>;
+  betterTStackConfig?: BetterTStackConfig;
+  generatedCommand?: string;
+  useBetterTStack?: boolean;
 }
 
 export interface ProjectUpdateRequest {

@@ -148,4 +148,19 @@ export const commonSelectors = {
     'button:has-text("Create"), button:has-text("Submit"), .ant-btn-primary, [data-testid="submit-button"], button[type="submit"]',
   mainContent:
     '[data-testid="main-content"], .main-content, main, .ant-layout-content',
+  // Better T Stack specific selectors
+  betterTStackToggle:
+    '[data-testid="better-t-stack-toggle"], .ant-switch, .better-t-stack-toggle',
+  betterTStackConfig:
+    '[data-testid="better-t-stack-config"], .better-t-stack-builder, .better-t-stack-configuration',
+  frontendSelect:
+    '[data-testid="frontend-select"], .frontend-select .ant-select, .better-t-stack-builder .ant-select',
+  databaseSelect:
+    '[data-testid="database-select"], .database-select .ant-select, .better-t-stack-builder .ant-select',
+  commandPreview:
+    '[data-testid="command-preview"], .command-preview, .generated-command, code',
+  projectSummary:
+    '[data-testid="project-summary"], .project-summary, .summary-section',
+  betterTStackSubmitButton:
+    'button:has-text("Create Better T Stack Project"), button:has(.anticon-thunderbolt), .better-t-stack-submit',
 };

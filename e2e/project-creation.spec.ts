@@ -166,4 +166,83 @@ test.describe('Project Creation E2E Tests', () => {
       console.log('IPC functionality verified through UI elements');
     }
   });
+
+  test('should support Better T Stack integration', async () => {
+    // Open project creation modal
+    await electronHelper.clickElement(commonSelectors.createProjectButton);
+    await electronHelper.waitForModal();
+    
+    // Fill basic project info
+    await electronHelper.fillInput(commonSelectors.projectNameInput, 'Better T Stack Integration Test');
+    
+    // Move to setup step
+    const nextButton = page.locator('button:has-text("Next")');
+    await nextButton.click();
+    
+    // Check if Better T Stack option is available
+    const betterTStackToggle = page.locator('[data-testid="better-t-stack-toggle"], .ant-switch');
+    const isToggleVisible = await betterTStackToggle.isVisible({ timeout: 5000 });
+    
+    if (isToggleVisible) {
+      console.log('Better T Stack integration is available');
+      expect(isToggleVisible).toBe(true);
+      
+      // Test enabling Better T Stack
+      await betterTStackToggle.click();
+      const isToggleChecked = await betterTStackToggle.isChecked();
+      expect(isToggleChecked).toBe(true);
+      
+      // Verify UI changes when Better T Stack is enabled
+      const pathInput = page.locator('input[placeholder*="directory"], input[placeholder*="path"]');
+      const pathLabel = await pathInput.getAttribute('placeholder');
+      
+      // Should show "Base Directory" instead of "Project Location" when Better T Stack is enabled
+      if (pathLabel) {
+        expect(pathLabel.toLowerCase()).toContain('directory');
+      }
+    } else {
+      console.log('Better T Stack integration not found - feature may not be implemented yet');
+    }
+  });
+
+  test('should handle dynamic step progression', async () => {
+    // Test that step progression works correctly with and without Better T Stack
+    const isModalVisible = await electronHelper.isElementVisible(commonSelectors.modal);
+    if (!isModalVisible) {
+      await electronHelper.clickElement(commonSelectors.createProjectButton);
+      await electronHelper.waitForModal();
+      await electronHelper.fillInput(commonSelectors.projectNameInput, 'Step Progression Test');
+    }
+    
+    // Check initial step count
+    const stepsContainer = page.locator('.ant-steps, [data-testid="steps"]');
+    const isStepsVisible = await stepsContainer.isVisible({ timeout: 3000 });
+    
+    if (isStepsVisible) {
+      const stepItems = page.locator('.ant-steps-item, .step-item');
+      const initialStepCount = await stepItems.count();
+      
+      console.log(`Initial step count: ${initialStepCount}`);
+      expect(initialStepCount).toBeGreaterThan(0);
+      
+      // Navigate through steps and verify progression
+      const nextButton = page.locator('button:has-text("Next")');
+      if (await nextButton.isVisible({ timeout: 3000 })) {
+        await nextButton.click();
+        
+        // Check if Better T Stack affects step count
+        const betterTStackToggle = page.locator('[data-testid="better-t-stack-toggle"], .ant-switch');
+        if (await betterTStackToggle.isVisible({ timeout: 3000 })) {
+          await betterTStackToggle.click();
+          
+          // Step count might change when Better T Stack is enabled
+          const newStepCount = await stepItems.count();
+          console.log(`Step count after Better T Stack enabled: ${newStepCount}`);
+          
+          // Should have at least the same or more steps
+          expect(newStepCount).toBeGreaterThanOrEqual(initialStepCount);
+        }
+      }
+    }
+  });
 });

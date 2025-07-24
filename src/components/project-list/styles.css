@@ -199,7 +199,7 @@
 
 .ide-card:hover {
   border-color: #1890ff;
-  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.2);
+  box-shadow: 0 2px 8px rgb(24 144 255 / 20%);
   transform: translateY(-2px);
 }
 
@@ -219,8 +219,8 @@
   }
 
   .ide-card:hover {
-    border-color: #1890ff;
     background-color: #262626;
+    border-color: #1890ff;
   }
 }
 

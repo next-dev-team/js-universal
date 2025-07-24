@@ -12,6 +12,7 @@ import {
   InfoCircleOutlined,
   MobileOutlined,
   PlusOutlined,
+  ThunderboltOutlined,
 } from '@ant-design/icons';
 import {
   Alert,
@@ -32,10 +33,12 @@ import {
 } from 'antd';
 import { useProjectStore } from '../../store/modules/use-project-store';
 import type {
+  BetterTStackConfig,
   ProjectCreateModalProps,
   ProjectCreateRequest,
   ProjectTemplate,
 } from '../../types/project';
+import BetterTStackBuilder from './BetterTStackBuilder';
 import './styles.css';
 
 const { Text, Paragraph, Title } = Typography;
@@ -54,6 +57,22 @@ const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<'create' | 'open'>('create');
   const [dragActive, setDragActive] = useState(false);
+  const [useBetterTStack, setUseBetterTStack] = useState(false);
+  const [betterTStackConfig, setBetterTStackConfig] =
+    useState<BetterTStackConfig>({
+      frontend: 'next',
+      api: 'trpc',
+      database: 'sqlite',
+      orm: 'drizzle',
+      runtime: 'node',
+      auth: undefined,
+      addons: [],
+      examples: undefined,
+      packageManager: 'npm',
+      installDeps: true,
+      gitInit: true,
+    });
+  const [generatedCommand, setGeneratedCommand] = useState<string>('');
   const dragCounter = useRef(0);
 
   const {
@@ -69,6 +88,21 @@ const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
       loadTemplates();
       setCurrentStep(0);
       setSelectedTemplate(null);
+      setUseBetterTStack(false);
+      setBetterTStackConfig({
+        frontend: 'next',
+        api: 'trpc',
+        database: 'sqlite',
+        orm: 'drizzle',
+        runtime: 'node',
+        auth: undefined,
+        addons: [],
+        examples: undefined,
+        packageManager: 'npm',
+        installDeps: true,
+        gitInit: true,
+      });
+      setGeneratedCommand('');
       form.resetFields();
     }
   }, [open, loadTemplates, form]);
@@ -119,9 +153,22 @@ const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
         await form.validateFields(['name', 'description', 'type']);
         setCurrentStep(1);
       } else if (currentStep === 1) {
-        // Validate project setup
-        await form.validateFields(['path']);
-        setCurrentStep(2);
+        // Check if Better T Stack is selected and validate accordingly
+        if (useBetterTStack) {
+          // Skip path validation for Better T Stack as it will be generated
+          setCurrentStep(2);
+        } else {
+          // Validate project setup for regular projects
+          await form.validateFields(['path']);
+          setCurrentStep(2);
+        }
+      } else if (currentStep === 2) {
+        // Move to Better T Stack configuration or final options
+        if (useBetterTStack) {
+          setCurrentStep(3);
+        } else {
+          setCurrentStep(3);
+        }
       }
     } catch (error) {
       console.error('Validation failed:', error);
@@ -141,15 +188,26 @@ const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
         name: values.name,
         description: values.description,
         type: values.type,
-        path: values.path,
+        path: useBetterTStack ? `${values.path}/${values.name}` : values.path,
         template: selectedTemplate?.id,
         gitRepository: values.gitRepository,
-        initializeGit: values.initializeGit || false,
-        installDependencies: values.installDependencies || false,
+        initializeGit: useBetterTStack
+          ? betterTStackConfig.gitInit
+          : values.initializeGit || false,
+        installDependencies: useBetterTStack
+          ? betterTStackConfig.installDeps
+          : values.installDependencies || false,
+        useBetterTStack,
+        betterTStackConfig: useBetterTStack ? betterTStackConfig : undefined,
+        generatedCommand: useBetterTStack ? generatedCommand : undefined,
       };
 
       await createProject(projectData);
-      message.success('Project created successfully!');
+      message.success(
+        useBetterTStack
+          ? 'Better T Stack project created successfully!'
+          : 'Project created successfully!',
+      );
 
       if (onSuccess) {
         onSuccess(projectData);
@@ -168,6 +226,21 @@ const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
     form.resetFields();
     setCurrentStep(0);
     setSelectedTemplate(null);
+    setUseBetterTStack(false);
+    setBetterTStackConfig({
+      frontend: 'next',
+      api: 'trpc',
+      database: 'sqlite',
+      orm: 'drizzle',
+      runtime: 'node',
+      auth: undefined,
+      addons: [],
+      examples: undefined,
+      packageManager: 'npm',
+      installDeps: true,
+      gitInit: true,
+    });
+    setGeneratedCommand('');
     if (onCancel) {
       onCancel();
     }
@@ -364,84 +437,173 @@ const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
           <div className="step-content">
             <Title level={4}>Project Setup</Title>
 
-            <Form.Item
-              name="path"
-              label={
-                <Space>
-                  Project Location
-                  <Tooltip title="Choose where to create your project">
-                    <InfoCircleOutlined />
-                  </Tooltip>
-                </Space>
-              }
-              rules={[
-                { required: true, message: 'Please specify project location' },
-              ]}
-            >
-              <Input.Group compact>
-                <Input
-                  style={{ width: 'calc(100% - 100px)' }}
-                  placeholder="/path/to/project"
-                  size="large"
+            {/* Better T Stack Option */}
+            <Form.Item name="useBetterTStack" valuePropName="checked">
+              <div className="option-item">
+                <Switch
+                  data-testid="better-t-stack-toggle"
+                  checked={useBetterTStack}
+                  onChange={setUseBetterTStack}
                 />
-                <Button
-                  size="large"
-                  icon={<FolderOpenOutlined />}
-                  onClick={handleBrowseFolder}
-                >
-                  Browse
-                </Button>
-              </Input.Group>
+                <div className="option-content">
+                  <Space>
+                    <ThunderboltOutlined style={{ color: '#1890ff' }} />
+                    <Text strong>Use Better T Stack</Text>
+                  </Space>
+                  <Text className="option-description">
+                    Advanced project starter with modern tech stack
+                    configuration
+                  </Text>
+                </div>
+              </div>
             </Form.Item>
 
-            <Divider>Template Selection (Optional)</Divider>
-
-            <div className="template-selector">
-              <Row gutter={[16, 16]}>
-                <Col span={8}>
-                  <Card
-                    className={`template-card ${!selectedTemplate ? 'selected' : ''}`}
-                    hoverable
-                    onClick={() => setSelectedTemplate(null)}
+            {!useBetterTStack && (
+              <Form.Item
+                name="path"
+                label={
+                  <Space>
+                    Project Location
+                    <Tooltip title="Choose where to create your project">
+                      <InfoCircleOutlined />
+                    </Tooltip>
+                  </Space>
+                }
+                rules={[
+                  {
+                    required: true,
+                    message: 'Please specify project location',
+                  },
+                ]}
+              >
+                <Input.Group compact>
+                  <Input
+                    style={{ width: 'calc(100% - 100px)' }}
+                    placeholder="/path/to/project"
+                    size="large"
+                  />
+                  <Button
+                    size="large"
+                    icon={<FolderOpenOutlined />}
+                    onClick={handleBrowseFolder}
                   >
-                    <div className="template-content">
-                      <FolderOutlined className="template-icon" />
-                      <Text strong>Empty Project</Text>
-                      <Text className="template-description">
-                        Start with an empty folder
-                      </Text>
-                    </div>
-                  </Card>
-                </Col>
-                {templates.map((template) => (
-                  <Col span={8} key={template.id}>
-                    <Card
-                      className={`template-card ${selectedTemplate?.id === template.id ? 'selected' : ''}`}
-                      hoverable
-                      onClick={() => handleTemplateSelect(template)}
-                    >
-                      <div className="template-content">
-                        <div className="template-icon">
-                          <FileOutlined />
+                    Browse
+                  </Button>
+                </Input.Group>
+              </Form.Item>
+            )}
+
+            {useBetterTStack && (
+              <Form.Item
+                name="path"
+                label={
+                  <Space>
+                    Base Directory (Optional)
+                    <Tooltip title="Project will be created in a subfolder with your project name">
+                      <InfoCircleOutlined />
+                    </Tooltip>
+                  </Space>
+                }
+              >
+                <Input.Group compact>
+                  <Input
+                    style={{ width: 'calc(100% - 100px)' }}
+                    placeholder={'/path/to/base/directory'}
+                    size="large"
+                  />
+                  <Button
+                    size="large"
+                    icon={<FolderOpenOutlined />}
+                    onClick={handleBrowseFolder}
+                  >
+                    Browse
+                  </Button>
+                </Input.Group>
+              </Form.Item>
+            )}
+
+            {!useBetterTStack && (
+              <>
+                <Divider>Template Selection (Optional)</Divider>
+
+                <div className="template-selector">
+                  <Row gutter={[16, 16]}>
+                    <Col span={8}>
+                      <Card
+                        className={`template-card ${!selectedTemplate ? 'selected' : ''}`}
+                        hoverable
+                        onClick={() => setSelectedTemplate(null)}
+                      >
+                        <div className="template-content">
+                          <FolderOutlined className="template-icon" />
+                          <Text strong>Empty Project</Text>
+                          <Text className="template-description">
+                            Start with an empty folder
+                          </Text>
                         </div>
-                        <Text strong>{template.name}</Text>
-                        <Text className="template-description">
-                          {template.description}
-                        </Text>
-                      </div>
-                    </Card>
-                  </Col>
-                ))}
-              </Row>
-            </div>
+                      </Card>
+                    </Col>
+                    {templates.map((template) => (
+                      <Col span={8} key={template.id}>
+                        <Card
+                          className={`template-card ${selectedTemplate?.id === template.id ? 'selected' : ''}`}
+                          hoverable
+                          onClick={() => handleTemplateSelect(template)}
+                        >
+                          <div className="template-content">
+                            <div className="template-icon">
+                              <FileOutlined />
+                            </div>
+                            <Text strong>{template.name}</Text>
+                            <Text className="template-description">
+                              {template.description}
+                            </Text>
+                          </div>
+                        </Card>
+                      </Col>
+                    ))}
+                  </Row>
+                </div>
+              </>
+            )}
           </div>
         );
 
       case 2:
-        return (
-          <div className="step-content">
-            <Title level={4}>Additional Options</Title>
+        if (useBetterTStack) {
+          return (
+            <div className="step-content">
+              <Title level={4}>Better T Stack Configuration</Title>
+              <BetterTStackBuilder
+                config={betterTStackConfig}
+                onChange={(config) => {
+                  setBetterTStackConfig(config);
+                }}
+                onCommandChange={(command) => {
+                  setGeneratedCommand(command);
+                }}
+              />
+            </div>
+          );
+        }
+        // Fall through to case 3 for regular projects
+        return renderAdditionalOptions();
 
+      case 3:
+        return renderAdditionalOptions();
+
+      default:
+        return null;
+    }
+  };
+
+  const renderAdditionalOptions = () => {
+    return (
+      <div className="step-content">
+        <Title level={4}>Additional Options</Title>
+
+        {!useBetterTStack && (
+          <>
             <Form.Item name="gitRepository" label="Git Repository (Optional)">
               <Input
                 placeholder="https://github.com/username/repo.git"
@@ -475,50 +637,98 @@ const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
             </Form.Item>
 
             <Divider />
+          </>
+        )}
 
-            <div className="project-summary">
-              <Title level={5}>Project Summary</Title>
+        <div className="project-summary">
+          <Title level={5}>Project Summary</Title>
+          <div className="summary-item">
+            <Text strong>Name:</Text> <Text>{form.getFieldValue('name')}</Text>
+          </div>
+          <div className="summary-item">
+            <Text strong>Type:</Text> <Text>{form.getFieldValue('type')}</Text>
+          </div>
+          <div className="summary-item">
+            <Text strong>Location:</Text>{' '}
+            <Text>
+              {useBetterTStack
+                ? `${form.getFieldValue('path')}/${form.getFieldValue('name')}`
+                : form.getFieldValue('path')}
+            </Text>
+          </div>
+          {useBetterTStack ? (
+            <>
               <div className="summary-item">
-                <Text strong>Name:</Text>{' '}
-                <Text>{form.getFieldValue('name')}</Text>
+                <Text strong>Stack:</Text> <Text>Better T Stack</Text>
               </div>
               <div className="summary-item">
-                <Text strong>Type:</Text>{' '}
-                <Text>{form.getFieldValue('type')}</Text>
+                <Text strong>Frontend:</Text>{' '}
+                <Text>{betterTStackConfig.frontend}</Text>
               </div>
               <div className="summary-item">
-                <Text strong>Location:</Text>{' '}
-                <Text>{form.getFieldValue('path')}</Text>
+                <Text strong>Database:</Text>{' '}
+                <Text>{betterTStackConfig.database}</Text>
               </div>
-              {selectedTemplate && (
+              {generatedCommand && (
                 <div className="summary-item">
-                  <Text strong>Template:</Text>{' '}
-                  <Text>{selectedTemplate.name}</Text>
+                  <Text strong>Command:</Text>
+                  <div
+                    style={{
+                      marginTop: 8,
+                      padding: 12,
+                      backgroundColor: '#f5f5f5',
+                      borderRadius: 4,
+                      fontFamily: 'monospace',
+                      fontSize: '12px',
+                      wordBreak: 'break-all',
+                    }}
+                  >
+                    {generatedCommand}
+                  </div>
                 </div>
               )}
-            </div>
-          </div>
-        );
-
-      default:
-        return null;
-    }
+            </>
+          ) : (
+            selectedTemplate && (
+              <div className="summary-item">
+                <Text strong>Template:</Text>{' '}
+                <Text>{selectedTemplate.name}</Text>
+              </div>
+            )
+          )}
+        </div>
+      </div>
+    );
   };
 
-  const steps = [
-    {
-      title: 'Project Info',
-      description: 'Basic information',
-    },
-    {
-      title: 'Setup',
-      description: 'Location and template',
-    },
-    {
+  const getSteps = () => {
+    const baseSteps = [
+      {
+        title: 'Project Info',
+        description: 'Basic information',
+      },
+      {
+        title: 'Setup',
+        description: 'Location and template',
+      },
+    ];
+
+    if (useBetterTStack) {
+      baseSteps.push({
+        title: 'Configuration',
+        description: 'Better T Stack setup',
+      });
+    }
+
+    baseSteps.push({
       title: 'Options',
       description: 'Additional settings',
-    },
-  ];
+    });
+
+    return baseSteps;
+  };
+
+  const steps = getSteps();
 
   return (
     <Modal
@@ -622,8 +832,11 @@ const ProjectCreateModal: React.FC<ProjectCreateModalProps> = ({
                     type="primary"
                     onClick={handleSubmit}
                     loading={loading}
+                    icon={useBetterTStack ? <ThunderboltOutlined /> : undefined}
                   >
-                    Create Project
+                    {useBetterTStack
+                      ? 'Create Better T Stack Project'
+                      : 'Create Project'}
                   </Button>
                 )}
               </Space>
