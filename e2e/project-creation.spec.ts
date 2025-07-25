@@ -180,7 +180,7 @@ test.describe('Project Creation E2E Tests', () => {
     await nextButton.click();
     
     // Check if Better T Stack option is available
-    const betterTStackToggle = page.locator('[data-testid="better-t-stack-toggle"], .ant-switch');
+    const betterTStackToggle = page.locator('[data-testid="better-t-stack-toggle"]');
     const isToggleVisible = await betterTStackToggle.isVisible({ timeout: 5000 });
     
     if (isToggleVisible) {
@@ -231,7 +231,7 @@ test.describe('Project Creation E2E Tests', () => {
         await nextButton.click();
         
         // Check if Better T Stack affects step count
-        const betterTStackToggle = page.locator('[data-testid="better-t-stack-toggle"], .ant-switch');
+        const betterTStackToggle = page.locator('[data-testid="better-t-stack-toggle"]');
         if (await betterTStackToggle.isVisible({ timeout: 3000 })) {
           await betterTStackToggle.click();
           

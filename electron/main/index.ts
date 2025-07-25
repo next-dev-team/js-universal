@@ -1,9 +1,12 @@
 import { electronApp, is, optimizer } from '@electron-toolkit/utils';
 import { BrowserWindow, app, dialog, ipcMain, shell } from 'electron';
 import { join } from 'path';
+import {
+  cleanupFileWatchers,
+  setupFileHandlers,
+} from '../../src/main/file-handlers';
 import { getMainLogger, initMainLogger } from '../common/logger/main';
 import initIpcMain from '../main/ipc';
-import { setupFileHandlers, cleanupFileWatchers } from '../../src/main/file-handlers';
 
 let indexLog: ReturnType<typeof getMainLogger>;
 

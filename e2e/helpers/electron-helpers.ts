@@ -150,7 +150,7 @@ export const commonSelectors = {
     '[data-testid="main-content"], .main-content, main, .ant-layout-content',
   // Better T Stack specific selectors
   betterTStackToggle:
-    '[data-testid="better-t-stack-toggle"], .ant-switch, .better-t-stack-toggle',
+    '[data-testid="better-t-stack-toggle"]',
   betterTStackConfig:
     '[data-testid="better-t-stack-config"], .better-t-stack-builder, .better-t-stack-configuration',
   frontendSelect:

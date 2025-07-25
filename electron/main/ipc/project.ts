@@ -175,12 +175,12 @@ const executeBetterTStackCommand = async (
   try {
     console.log(`Executing Better T Stack command: ${command}`);
     console.log(`In directory: ${baseDir}`);
-    
+
     const { stdout, stderr } = await execAsync(command, {
       cwd: baseDir,
       timeout: 300000, // 5 minutes timeout
     });
-    
+
     return {
       success: true,
       output: stdout + (stderr ? `\nWarnings: ${stderr}` : ''),
@@ -227,7 +227,7 @@ export const initProjectIpcMain = () => {
         if (projectData.useBetterTStack && projectData.generatedCommand) {
           // For Better T Stack projects, execute the command first
           const baseDir = projectData.path || process.cwd();
-          
+
           // Ensure the base directory exists
           try {
             await fs.access(baseDir);
@@ -245,18 +245,20 @@ export const initProjectIpcMain = () => {
           }
 
           betterTStackOutput = result.output;
-          
+
           // The project will be created in a subdirectory with the project name
           finalProjectPath = path.join(baseDir, projectData.name);
-          
+
           // Wait a bit for the project to be fully created
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+
           // Verify the project was created
           try {
             await fs.access(finalProjectPath);
           } catch {
-            throw new Error('Better T Stack project creation failed - directory not found');
+            throw new Error(
+              'Better T Stack project creation failed - directory not found',
+            );
           }
         }
 
@@ -286,7 +288,7 @@ export const initProjectIpcMain = () => {
         };
 
         const createdProject = await db.createProject(project);
-        
+
         return {
           ...createdProject,
           betterTStackOutput,
@@ -638,5 +640,65 @@ export const initProjectIpcMain = () => {
     }
 
     return ides;
+  });
+
+  // Open project (used by openProject in store)
+  ipcMain.handle('project:open', async (_, projectId: string, ideId?: string) => {
+    try {
+      const project = db.getProjectById(projectId);
+      if (!project) {
+        throw new Error(`Project with id ${projectId} not found`);
+      }
+
+      if (ideId) {
+        // Open with specific IDE - get available IDEs first
+        const ideConfigs = [
+          { id: 'trae', name: 'Trae AI', commands: ['trae'], args: ['.'], icon: '🤖' },
+          { id: 'vscode', name: 'Visual Studio Code', commands: ['code'], args: ['.'], icon: '🔵' },
+          { id: 'cursor', name: 'Cursor', commands: ['cursor'], args: ['.'], icon: '⚡' },
+          { id: 'windsurf', name: 'Windsurf', commands: ['windsurf'], args: ['.'], icon: '🌊' },
+          { id: 'webstorm', name: 'WebStorm', commands: ['webstorm'], args: ['.'], icon: '🟡' },
+        ];
+        
+        const ideConfig = ideConfigs.find(config => config.id === ideId);
+        if (ideConfig) {
+          // Try each command for the IDE
+          let success = false;
+          for (const command of ideConfig.commands) {
+            try {
+              await execAsync(`${command} "${project.path}"`);
+              success = true;
+              break;
+            } catch {
+              // Try next command
+            }
+          }
+          if (!success) {
+            throw new Error(`IDE ${ideId} is not available`);
+          }
+        } else {
+          throw new Error(`IDE ${ideId} not found`);
+        }
+      } else {
+        // Default behavior: open in file explorer
+        await shell.openPath(project.path);
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Failed to open project:', error);
+      throw error;
+    }
+  });
+
+  // Open project in specific IDE
+  ipcMain.handle('project:open-in-ide', async (_, projectPath: string, ideExecutable: string) => {
+    try {
+      await execAsync(`"${ideExecutable}" "${projectPath}"`);
+      return true;
+    } catch (error) {
+      console.error('Failed to open in IDE:', error);
+      throw error;
+    }
   });
 };
