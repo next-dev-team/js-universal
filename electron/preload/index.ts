@@ -27,11 +27,11 @@ const fileAPI = {
 
   watchFile: (filePath: string, callback: (content: string) => void): void => {
     const watcherId = `file-watcher-${Date.now()}`;
-    
+
     ipcRenderer.on(`file-changed-${filePath}`, (_, content: string) => {
       callback(content);
     });
-    
+
     ipcRenderer.invoke('watch-file', filePath, watcherId);
   },
 
@@ -48,7 +48,10 @@ const fileAPI = {
     }
   },
 
-  createFile: async (filePath: string, content: string = ''): Promise<boolean> => {
+  createFile: async (
+    filePath: string,
+    content: string = '',
+  ): Promise<boolean> => {
     try {
       return await ipcRenderer.invoke('create-file', filePath, content);
     } catch (_error) {
@@ -73,14 +76,19 @@ const fileAPI = {
       console.error('Failed to get file stats:', _error);
       return null;
     }
-  }
+  },
+};
+
+const cliApi = {
+  pterm: (args: string[] = []) => ipcRenderer.invoke('run-pterm', args),
 };
 
 initPreloadLogger();
 
-const apiKey = 'electronAPI';
+const apiKey = 'electron';
 
 const api = {
+  ...cliApi,
   versions: process.versions,
   getTestHandle1,
   user32,

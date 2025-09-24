@@ -1,5 +1,5 @@
 import { electronApp, is, optimizer } from '@electron-toolkit/utils';
-import { BrowserWindow, app, dialog, ipcMain, shell } from 'electron';
+import { BrowserWindow, app, shell } from 'electron';
 import { join } from 'path';
 import {
   cleanupFileWatchers,
@@ -9,19 +9,6 @@ import { getMainLogger, initMainLogger } from '../common/logger/main';
 import initIpcMain from '../main/ipc';
 
 let indexLog: ReturnType<typeof getMainLogger>;
-
-// Handle project selection from renderer
-ipcMain.handle('open-project', async () => {
-  const result = await dialog.showOpenDialog({
-    properties: ['openDirectory'],
-    title: 'Select Project Folder',
-  });
-
-  if (!result.canceled && result.filePaths.length > 0) {
-    return result.filePaths[0];
-  }
-  return null;
-});
 
 function createWindow(): void {
   // Create the browser window.
@@ -34,6 +21,9 @@ function createWindow(): void {
     webPreferences: {
       preload: join(__dirname, '../preload/index.cjs'),
       sandbox: false,
+      webviewTag: true, // Enable webview tag
+      nodeIntegration: false, // Recommended for security
+      contextIsolation: true, // Recommended for security
     },
   });
 
