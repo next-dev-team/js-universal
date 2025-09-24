@@ -16,10 +16,14 @@ const initIpcMain = () => {
       child.stdout.on('data', (data) => {
         output += data.toString();
         console.log('stdout:', data.toString());
+        setTimeout(() => {
+          resolve(output.trim());
+        }, 5000); // 30 second timeout
       });
 
       child.stderr.on('data', (data) => {
         errorOutput += data.toString();
+        console.log('stderr:', data.toString());
       });
 
       child.on('error', (error) => {
@@ -29,7 +33,7 @@ const initIpcMain = () => {
 
       child.on('close', (code) => {
         console.log(`pterm exited with code ${code}`);
-        console.log('stdout:', output);
+        console.log('stdout111111111111:', output);
         console.log('stderr:', errorOutput);
 
         if (code === 0) {
