@@ -27,7 +27,7 @@
     "build:pro:win": "npm run build:pro && electron-builder --win",
     "build:test": "npm run electron-vite build -m test",
     "coverage": "vitest run --coverage",
-    "dev": "concurrently \"electron-vite -m dev\" \"cd pinokiod && yarn start\"",
+    "dev": "concurrently \"electron-vite -m dev --watch\" \"cd pinokiod && yarn start\"",
     "dev:mock": "electron-vite -m dev-mock",
     "dev:mock-server": "npm run mock-server -c mock.config.ts",
     "dev:mock:web": "vite -m dev-mock",

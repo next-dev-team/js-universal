@@ -80,8 +80,7 @@ const fileAPI = {
 };
 
 const cliApi = {
-  pterm: async (args: string[] = []) =>
-    await ipcRenderer.invoke('run-pterm', args),
+  pterm: (args: string[] = []) => ipcRenderer.invoke('run-pterm', args),
 };
 
 initPreloadLogger();
