@@ -1,35 +1,28 @@
-import path from 'path';
-import { defineConfig } from 'vitest/config';
+import { defineConfig } from 'vitest/config'
+import path from 'path'
+import react from '@vitejs/plugin-react'
 
 export default defineConfig({
+  plugins: [react()],
   test: {
-    include: [
-      'src/**/*.test.{ts,tsx,js}',
-      './__test__/**/*.test.{ts,tsx,js}',
-      'electron/preload/ipc/**/*.test.{ts,tsx,js}',
-    ],
-    environment: 'jsdom',
-    setupFiles: ['./vitest.setup.ts'],
-    css: true,
-    alias: {
-      '@': path.join(__dirname, './src'),
-    },
+    environment: 'happy-dom',
     globals: true,
-    testTimeout: 1000 * 60,
-    coverage: {
-      provider: 'v8',
-      enabled: true,
-      include: ['src/**/*.{js,jsx,ts,tsx}'],
-      exclude: [
-        'src/components/icon/icons-loader.ts', // 排除这个文件
-        'src/components/version-update/index.tsx',
-      ],
-      // thresholds: {
-      //   branches: 90,
-      //   functions: 90,
-      //   lines: 90,
-      //   statements: 90,
-      // },
+    setupFiles: ['./tests/setup.ts'],
+    include: ['tests/**/*.test.ts', 'tests/**/*.spec.ts', 'tests/**/*.test.tsx', 'tests/**/*.spec.tsx'],
+    exclude: ['node_modules', 'dist*', 'build', 'coverage'],
+    testTimeout: 10000,
+    hookTimeout: 10000,
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+      '@shared': path.resolve(__dirname, './shared'),
     },
   },
-});
+  define: {
+    'process.env.NODE_ENV': '"test"',
+  },
+  esbuild: {
+    jsx: 'automatic',
+  },
+})

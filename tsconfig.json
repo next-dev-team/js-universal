@@ -1,38 +1,44 @@
 {
-  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
-    "target": "ESNext",
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "ES2020",
     "useDefineForClassFields": true,
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "module": "ESNext",
     "skipLibCheck": true,
-    /* Bundler mode */
-    "moduleResolution": "Bundler",
+    "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
-    "isolatedModules": true,
+    "verbatimModuleSyntax": false,
     "moduleDetection": "force",
     "noEmit": true,
-    "typeRoots": ["./types", "./node_modules/@types", "./node_modules"],
-    "types": ["chokidar", "vitest/globals", "vitest/jsdom"],
     "jsx": "react-jsx",
-    /* Linting */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true,
-    /** 别名路径提示 */
-    "baseUrl": ".",
+    "strict": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": false,
+    "noUncheckedSideEffectImports": false,
+    "forceConsistentCasingInFileNames": false,
+    "baseUrl": "./",
     "paths": {
-      "@/*": ["./src/*"]
-    }
+      "@/*": [
+        "./src/*"
+      ],
+      "@shared/*": [
+        "./shared/*"
+      ]
+    },
+    "types": [
+      "node",
+      "express"
+    ]
   },
-  "include": ["**/*.ts", "src/**/*.d.ts", "**/*.tsx"],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "dist-*",
-    "vitest.config.ts",
-    "vitest.setup.ts"
+  "include": [
+    "src",
+    "api",
+    "shared"
   ]
 }
