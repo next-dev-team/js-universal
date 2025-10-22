@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from "electron";
 import { IPC_CHANNELS } from "@shared/types";
 
-console.log('Preload script loaded - testing automatic restart functionality');
+console.log("Preload script loaded - testing automatic restart functionality");
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object

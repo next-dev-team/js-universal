@@ -14,7 +14,7 @@ const __dirname = path.dirname(__filename);
 // Automatic restart is now handled by nodemon in the development script
 // which watches dist-main and dist-preload directories for changes
 if (isDev) {
-  console.log('Automatic restart enabled via nodemon for development');
+  console.log("Automatic restart enabled via nodemon for development");
 }
 
 export class ElectronApp {
@@ -64,28 +64,34 @@ export class ElectronApp {
 
   private createMainWindow() {
     this.mainWindow = new BrowserWindow({
-      width: 1200,
-      height: 800,
-      minWidth: 800,
-      minHeight: 600,
+      // width: 1200,
+      // height: 800,
+      // minWidth: 800,
+      // minHeight: 600,
+      width: 1440,
+      height: 1080,
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
-        enableRemoteModule: false,
         preload: path.join(__dirname, "../dist-preload/preload.js"),
         webSecurity: true,
       },
-      titleBarStyle: "hiddenInset",
-      show: false,
+      // titleBarStyle: "hiddenInset",
+      // show: false,
     });
 
     // Load the app
     if (isDev) {
       this.mainWindow.loadURL("http://localhost:5173");
       this.mainWindow.webContents.openDevTools();
-      console.log('Development mode: Main window created and loaded at:', new Date().toISOString());
-  console.log('Watch functionality test - main process auto-rebuild working!');
-  console.log('Testing nodemon automatic restart functionality - UPDATED!');
+      console.log(
+        "Development mode: Main window created and loaded at:",
+        new Date().toISOString()
+      );
+      console.log(
+        "Watch functionality test - main process auto-rebuild working!"
+      );
+      console.log("Testing nodemon automatic restart functionality - UPDATED!");
     } else {
       this.mainWindow.loadFile(
         path.join(__dirname, "../dist-renderer/index.html")
