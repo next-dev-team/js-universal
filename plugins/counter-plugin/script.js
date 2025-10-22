@@ -27,21 +27,11 @@ class CounterPlugin {
     
     async loadData() {
         try {
-            // Check if plugin API is available
-            if (typeof window.pluginAPI !== 'undefined' && window.pluginAPI.storage) {
-                const savedCounter = await window.pluginAPI.storage.get('counter');
-                const savedTotalClicks = await window.pluginAPI.storage.get('totalClicks');
-                
-                this.counter = savedCounter !== null ? savedCounter : 0;
-                this.totalClicks = savedTotalClicks !== null ? savedTotalClicks : 0;
-            } else {
-                // Fallback to localStorage if plugin API is not available
-                const savedCounter = localStorage.getItem('counter-plugin-counter');
-                const savedTotalClicks = localStorage.getItem('counter-plugin-totalClicks');
-                
-                this.counter = savedCounter !== null ? parseInt(savedCounter) || 0 : 0;
-                this.totalClicks = savedTotalClicks !== null ? parseInt(savedTotalClicks) || 0 : 0;
-            }
+            const savedCounter = await window.pluginAPI.storage.get('counter');
+            const savedTotalClicks = await window.pluginAPI.storage.get('totalClicks');
+            
+            this.counter = savedCounter !== null ? savedCounter : 0;
+            this.totalClicks = savedTotalClicks !== null ? savedTotalClicks : 0;
         } catch (error) {
             console.warn('Failed to load data from storage:', error);
             // Use default values
@@ -52,15 +42,8 @@ class CounterPlugin {
     
     async saveData() {
         try {
-            // Check if plugin API is available
-            if (typeof window.pluginAPI !== 'undefined' && window.pluginAPI.storage) {
-                await window.pluginAPI.storage.set('counter', this.counter);
-                await window.pluginAPI.storage.set('totalClicks', this.totalClicks);
-            } else {
-                // Fallback to localStorage
-                localStorage.setItem('counter-plugin-counter', this.counter.toString());
-                localStorage.setItem('counter-plugin-totalClicks', this.totalClicks.toString());
-            }
+            await window.pluginAPI.storage.set('counter', this.counter);
+            await window.pluginAPI.storage.set('totalClicks', this.totalClicks);
         } catch (error) {
             console.warn('Failed to save data to storage:', error);
         }
@@ -195,22 +178,7 @@ class CounterPlugin {
     
     async showNotification(message) {
         try {
-            // Try to use plugin API notification
-            if (typeof window.pluginAPI !== 'undefined' && window.pluginAPI.notifications) {
-                await window.pluginAPI.notifications.show('Counter Plugin', message);
-            } else {
-                // Fallback to browser notification
-                if ('Notification' in window) {
-                    if (Notification.permission === 'granted') {
-                        new Notification('Counter Plugin', { body: message });
-                    } else if (Notification.permission !== 'denied') {
-                        const permission = await Notification.requestPermission();
-                        if (permission === 'granted') {
-                            new Notification('Counter Plugin', { body: message });
-                        }
-                    }
-                }
-            }
+            await window.pluginAPI.notifications.show('Counter Plugin', message);
         } catch (error) {
             console.warn('Failed to show notification:', error);
         }
@@ -222,34 +190,32 @@ document.addEventListener('DOMContentLoaded', () => {
     window.counterPlugin = new CounterPlugin();
 });
 
-// Handle plugin communication if API is available
-if (typeof window.pluginAPI !== 'undefined' && window.pluginAPI.communication) {
-    window.pluginAPI.communication.onMessage((message) => {
-        console.log('Received message:', message);
-        
-        // Handle different message types
-        switch (message.type) {
-            case 'getCounter':
-                window.pluginAPI.communication.sendMessage({
-                    type: 'counterValue',
-                    value: window.counterPlugin ? window.counterPlugin.counter : 0
-                });
-                break;
-            case 'setCounter':
-                if (window.counterPlugin && typeof message.value === 'number') {
-                    window.counterPlugin.counter = message.value;
-                    window.counterPlugin.saveData();
-                    window.counterPlugin.updateDisplay();
-                }
-                break;
-            case 'reset':
-                if (window.counterPlugin) {
-                    window.counterPlugin.reset();
-                }
-                break;
-        }
-    });
-}
+// Handle plugin communication
+window.pluginAPI.communication.onMessage((message) => {
+    console.log('Received message:', message);
+    
+    // Handle different message types
+    switch (message.type) {
+        case 'getCounter':
+            window.pluginAPI.communication.sendMessage({
+                type: 'counterValue',
+                value: window.counterPlugin ? window.counterPlugin.counter : 0
+            });
+            break;
+        case 'setCounter':
+            if (window.counterPlugin && typeof message.value === 'number') {
+                window.counterPlugin.counter = message.value;
+                window.counterPlugin.saveData();
+                window.counterPlugin.updateDisplay();
+            }
+            break;
+        case 'reset':
+            if (window.counterPlugin) {
+                window.counterPlugin.reset();
+            }
+            break;
+    }
+});
 
 // Export for potential external access
 if (typeof module !== 'undefined' && module.exports) {
