@@ -6,9 +6,12 @@ const isDevelopment = process.env.NODE_ENV === 'development'
 export default defineConfig({
   build: {
     lib: {
-      entry: path.resolve(__dirname, 'src/preload/preload.ts'),
+      entry: {
+        preload: path.resolve(__dirname, 'src/preload/preload.ts'),
+        'plugin-preload': path.resolve(__dirname, 'src/preload/plugin-preload.ts'),
+      },
       formats: ['cjs'],
-      fileName: () => 'preload.js',
+      fileName: (format, entryName) => `${entryName}.js`,
     },
     outDir: 'dist-preload',
     sourcemap: isDevelopment,

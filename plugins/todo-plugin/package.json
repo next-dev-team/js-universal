@@ -1,6 +1,6 @@
 {
   "name": "todo-plugin",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A modern React-based todo app plugin with task management, filtering, and persistent storage",
   "author": "Plugin Developer",
   "main": "index.html",
@@ -20,7 +20,7 @@
     "@types/react-dom": "^18.2.0"
   },
   "scripts": {
-    "cp-resources": "cp -r src/package.json dist/",
+    "cp-resources": "cp -r package.json dist/",
     "dev": "vite",
     "build": "vite build && npm run cp-resources",
     "preview": "vite preview"

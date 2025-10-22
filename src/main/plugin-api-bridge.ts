@@ -241,6 +241,33 @@ export class PluginAPIBridge {
       }
     );
 
+    ipcMain.handle(
+      "plugin-api:file-exists",
+      async (event, filePath: string) => {
+        const pluginId = this.getPluginIdFromEvent(event);
+        if (!pluginId || !this.hasPermission(pluginId, "filesystem")) {
+          throw new Error("File system permission denied");
+        }
+
+        const context = this.pluginContexts.get(pluginId);
+        if (!context) {
+          throw new Error("Plugin context not found");
+        }
+
+        const resolvedPath = path.resolve(context.dataPath, filePath);
+        if (!resolvedPath.startsWith(context.dataPath)) {
+          throw new Error("Invalid file path - outside plugin directory");
+        }
+
+        try {
+          await fs.access(resolvedPath);
+          return true;
+        } catch {
+          return false;
+        }
+      }
+    );
+
     // Inter-plugin communication
     ipcMain.handle(
       "plugin-api:send-message",
@@ -291,6 +318,16 @@ export class PluginAPIBridge {
           context.permissions.push(permission);
         }
         return true;
+      }
+    );
+
+    ipcMain.handle(
+      "plugin-api:check-permission",
+      async (event, permission: string) => {
+        const pluginId = this.getPluginIdFromEvent(event);
+        if (!pluginId) return false;
+
+        return this.hasPermission(pluginId, permission);
       }
     );
 

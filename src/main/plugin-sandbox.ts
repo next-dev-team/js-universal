@@ -26,6 +26,9 @@ export class PluginSandbox {
     pluginId: string,
     manifest: PluginManifest
   ): Promise<BrowserWindow> {
+    console.log("[Plugin Sandbox] Creating sandbox for plugin:", pluginId);
+    console.log("[Plugin Sandbox] Manifest:", manifest);
+
     const pluginDataPath = join(app.getPath("userData"), "plugins", pluginId);
     const pluginTempPath = join(
       app.getPath("temp"),
@@ -62,10 +65,15 @@ export class PluginSandbox {
         contextIsolation: true,
         enableRemoteModule: false,
         sandbox: true,
-        preload: join(__dirname, "../preload/plugin-preload.js"),
+        preload: join(__dirname, "../dist-preload/plugin-preload.js"),
         additionalArguments: [`--plugin-id=${pluginId}`],
       },
     };
+
+    console.log("[Plugin Sandbox] Window options:", windowOptions);
+    console.log("[Plugin Sandbox] Additional arguments:", windowOptions.webPreferences.additionalArguments);
+    console.log("[Plugin Sandbox] Preload path resolved to:", windowOptions.webPreferences.preload);
+    console.log("[Plugin Sandbox] __dirname is:", __dirname);
 
     const window = new BrowserWindow(windowOptions);
     this.pluginWindows.set(pluginId, window);
@@ -166,8 +174,8 @@ export class PluginSandbox {
       console.log(`Plugin ${pluginId} became responsive again`);
     });
 
-    window.webContents.on("crashed", () => {
-      console.error(`Plugin ${pluginId} crashed`);
+    window.webContents.on("render-process-gone", (event, details) => {
+      console.error(`Plugin ${pluginId} render process gone:`, details);
       this.closePlugin(pluginId);
     });
   }
