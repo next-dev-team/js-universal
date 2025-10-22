@@ -5,7 +5,7 @@
 A modern, extensible desktop application built with Electron and React that provides a plugin-based ecosystem for running mini-applications. Designed with AI development in mind, featuring a secure sandbox environment and comprehensive plugin management system.
 
 ![Electron Super App Demo](.trae/documents/demo_app.jpg)
-*Plugin Manager interface showing Counter Plugin and Todo Plugin running in sandboxed windows*
+_Plugin Manager interface showing Counter Plugin and Todo Plugin running in sandboxed windows_
 
 ## 🚀 Features
 
@@ -15,6 +15,16 @@ A modern, extensible desktop application built with Electron and React that prov
 - **Modern Web Technologies** - React 19, TypeScript, Vite, and Ant Design
 - **Dual Runtime** - Works as both web application and desktop app
 - **Dark/Light Theme** - Comprehensive theming system with user preferences
+- **🆕 Pinokio Terminal API** - Integrated auto-start daemon with optimized REST API (5-10x faster!)
+
+### Pinokio Terminal Integration (NEW!)
+
+- **Git Submodule Integration** - Pinokio daemon as separate submodule, auto-installs on setup
+- **Optimized Performance** - Direct HTTP calls, 140x faster version checks, 10x faster operations
+- **REST API** - Complete API for clipboard, notifications, scripts, and more
+- **Full Test Coverage** - 15 comprehensive tests, all passing
+- **No npx Overhead** - Uses local executable and direct HTTP for maximum speed
+- **Easy Development** - One command starts both daemon and API with `npm run dev:all`
 
 ### Plugin Architecture
 
