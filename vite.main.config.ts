@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite'
 import path from 'path'
 
+const isDevelopment = process.env.NODE_ENV === 'development'
+
 export default defineConfig({
   build: {
     lib: {
@@ -9,6 +11,12 @@ export default defineConfig({
       fileName: () => 'main.js',
     },
     outDir: 'dist-main',
+    sourcemap: isDevelopment,
+    minify: isDevelopment ? false : 'esbuild',
+    watch: isDevelopment ? {
+      include: ['src/main/**/*', 'shared/**/*'],
+      exclude: ['node_modules/**', 'dist-*/**']
+    } : null,
     rollupOptions: {
       external: [
         'electron', 
@@ -18,21 +26,32 @@ export default defineConfig({
         'os', 
         '@prisma/client', 
         'electron-is-dev',
+        'electron-reload',
         'crypto',
         'util',
         'events',
         'stream',
         'buffer',
         'url',
-        'querystring'
+        'querystring',
+        'dotenv'
       ],
+      output: {
+        format: 'es',
+        entryFileNames: '[name].js',
+        chunkFileNames: '[name].js',
+      },
     },
-    minify: false,
+    target: 'node18',
+    reportCompressedSize: !isDevelopment,
   },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
       '@shared': path.resolve(__dirname, './shared'),
     },
+  },
+  define: {
+    __DEV__: isDevelopment,
   },
 })

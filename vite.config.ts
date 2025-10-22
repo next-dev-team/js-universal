@@ -4,14 +4,14 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import { traeBadgePlugin } from 'vite-plugin-trae-solo-badge';
 import path from 'path'
 
+const isDevelopment = process.env.NODE_ENV === 'development'
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react({
       babel: {
-        plugins: [
-          'react-dev-locator',
-        ],
+        plugins: isDevelopment ? ['react-dev-locator'] : [],
       },
     }),
     traeBadgePlugin({
@@ -33,19 +33,33 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist-renderer',
+    sourcemap: isDevelopment,
+    minify: isDevelopment ? false : 'esbuild',
     rollupOptions: {
       external: ['electron'],
+      output: {
+        manualChunks: isDevelopment ? undefined : {
+          vendor: ['react', 'react-dom'],
+          antd: ['antd', '@ant-design/icons'],
+          router: ['react-router-dom'],
+        },
+      },
     },
+    target: 'esnext',
+    reportCompressedSize: !isDevelopment,
   },
   server: {
     port: 5173,
     strictPort: true,
+    hmr: {
+      port: 5174,
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:3001',
         changeOrigin: true,
         secure: false,
-        configure: (proxy, _options) => {
+        configure: isDevelopment ? (proxy, _options) => {
           proxy.on('error', (err, _req, _res) => {
             console.log('proxy error', err);
           });
@@ -55,9 +69,12 @@ export default defineConfig({
           proxy.on('proxyRes', (proxyRes, req, _res) => {
             console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
           });
-        },
+        } : undefined,
       }
     }
   },
   base: './',
+  define: {
+    __DEV__: isDevelopment,
+  },
 })

@@ -7,14 +7,27 @@
   "homepage": "./",
   "scripts": {
     "client:dev": "vite",
-    "build": "tsc -b && vite build && vite build --config vite.main.config.ts && vite build --config vite.preload.config.ts && electron-builder",
+    "build": "npm run build:clean && npm run build:compile && npm run build:electron",
+    "build:clean": "rm -rf dist-renderer dist-main dist-preload release",
+    "build:compile": "tsc -b && npm run build:renderer && npm run build:main && npm run build:preload",
+    "build:renderer": "vite build",
+    "build:main": "vite build --config vite.main.config.ts",
+    "build:preload": "vite build --config vite.preload.config.ts",
+    "build:electron": "electron-builder",
+    "build:dev": "cross-env NODE_ENV=development npm run build:compile",
+    "build:prod": "cross-env NODE_ENV=production npm run build",
+    "watch:main": "cross-env NODE_ENV=development vite build --config vite.main.config.ts --watch",
+    "watch:preload": "cross-env NODE_ENV=development vite build --config vite.preload.config.ts --watch",
     "lint": "eslint .",
     "preview": "vite preview",
     "check": "tsc --noEmit",
     "server:dev": "nodemon",
     "dev": "npm run electron:dev",
-    "electron:dev": "concurrently \"npm run client:dev\" \"wait-on http://localhost:5173 && electron .\"",
-    "electron:build": "npm run build",
+    "dev:all": "concurrently \"npm run server:dev\" \"npm run electron:dev\"",
+    "electron:dev": "cross-env NODE_ENV=development concurrently \"npm run client:dev\" \"npm run watch:main\" \"npm run watch:preload\" \"wait-on http://localhost:5173 dist-main/main.js dist-preload/preload.js && nodemon --watch dist-main --watch dist-preload --exec electron .\"",
+    "electron:build": "npm run build:prod",
+    "electron:pack": "npm run build:compile && electron-builder --dir",
+    "electron:dist": "npm run build:prod",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
@@ -64,8 +77,10 @@
     "autoprefixer": "^10.4.21",
     "babel-plugin-react-dev-locator": "^1.0.0",
     "concurrently": "^9.2.0",
+    "cross-env": "^7.0.3",
     "electron": "^38.3.0",
     "electron-builder": "^25.1.8",
+    "electron-reload": "^2.0.0-alpha.1",
     "eslint": "^9.25.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
@@ -89,23 +104,72 @@
     "appId": "com.superapp.electron-plugin-app",
     "productName": "Super App",
     "directories": {
-      "output": "release"
+      "output": "release",
+      "buildResources": "build"
     },
     "files": [
       "dist-renderer/**/*",
       "dist-main/**/*",
       "dist-preload/**/*",
       "node_modules/**/*",
-      "package.json"
+      "package.json",
+      "!node_modules/**/{CHANGELOG.md,README.md,README,readme.md,readme}",
+      "!node_modules/**/{test,__tests__,tests,powered-test,example,examples}",
+      "!node_modules/**/*.d.ts",
+      "!node_modules/**/.bin",
+      "!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}",
+      "!.editorconfig",
+      "!**/._*",
+      "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}",
+      "!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}",
+      "!**/{appveyor.yml,.travis.yml,circle.yml}",
+      "!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}"
+    ],
+    "extraResources": [
+      {
+        "from": "prisma/dev.db",
+        "to": "prisma/dev.db",
+        "filter": [
+          "**/*"
+        ]
+      }
     ],
     "mac": {
-      "category": "public.app-category.productivity"
+      "category": "public.app-category.productivity",
+      "icon": "build/icon.icns",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
     },
     "win": {
-      "target": "nsis"
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
     },
     "linux": {
-      "target": "AppImage"
-    }
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "category": "Development"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "compression": "maximum",
+    "removePackageScripts": true
   }
 }
