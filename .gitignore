@@ -26,4 +26,4 @@ release
 *.sln
 *.sw?
 .vite
-# plugin-storage
+plugin-storage
