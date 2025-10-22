@@ -2,8 +2,8 @@
  * Pinokio Terminal API Routes
  * Provides direct access to Pinokio daemon functionality
  *
- * Note: This makes direct HTTP requests to the Pinokio daemon at localhost:42000
- * instead of spawning pterm CLI processes for better performance.
+ * Note: This makes direct HTTP requests to the Pinokio daemon
+ * which is started automatically by the API server.
  *
  * Script management endpoints use the local pterm executable directly
  * from node_modules for WebSocket-based operations.
@@ -16,8 +16,10 @@ import path from "path";
 const execAsync = promisify(exec);
 const router = Router();
 
-// Pinokio daemon base URL
-const PINOKIO_DAEMON_URL = "http://localhost:42000";
+// Pinokio daemon base URL from environment variables
+const PINOKIO_DAEMON_HOST = process.env.PINOKIO_DAEMON_HOST || "localhost";
+const PINOKIO_DAEMON_PORT = process.env.PINOKIO_DAEMON_PORT || "42000";
+const PINOKIO_DAEMON_URL = `http://${PINOKIO_DAEMON_HOST}:${PINOKIO_DAEMON_PORT}`;
 
 // Path to local pterm executable (faster than npx)
 const PTERM_PATH = path.join(process.cwd(), "node_modules", ".bin", "pterm");

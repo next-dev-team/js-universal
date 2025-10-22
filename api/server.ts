@@ -1,24 +1,22 @@
 /**
  * local server entry file, for local development
  */
-import app from "./app.js";
+import app, { PORT, NODE_ENV, PINOKIO_DAEMON_URL } from "./app.js";
 
 /**
  * start server with port
  */
-const PORT = process.env.PORT || 3001;
-
 const server = app.listen(PORT, () => {
   console.log("=".repeat(50));
   console.log(`🎉 API Server is running!`);
-  console.log(`📡 Port: ${PORT}`);
-  console.log(`🌍 Environment: ${process.env.NODE_ENV || "development"}`);
+  console.log(`📡 API Port: ${PORT}`);
+  console.log(`🌍 Environment: ${NODE_ENV}`);
   console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
   console.log(`🔗 API Docs: http://localhost:${PORT}/api/pterm/version`);
+  console.log(`🔗 Pinokio Daemon: ${PINOKIO_DAEMON_URL}`);
   console.log("=".repeat(50));
   console.log("");
-  console.log("💡 Don't forget to start Pinokio daemon separately:");
-  console.log("   npm run pinokiod:start");
+  console.log("✅ Pinokio daemon started automatically");
   console.log("");
 });
 
