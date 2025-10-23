@@ -1,6 +1,7 @@
 {
   "name": "electron-plugin-app",
   "private": true,
+  "packageManager": "pnpm@10.19.0",
   "version": "0.0.0",
   "description": "A modern Electron app with plugin system built with React and TypeScript",
   "author": "Electron Plugin App Team",
@@ -32,7 +33,10 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "pinokiod:setup": "cd pinokiod && npm install && cd ..",
-    "postinstall": "npm run db:generate && patch-package"
+    "postinstall": "npm run db:generate && patch-package",
+    "build:workspace": "turbo run build",
+    "lint:workspace": "turbo run lint",
+    "test:workspace": "turbo run test"
   },
   "dependencies": {
     "@ant-design/icons": "^5.5.1",
@@ -89,7 +93,26 @@
     "vite": "^7.1.11",
     "vite-plugin-trae-solo-badge": "^1.0.0",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "turbo": "2.5.8"
+  },
+  "turbo": {
+    "tasks": {
+      "build": {
+        "dependsOn": ["^build"],
+        "outputs": ["dist/**", "out/**", "build/**"]
+      },
+      "lint": {
+        "dependsOn": ["^lint"]
+      },
+      "test": {
+        "dependsOn": ["^test"],
+        "outputs": ["coverage/**"]
+      },
+      "dev": {
+        "cache": false
+      }
+    }
   },
   "build": {
     "appId": "com.superapp.electron-plugin-app",

@@ -3,6 +3,7 @@
     "name": "my-expo-app",
     "slug": "my-expo-app",
     "version": "1.0.0",
+    "main": "./index.js",
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro"

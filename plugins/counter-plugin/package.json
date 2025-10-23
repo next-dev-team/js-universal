@@ -9,6 +9,9 @@
   ],
   "category": "utility",
   "icon": "counter-icon.svg",
+  "scripts": {
+    "build": "mkdir -p dist && cp -r *.html *.js *.css *.svg dist/"
+  },
   "dependencies": {},
   "window": {
     "width": 400,
