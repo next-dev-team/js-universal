@@ -9,9 +9,9 @@
   "main": "out/main/index.js",
   "homepage": "./",
   "scripts": {
-    "dev": "electron-vite dev",
+    "dev": "cross-env ELECTRON_PATH=electron electron-vite dev",
     "build": "electron-vite build",
-    "preview": "electron-vite preview",
+    "preview": "cross-env ELECTRON_PATH=electron electron-vite preview",
     "release": "npm run build && electron-builder --publish=never",
     "release:dir": "npm run build && electron-builder --dir --publish=never",
     "release:win": "npm run build && electron-builder --win --publish=never",
