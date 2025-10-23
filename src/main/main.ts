@@ -82,7 +82,7 @@ export class ElectronApp {
 
     // Load the app
     if (isDev) {
-      this.mainWindow.loadURL("http://localhost:5173");
+      this.mainWindow.loadURL("http://localhost:5174");
       this.mainWindow.webContents.openDevTools();
       console.log(
         "Development mode: Main window created and loaded at:",

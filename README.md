@@ -133,7 +133,7 @@ _Plugin Manager interface showing Counter Plugin and Todo Plugin running in sand
 
 The application will start with:
 
-- Main app running on `http://localhost:5173`
+- Main app running on `http://localhost:5174`
 - Electron desktop app launching automatically
 - Hot reload enabled for development
 

@@ -24,7 +24,7 @@
     "server:dev": "nodemon",
     "dev": "npm run electron:dev",
     "dev:all": "concurrently \"npm run server:dev\" \"npm run electron:dev\"",
-    "electron:dev": "cross-env NODE_ENV=development concurrently \"npm run client:dev\" \"npm run watch:main\" \"npm run watch:preload\" \"wait-on http://localhost:5173 dist-main/main.js dist-preload/preload.js && nodemon --watch dist-main --watch dist-preload --exec electron .\"",
+    "electron:dev": "cross-env NODE_ENV=development concurrently \"npm run client:dev\" \"npm run watch:main\" \"npm run watch:preload\" \"wait-on http://localhost:5174 dist-main/main.js dist-preload/preload.js && nodemon --watch dist-main --watch dist-preload --exec electron .\"",
     "electron:build": "npm run build:prod",
     "electron:pack": "npm run build:compile && electron-builder --dir",
     "electron:dist": "npm run build:prod",
