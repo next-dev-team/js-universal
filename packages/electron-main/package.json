@@ -1,0 +1,23 @@
+{
+  "name": "@js-universal/electron-main",
+  "version": "0.0.0",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "electron": "^33.2.0",
+    "electron-is-dev": "^3.0.1",
+    "dotenv": "^16.4.5",
+    "pinokiod": "^3.170.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "typescript": "^5.7.2",
+    "rimraf": "^6.0.1"
+  }
+}

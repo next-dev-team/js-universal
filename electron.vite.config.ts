@@ -8,6 +8,9 @@ const isDevelopment = process.env.NODE_ENV === "development";
 export default defineConfig({
   main: {
     build: {
+      lib: {
+        entry: path.resolve(__dirname, "packages/electron-main/src/index.ts"),
+      },
       rollupOptions: {
         external: [
           "electron",
