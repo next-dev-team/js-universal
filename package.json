@@ -32,10 +32,11 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "pinokiod:setup": "cd pinokiod && npm install && cd ..",
-    "postinstall": "patch-package"
+    "postinstall": "npm run db:generate && patch-package"
   },
   "dependencies": {
     "@ant-design/icons": "^5.5.1",
+    "@ant-design/v5-patch-for-react-19": "^1.0.3",
     "@prisma/client": "^6.1.0",
     "antd": "^5.22.6",
     "clsx": "^2.1.1",

@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "A modern React-based todo app plugin with task management, filtering, and persistent storage",
   "author": "Plugin Developer",
-  "main": "index.html",
   "permissions": [
     "storage"
   ],
@@ -17,7 +16,8 @@
     "lint": "eslint \"**/*.{js,jsx,ts,tsx}\" && prettier -c \"**/*.{js,jsx,ts,tsx,json}\"",
     "format": "eslint \"**/*.{js,jsx,ts,tsx}\" --fix && prettier \"**/*.{js,jsx,ts,tsx,json}\" --write",
     "web": "expo start --web",
-    "build": "expo export --platform web"
+    "build": "expo export --platform web",
+    "cp-pk": "cp -r assets/package.json dist/"
   },
   "dependencies": {
     "@rn-primitives/slot": "^1.2.0",
