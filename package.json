@@ -2,28 +2,37 @@
   "name": "electron-plugin-app",
   "private": true,
   "version": "0.0.0",
+  "description": "A modern Electron app with plugin system built with React and TypeScript",
+  "author": "Electron Plugin App Team",
   "type": "module",
-  "main": "dist-main/main.js",
+  "main": "out/main/index.js",
   "homepage": "./",
   "scripts": {
-    "client:dev": "vite",
-    "build": "tsc -b && vite build && vite build --config vite.main.config.ts && vite build --config vite.preload.config.ts && electron-builder",
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "release": "npm run build && electron-builder --publish=never",
+    "release:dir": "npm run build && electron-builder --dir --publish=never",
+    "release:win": "npm run build && electron-builder --win --publish=never",
+    "release:mac": "npm run build && electron-builder --mac --publish=never",
+    "release:linux": "npm run build && electron-builder --linux --publish=never",
+    "release:all": "npm run build && electron-builder --win --mac --linux --publish=never",
+    "server:dev": "tsx api/server.ts",
+    "dev:all": "concurrently \"npm run server:dev\" \"npm run dev\"",
     "lint": "eslint .",
-    "preview": "vite preview",
     "check": "tsc --noEmit",
-    "server:dev": "nodemon",
-    "dev": "npm run electron:dev",
-    "electron:dev": "concurrently \"npm run client:dev\" \"wait-on http://localhost:5173 && electron .\"",
-    "electron:build": "npm run build",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
+    "test:api": "vitest run tests/api",
     "test:integration": "vitest run tests/integration",
     "test:unit": "vitest run tests/main",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "pinokiod:setup": "cd pinokiod && npm install && cd ..",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@ant-design/icons": "^5.5.1",
@@ -36,6 +45,8 @@
     "express": "^4.21.2",
     "lucide-react": "^0.511.0",
     "multer": "^1.4.5-lts.1",
+    "pinokiod": "^3.170.0",
+    "pterm": "^0.0.14",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.3.0",
@@ -61,12 +72,13 @@
     "concurrently": "^9.2.0",
     "electron": "^38.3.0",
     "electron-builder": "^25.1.8",
+    "electron-vite": "^5.0.0-beta.0",
     "eslint": "^9.25.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
     "happy-dom": "^20.0.7",
-    "nodemon": "^3.1.10",
+    "patch-package": "^8.0.1",
     "postcss": "^8.5.3",
     "prisma": "^6.1.0",
     "tailwindcss": "^3.4.17",
@@ -76,30 +88,112 @@
     "vite": "^7.1.11",
     "vite-plugin-trae-solo-badge": "^1.0.0",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.2.4",
-    "wait-on": "^8.0.1"
+    "vitest": "^3.2.4"
   },
   "build": {
     "appId": "com.superapp.electron-plugin-app",
     "productName": "Super App",
     "directories": {
-      "output": "release"
+      "output": "release",
+      "buildResources": "build"
     },
     "files": [
-      "dist-renderer/**/*",
-      "dist-main/**/*",
-      "dist-preload/**/*",
+      "out/**/*",
       "node_modules/**/*",
-      "package.json"
+      "node_modules/.prisma/**/*",
+      "node_modules/@prisma/client/**/*",
+      "package.json",
+      "!node_modules/**/{CHANGELOG.md,README.md,README,readme.md,readme}",
+      "!node_modules/**/{test,__tests__,tests,powered-test,example,examples}",
+      "!node_modules/**/*.d.ts",
+      "!node_modules/**/.bin",
+      "!node_modules/@homebridge/node-pty-prebuilt-multiarch/**/*",
+      "!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}",
+      "!.editorconfig",
+      "!**/._*",
+      "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}",
+      "!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}",
+      "!**/{appveyor.yml,.travis.yml,circle.yml}",
+      "!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}"
     ],
     "mac": {
-      "category": "public.app-category.productivity"
+      "category": "public.app-category.productivity",
+      "icon": "build/icon.icns",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
     },
     "win": {
-      "target": "nsis"
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "sign": false,
+      "signAndEditExecutable": false,
+      "signDlls": false
     },
     "linux": {
-      "target": "AppImage"
-    }
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "category": "Development"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "compression": "maximum",
+    "removePackageScripts": true,
+    "npmRebuild": false,
+    "nodeGypRebuild": false,
+    "buildDependenciesFromSource": false,
+    "forceCodeSigning": false,
+    "asarUnpack": [
+      "node_modules/@homebridge/node-pty-prebuilt-multiarch/**/*",
+      "node_modules/.prisma/**/*",
+      "node_modules/@prisma/client/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "node_modules/@homebridge/node-pty-prebuilt-multiarch",
+        "to": "node_modules/@homebridge/node-pty-prebuilt-multiarch",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "prisma/dev.db",
+        "to": "prisma/dev.db",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "node_modules/.prisma",
+        "to": "node_modules/.prisma",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "node_modules/@prisma/client",
+        "to": "node_modules/@prisma/client",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ]
   }
 }

@@ -1,24 +1,45 @@
-import { PrismaClient } from '@prisma/client'
-import { Plugin, UserPlugin, AppSettings } from '../../shared/types'
+import { PrismaClient } from "@prisma/client";
+import { Plugin, UserPlugin, AppSettings } from "../../shared/types";
+import path from "path";
+import isDev from "electron-is-dev";
+
+// Configure Prisma for packaged app
+if (!isDev) {
+  // Set the path to the Prisma client in the packaged app
+  const prismaPath = path.join(
+    process.resourcesPath,
+    "node_modules",
+    ".prisma",
+    "client"
+  );
+  process.env.PRISMA_QUERY_ENGINE_LIBRARY = path.join(
+    prismaPath,
+    "query_engine-windows.dll.node"
+  );
+  process.env.PRISMA_QUERY_ENGINE_BINARY = path.join(
+    prismaPath,
+    "query_engine-windows.dll.node"
+  );
+}
 
 export class DatabaseService {
-  constructor(private prisma: PrismaClient) {}
+  constructor(private prisma: any) {}
 
   // Plugin methods
   async getPlugins(): Promise<Plugin[]> {
     const plugins = await this.prisma.plugin.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       include: {
         versions: {
           where: { isStable: true },
-          orderBy: { releaseDate: 'desc' },
-          take: 1
+          orderBy: { releaseDate: "desc" },
+          take: 1,
         },
-        permissions: true
-      }
-    })
-    
-    return plugins.map(plugin => ({
+        permissions: true,
+      },
+    });
+
+    return plugins.map((plugin) => ({
       id: plugin.id,
       name: plugin.name,
       description: plugin.description,
@@ -31,27 +52,27 @@ export class DatabaseService {
       updatedAt: plugin.updatedAt,
       isActive: plugin.isActive,
       isVerified: plugin.isVerified,
-      version: plugin.versions[0]?.version || '1.0.0',
+      version: plugin.versions[0]?.version || "1.0.0",
       size: 0, // TODO: Calculate from plugin files
       tags: [], // TODO: Add tags to schema or derive from category
-      requiredPermissions: plugin.permissions.map(p => p.permissionType)
-    }))
+      requiredPermissions: plugin.permissions.map((p) => p.permissionType),
+    }));
   }
 
   async getAllPlugins(): Promise<Plugin[]> {
     const plugins = await this.prisma.plugin.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       include: {
         versions: {
           where: { isStable: true },
-          orderBy: { releaseDate: 'desc' },
-          take: 1
+          orderBy: { releaseDate: "desc" },
+          take: 1,
         },
-        permissions: true
-      }
-    })
-    
-    return plugins.map(plugin => ({
+        permissions: true,
+      },
+    });
+
+    return plugins.map((plugin) => ({
       id: plugin.id,
       name: plugin.name,
       description: plugin.description,
@@ -64,11 +85,11 @@ export class DatabaseService {
       updatedAt: plugin.updatedAt,
       isActive: plugin.isActive,
       isVerified: plugin.isVerified,
-      version: plugin.versions[0]?.version || '1.0.0',
+      version: plugin.versions[0]?.version || "1.0.0",
       size: 0, // TODO: Calculate from plugin files
       tags: [], // TODO: Add tags to schema or derive from category
-      requiredPermissions: plugin.permissions.map(p => p.permissionType)
-    }))
+      requiredPermissions: plugin.permissions.map((p) => p.permissionType),
+    }));
   }
 
   async getPluginById(id: string): Promise<Plugin | null> {
@@ -77,15 +98,15 @@ export class DatabaseService {
       include: {
         versions: {
           where: { isStable: true },
-          orderBy: { releaseDate: 'desc' },
-          take: 1
+          orderBy: { releaseDate: "desc" },
+          take: 1,
         },
-        permissions: true
-      }
-    })
-    
-    if (!plugin) return null
-    
+        permissions: true,
+      },
+    });
+
+    if (!plugin) return null;
+
     return {
       id: plugin.id,
       name: plugin.name,
@@ -99,14 +120,16 @@ export class DatabaseService {
       updatedAt: plugin.updatedAt,
       isActive: plugin.isActive,
       isVerified: plugin.isVerified,
-      version: plugin.versions[0]?.version || '1.0.0',
+      version: plugin.versions[0]?.version || "1.0.0",
       size: 0, // TODO: Calculate from plugin files
       tags: [], // TODO: Add tags to schema or derive from category
-      requiredPermissions: plugin.permissions.map(p => p.permissionType)
-    }
+      requiredPermissions: plugin.permissions.map((p) => p.permissionType),
+    };
   }
 
-  async createPlugin(data: Omit<Plugin, 'createdAt' | 'updatedAt'>): Promise<Plugin> {
+  async createPlugin(
+    data: Omit<Plugin, "createdAt" | "updatedAt">
+  ): Promise<Plugin> {
     const plugin = await this.prisma.plugin.create({
       data: {
         id: data.id,
@@ -118,17 +141,17 @@ export class DatabaseService {
         downloadCount: data.downloadCount,
         averageRating: data.averageRating,
         isActive: data.isActive,
-        isVerified: data.isVerified
-      }
-    })
-    
+        isVerified: data.isVerified,
+      },
+    });
+
     return {
       ...plugin,
       version: data.version,
       size: data.size,
       tags: data.tags,
-      requiredPermissions: data.requiredPermissions
-    }
+      requiredPermissions: data.requiredPermissions,
+    };
   }
 
   async updatePlugin(id: string, data: Partial<Plugin>): Promise<Plugin> {
@@ -143,84 +166,95 @@ export class DatabaseService {
         downloadCount: data.downloadCount,
         averageRating: data.averageRating,
         isActive: data.isActive,
-        isVerified: data.isVerified
-      }
-    })
-    
+        isVerified: data.isVerified,
+      },
+    });
+
     return {
       ...plugin,
-      version: data.version || '1.0.0',
+      version: data.version || "1.0.0",
       size: data.size || 0,
       tags: data.tags || [],
-      requiredPermissions: data.requiredPermissions || []
-    }
+      requiredPermissions: data.requiredPermissions || [],
+    };
   }
 
   async deletePlugin(id: string): Promise<void> {
     await this.prisma.plugin.delete({
-      where: { id }
-    })
+      where: { id },
+    });
   }
 
   // UserPlugin methods
   async getUserPlugins(userId: string): Promise<UserPlugin[]> {
     const userPlugins = await this.prisma.userPlugin.findMany({
       where: { userId },
-      orderBy: { installedAt: 'desc' },
+      orderBy: { installedAt: "desc" },
       include: {
-        plugin: true
-      }
-    })
-    
-    return userPlugins.map(plugin => ({
+        plugin: true,
+      },
+    });
+
+    return userPlugins.map((plugin) => ({
       ...plugin,
-      settings: plugin.settings ? JSON.parse(plugin.settings as string) : {}
-    }))
+      settings: plugin.settings ? JSON.parse(plugin.settings as string) : {},
+    }));
   }
 
-  async getUserPlugin(userId: string, pluginId: string): Promise<UserPlugin | null> {
+  async getUserPlugin(
+    userId: string,
+    pluginId: string
+  ): Promise<UserPlugin | null> {
     const userPlugin = await this.prisma.userPlugin.findUnique({
       where: {
         userId_pluginId: {
           userId,
-          pluginId
-        }
+          pluginId,
+        },
       },
       include: {
-        plugin: true
-      }
-    })
-    
-    if (!userPlugin) return null
-    
+        plugin: true,
+      },
+    });
+
+    if (!userPlugin) return null;
+
     return {
       ...userPlugin,
-      settings: userPlugin.settings ? JSON.parse(userPlugin.settings as string) : {}
-    }
+      settings: userPlugin.settings
+        ? JSON.parse(userPlugin.settings as string)
+        : {},
+    };
   }
 
-  async createUserPlugin(data: Omit<UserPlugin, 'id'>): Promise<UserPlugin> {
+  async createUserPlugin(data: Omit<UserPlugin, "id">): Promise<UserPlugin> {
     const userPlugin = await this.prisma.userPlugin.create({
       data: {
         ...data,
-        settings: JSON.stringify(data.settings || {})
-      }
-    })
-    
+        settings: JSON.stringify(data.settings || {}),
+      },
+    });
+
     return {
       ...userPlugin,
-      settings: userPlugin.settings ? JSON.parse(userPlugin.settings as string) : {}
-    }
+      settings: userPlugin.settings
+        ? JSON.parse(userPlugin.settings as string)
+        : {},
+    };
   }
 
-  async installUserPlugin(userId: string, pluginId: string, options?: {
-    isEnabled?: boolean
-    settings?: Record<string, any>
-    lastUsed?: Date
-  }): Promise<UserPlugin> {
-    const plugin = await this.getPluginById(pluginId)
+  async installUserPlugin(
+    userId: string,
+    pluginId: string,
+    options?: {
+      isEnabled?: boolean;
+      settings?: Record<string, any>;
+      lastUsed?: Date;
+    }
+  ): Promise<UserPlugin> {
+    const plugin = await this.getPluginById(pluginId);
     if (!plugin) {
-      throw new Error(`Plugin ${pluginId} not found`)
+      throw new Error(`Plugin ${pluginId} not found`);
     }
 
     const userPlugin = await this.prisma.userPlugin.create({
@@ -231,14 +265,16 @@ export class DatabaseService {
         installedAt: new Date(),
         lastUsedAt: options?.lastUsed || new Date(),
         isEnabled: options?.isEnabled ?? true,
-        settings: JSON.stringify(options?.settings || {})
-      }
-    })
-    
+        settings: JSON.stringify(options?.settings || {}),
+      },
+    });
+
     return {
       ...userPlugin,
-      settings: userPlugin.settings ? JSON.parse(userPlugin.settings as string) : {}
-    }
+      settings: userPlugin.settings
+        ? JSON.parse(userPlugin.settings as string)
+        : {},
+    };
   }
 
   async uninstallUserPlugin(userId: string, pluginId: string): Promise<void> {
@@ -246,178 +282,226 @@ export class DatabaseService {
       where: {
         userId_pluginId: {
           userId,
-          pluginId
-        }
-      }
-    })
+          pluginId,
+        },
+      },
+    });
   }
 
-  async updateUserPlugin(userId: string, pluginId: string, data: Partial<UserPlugin>): Promise<UserPlugin> {
+  async updateUserPlugin(
+    userId: string,
+    pluginId: string,
+    data: Partial<UserPlugin>
+  ): Promise<UserPlugin> {
     const userPlugin = await this.prisma.userPlugin.update({
       where: {
         userId_pluginId: {
           userId,
-          pluginId
-        }
+          pluginId,
+        },
       },
       data: {
         ...data,
-        settings: data.settings ? JSON.stringify(data.settings) : undefined
-      }
-    })
-    
+        settings: data.settings ? JSON.stringify(data.settings) : undefined,
+      },
+    });
+
     return {
       ...userPlugin,
-      settings: userPlugin.settings ? JSON.parse(userPlugin.settings as string) : {}
-    }
+      settings: userPlugin.settings
+        ? JSON.parse(userPlugin.settings as string)
+        : {},
+    };
   }
 
-  async enableUserPlugin(userId: string, pluginId: string): Promise<UserPlugin> {
-    console.log(`[DatabaseService] enableUserPlugin called with userId: ${userId}, pluginId: ${pluginId}`)
+  async enableUserPlugin(
+    userId: string,
+    pluginId: string
+  ): Promise<UserPlugin> {
+    console.log(
+      `[DatabaseService] enableUserPlugin called with userId: ${userId}, pluginId: ${pluginId}`
+    );
     try {
       // Ensure user exists first
-      await this.ensureUserExists(userId)
-      
+      await this.ensureUserExists(userId);
+
       // First check if UserPlugin record exists
-      const existingUserPlugin = await this.getUserPlugin(userId, pluginId)
-      console.log(`[DatabaseService] existingUserPlugin:`, existingUserPlugin)
-      
+      const existingUserPlugin = await this.getUserPlugin(userId, pluginId);
+      console.log(`[DatabaseService] existingUserPlugin:`, existingUserPlugin);
+
       if (existingUserPlugin) {
         // Update existing record
-        console.log(`[DatabaseService] Updating existing UserPlugin record`)
-        return await this.updateUserPlugin(userId, pluginId, { isEnabled: true })
+        console.log(`[DatabaseService] Updating existing UserPlugin record`);
+        return await this.updateUserPlugin(userId, pluginId, {
+          isEnabled: true,
+        });
       } else {
         // Create new UserPlugin record if it doesn't exist
-        console.log(`[DatabaseService] Creating new UserPlugin record for user ${userId} and plugin ${pluginId}`)
-        return await this.installUserPlugin(userId, pluginId, { isEnabled: true })
+        console.log(
+          `[DatabaseService] Creating new UserPlugin record for user ${userId} and plugin ${pluginId}`
+        );
+        return await this.installUserPlugin(userId, pluginId, {
+          isEnabled: true,
+        });
       }
     } catch (error) {
-      console.error(`[DatabaseService] Failed to enable user plugin ${pluginId} for user ${userId}:`, error)
-      throw error
+      console.error(
+        `[DatabaseService] Failed to enable user plugin ${pluginId} for user ${userId}:`,
+        error
+      );
+      throw error;
     }
   }
 
-  async disableUserPlugin(userId: string, pluginId: string): Promise<UserPlugin> {
-    console.log(`[DatabaseService] disableUserPlugin called with userId: ${userId}, pluginId: ${pluginId}`)
+  async disableUserPlugin(
+    userId: string,
+    pluginId: string
+  ): Promise<UserPlugin> {
+    console.log(
+      `[DatabaseService] disableUserPlugin called with userId: ${userId}, pluginId: ${pluginId}`
+    );
     try {
       // Ensure user exists first
-      await this.ensureUserExists(userId)
-      
+      await this.ensureUserExists(userId);
+
       // First check if UserPlugin record exists
-      const existingUserPlugin = await this.getUserPlugin(userId, pluginId)
-      console.log(`[DatabaseService] existingUserPlugin:`, existingUserPlugin)
-      
+      const existingUserPlugin = await this.getUserPlugin(userId, pluginId);
+      console.log(`[DatabaseService] existingUserPlugin:`, existingUserPlugin);
+
       if (existingUserPlugin) {
         // Update existing record
-        console.log(`[DatabaseService] Updating existing UserPlugin record`)
-        return await this.updateUserPlugin(userId, pluginId, { isEnabled: false })
+        console.log(`[DatabaseService] Updating existing UserPlugin record`);
+        return await this.updateUserPlugin(userId, pluginId, {
+          isEnabled: false,
+        });
       } else {
         // Create new UserPlugin record if it doesn't exist (disabled by default)
-        console.log(`[DatabaseService] Creating new UserPlugin record for user ${userId} and plugin ${pluginId} (disabled)`)
-        return await this.installUserPlugin(userId, pluginId, { isEnabled: false })
+        console.log(
+          `[DatabaseService] Creating new UserPlugin record for user ${userId} and plugin ${pluginId} (disabled)`
+        );
+        return await this.installUserPlugin(userId, pluginId, {
+          isEnabled: false,
+        });
       }
     } catch (error) {
-      console.error(`[DatabaseService] Failed to disable user plugin ${pluginId} for user ${userId}:`, error)
-      throw error
+      console.error(
+        `[DatabaseService] Failed to disable user plugin ${pluginId} for user ${userId}:`,
+        error
+      );
+      throw error;
     }
   }
 
   // AppSettings methods
   async getAppSettings(): Promise<AppSettings | null> {
-    const settings = await this.prisma.appSettings.findMany()
-    if (settings.length === 0) return null
-    
+    const settings = await this.prisma.appSettings.findMany();
+    if (settings.length === 0) return null;
+
     // Convert array of key-value pairs to a single settings object
-    const settingsObj: any = { id: 'default' }
-    settings.forEach(setting => {
-      settingsObj[setting.key] = setting.value
-    })
-    return settingsObj as AppSettings
+    const settingsObj: any = { id: "default" };
+    settings.forEach((setting) => {
+      settingsObj[setting.key] = setting.value;
+    });
+    return settingsObj as AppSettings;
   }
 
   async updateAppSettings(data: Partial<AppSettings>): Promise<AppSettings> {
     // Convert settings object to key-value pairs
-    const entries = Object.entries(data).filter(([key]) => key !== 'id')
-    
+    const entries = Object.entries(data).filter(([key]) => key !== "id");
+
     for (const [key, value] of entries) {
       await this.prisma.appSettings.upsert({
         where: { key },
         update: { value },
-        create: { key, value }
-      })
+        create: { key, value },
+      });
     }
 
-    return this.getAppSettings() as Promise<AppSettings>
+    return this.getAppSettings() as Promise<AppSettings>;
   }
 
   async getSetting(key: string): Promise<any> {
     const setting = await this.prisma.appSettings.findUnique({
-      where: { key }
-    })
-    return setting?.value
+      where: { key },
+    });
+    return setting?.value;
   }
 
   async updateSetting(key: string, value: any): Promise<void> {
     await this.prisma.appSettings.upsert({
       where: { key },
       update: { value },
-      create: { key, value }
-    })
+      create: { key, value },
+    });
   }
 
   // User methods
   async getUser(id: string) {
     return await this.prisma.user.findUnique({
-      where: { id }
-    })
+      where: { id },
+    });
   }
 
-  async createUser(data: { id?: string; username: string; email: string; preferences?: Record<string, any> }) {
+  async createUser(data: {
+    id?: string;
+    username: string;
+    email: string;
+    preferences?: Record<string, any>;
+  }) {
     return await this.prisma.user.create({
-      data
-    })
+      data,
+    });
   }
 
   async ensureUserExists(userId: string): Promise<void> {
-    const existingUser = await this.getUser(userId)
+    const existingUser = await this.getUser(userId);
     if (!existingUser) {
-      console.log(`[DatabaseService] Creating user ${userId} as it doesn't exist`)
+      console.log(
+        `[DatabaseService] Creating user ${userId} as it doesn't exist`
+      );
       await this.createUser({
         id: userId,
         username: userId,
         email: `${userId}@example.com`,
-        preferences: {}
-      })
+        preferences: {},
+      });
     }
   }
 
-  async updateUser(id: string, data: { username?: string; email?: string; preferences?: Record<string, any> }) {
+  async updateUser(
+    id: string,
+    data: {
+      username?: string;
+      email?: string;
+      preferences?: Record<string, any>;
+    }
+  ) {
     return await this.prisma.user.update({
       where: { id },
-      data
-    })
+      data,
+    });
   }
 
   // Utility methods
   async clearAllData(): Promise<void> {
     // Delete in correct order to avoid foreign key constraints
-    await this.prisma.userPlugin.deleteMany()
-    await this.prisma.plugin.deleteMany()
-    await this.prisma.appSettings.deleteMany()
-    await this.prisma.user.deleteMany()
+    await this.prisma.userPlugin.deleteMany();
+    await this.prisma.plugin.deleteMany();
+    await this.prisma.appSettings.deleteMany();
+    await this.prisma.user.deleteMany();
   }
 
   async getStats() {
     const [pluginCount, userCount, userPluginCount] = await Promise.all([
       this.prisma.plugin.count(),
       this.prisma.user.count(),
-      this.prisma.userPlugin.count()
-    ])
+      this.prisma.userPlugin.count(),
+    ]);
 
     return {
       plugins: pluginCount,
       users: userCount,
-      installations: userPluginCount
-    }
+      installations: userPluginCount,
+    };
   }
 }
