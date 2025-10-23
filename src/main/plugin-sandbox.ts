@@ -1,6 +1,6 @@
 import { BrowserWindow, ipcMain, app, dialog, shell } from "electron";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
+import { join } from "path";
+import isDev from "electron-is-dev";
 import { readFile, writeFile, access, mkdir } from "fs/promises";
 import {
   PluginContext,
@@ -8,9 +8,6 @@ import {
   IPC_CHANNELS,
 } from "../../shared/types";
 import { DatabaseService } from "./database-service";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 export class PluginSandbox {
   private pluginWindows: Map<string, BrowserWindow> = new Map();
@@ -65,15 +62,23 @@ export class PluginSandbox {
         contextIsolation: true,
         enableRemoteModule: false,
         sandbox: true,
-        preload: join(__dirname, "../dist-preload/plugin-preload.js"),
+        preload: isDev
+          ? join(process.cwd(), "out/preload/plugin-preload.cjs")
+          : join(__dirname, "../preload/plugin-preload.cjs"),
         additionalArguments: [`--plugin-id=${pluginId}`],
       },
     };
 
     console.log("[Plugin Sandbox] Window options:", windowOptions);
-    console.log("[Plugin Sandbox] Additional arguments:", windowOptions.webPreferences.additionalArguments);
-    console.log("[Plugin Sandbox] Preload path resolved to:", windowOptions.webPreferences.preload);
-    console.log("[Plugin Sandbox] __dirname is:", __dirname);
+    console.log(
+      "[Plugin Sandbox] Additional arguments:",
+      windowOptions.webPreferences.additionalArguments
+    );
+    console.log(
+      "[Plugin Sandbox] Preload path resolved to:",
+      windowOptions.webPreferences.preload
+    );
+    console.log("[Plugin Sandbox] process.cwd() is:", process.cwd());
 
     const window = new BrowserWindow(windowOptions);
     this.pluginWindows.set(pluginId, window);

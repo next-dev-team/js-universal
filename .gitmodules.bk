@@ -1,4 +1,0 @@
-[submodule "pinokiod"]
-	path = pinokiod
-	url = https://github.com/pinokiocomputer/pinokiod.git
-	branch = tabui

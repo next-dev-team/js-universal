@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -7,18 +7,18 @@
     <title>My Trae Project</title>
     <script type="module">
       if (import.meta.hot?.on) {
-        import.meta.hot.on('vite:error', (error) => {
+        import.meta.hot.on("vite:error", (error) => {
           if (error.err) {
             console.error(
-              [error.err.message, error.err.frame].filter(Boolean).join('\n'),
-            )
+              [error.err.message, error.err.frame].filter(Boolean).join("\n")
+            );
           }
-        })
+        });
       }
     </script>
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module" src="./main.tsx"></script>
   </body>
 </html>

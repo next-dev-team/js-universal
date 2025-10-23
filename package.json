@@ -2,32 +2,25 @@
   "name": "electron-plugin-app",
   "private": true,
   "version": "0.0.0",
+  "description": "A modern Electron app with plugin system built with React and TypeScript",
+  "author": "Electron Plugin App Team",
   "type": "module",
-  "main": "dist-main/main.js",
+  "main": "out/main/index.js",
   "homepage": "./",
   "scripts": {
-    "client:dev": "vite",
-    "build": "npm run build:clean && npm run build:compile && npm run build:electron",
-    "build:clean": "rm -rf dist-renderer dist-main dist-preload release",
-    "build:compile": "tsc -b && npm run build:renderer && npm run build:main && npm run build:preload",
-    "build:renderer": "vite build",
-    "build:main": "vite build --config vite.main.config.ts",
-    "build:preload": "vite build --config vite.preload.config.ts",
-    "build:electron": "electron-builder",
-    "build:dev": "cross-env NODE_ENV=development npm run build:compile",
-    "build:prod": "cross-env NODE_ENV=production npm run build",
-    "watch:main": "cross-env NODE_ENV=development vite build --config vite.main.config.ts --watch",
-    "watch:preload": "cross-env NODE_ENV=development vite build --config vite.preload.config.ts --watch",
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "release": "npm run build && electron-builder --publish=never",
+    "release:dir": "npm run build && electron-builder --dir --publish=never",
+    "release:win": "npm run build && electron-builder --win --publish=never",
+    "release:mac": "npm run build && electron-builder --mac --publish=never",
+    "release:linux": "npm run build && electron-builder --linux --publish=never",
+    "release:all": "npm run build && electron-builder --win --mac --linux --publish=never",
+    "server:dev": "tsx api/server.ts",
+    "dev:all": "concurrently \"npm run server:dev\" \"npm run dev\"",
     "lint": "eslint .",
-    "preview": "vite preview",
     "check": "tsc --noEmit",
-    "server:dev": "nodemon",
-    "dev": "npm run electron:dev",
-    "dev:all": "concurrently \"npm run server:dev\" \"npm run electron:dev\"",
-    "electron:dev": "cross-env NODE_ENV=development concurrently \"npm run client:dev\" \"npm run watch:main\" \"npm run watch:preload\" \"wait-on http://localhost:5174 dist-main/main.js dist-preload/preload.js && nodemon --watch dist-main --watch dist-preload --exec electron .\"",
-    "electron:build": "npm run build:prod",
-    "electron:pack": "npm run build:compile && electron-builder --dir",
-    "electron:dist": "npm run build:prod",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
@@ -77,16 +70,14 @@
     "autoprefixer": "^10.4.21",
     "babel-plugin-react-dev-locator": "^1.0.0",
     "concurrently": "^9.2.0",
-    "cross-env": "^7.0.3",
     "electron": "^38.3.0",
     "electron-builder": "^25.1.8",
-    "electron-reload": "^2.0.0-alpha.1",
+    "electron-vite": "^5.0.0-beta.0",
     "eslint": "^9.25.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
     "happy-dom": "^20.0.7",
-    "nodemon": "^3.1.10",
     "patch-package": "^8.0.1",
     "postcss": "^8.5.3",
     "prisma": "^6.1.0",
@@ -97,8 +88,7 @@
     "vite": "^7.1.11",
     "vite-plugin-trae-solo-badge": "^1.0.0",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.2.4",
-    "wait-on": "^8.0.1"
+    "vitest": "^3.2.4"
   },
   "build": {
     "appId": "com.superapp.electron-plugin-app",
@@ -108,15 +98,16 @@
       "buildResources": "build"
     },
     "files": [
-      "dist-renderer/**/*",
-      "dist-main/**/*",
-      "dist-preload/**/*",
+      "out/**/*",
       "node_modules/**/*",
+      "node_modules/.prisma/**/*",
+      "node_modules/@prisma/client/**/*",
       "package.json",
       "!node_modules/**/{CHANGELOG.md,README.md,README,readme.md,readme}",
       "!node_modules/**/{test,__tests__,tests,powered-test,example,examples}",
       "!node_modules/**/*.d.ts",
       "!node_modules/**/.bin",
+      "!node_modules/@homebridge/node-pty-prebuilt-multiarch/**/*",
       "!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}",
       "!.editorconfig",
       "!**/._*",
@@ -124,15 +115,6 @@
       "!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}",
       "!**/{appveyor.yml,.travis.yml,circle.yml}",
       "!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}"
-    ],
-    "extraResources": [
-      {
-        "from": "prisma/dev.db",
-        "to": "prisma/dev.db",
-        "filter": [
-          "**/*"
-        ]
-      }
     ],
     "mac": {
       "category": "public.app-category.productivity",
@@ -151,7 +133,10 @@
           ]
         }
       ],
-      "icon": "build/icon.ico"
+      "icon": "build/icon.ico",
+      "sign": false,
+      "signAndEditExecutable": false,
+      "signDlls": false
     },
     "linux": {
       "target": [
@@ -170,6 +155,45 @@
       "allowToChangeInstallationDirectory": true
     },
     "compression": "maximum",
-    "removePackageScripts": true
+    "removePackageScripts": true,
+    "npmRebuild": false,
+    "nodeGypRebuild": false,
+    "buildDependenciesFromSource": false,
+    "forceCodeSigning": false,
+    "asarUnpack": [
+      "node_modules/@homebridge/node-pty-prebuilt-multiarch/**/*",
+      "node_modules/.prisma/**/*",
+      "node_modules/@prisma/client/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "node_modules/@homebridge/node-pty-prebuilt-multiarch",
+        "to": "node_modules/@homebridge/node-pty-prebuilt-multiarch",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "prisma/dev.db",
+        "to": "prisma/dev.db",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "node_modules/.prisma",
+        "to": "node_modules/.prisma",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "node_modules/@prisma/client",
+        "to": "node_modules/@prisma/client",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ]
   }
 }

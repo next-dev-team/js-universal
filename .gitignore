@@ -10,6 +10,7 @@ lerna-debug.log*
 node_modules
 dist-*
 dist/
+out/
 build
 release
 
@@ -27,3 +28,4 @@ release
 *.sw?
 .vite
 plugin-storage
+nul

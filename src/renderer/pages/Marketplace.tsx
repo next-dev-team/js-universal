@@ -1,129 +1,132 @@
-import { useState, useEffect } from 'react'
-import { 
-  Card, 
-  Row, 
-  Col, 
-  Input, 
-  Select, 
-  Button, 
-  Avatar, 
-  Tag, 
-  Typography, 
+import { useState, useEffect } from "react";
+import {
+  Card,
+  Row,
+  Col,
+  Input,
+  Select,
+  Button,
+  Avatar,
+  Tag,
+  Typography,
   Space,
   Empty,
   Spin,
   Modal,
   Rate,
   Divider,
-  message
-} from 'antd'
-import { 
+  message,
+} from "antd";
+import {
   SearchOutlined,
   DownloadOutlined,
   StarOutlined,
   AppstoreOutlined,
   EyeOutlined,
   CheckCircleOutlined,
-  FilterOutlined
-} from '@ant-design/icons'
-import { useAppStore } from '@/store/useAppStore'
-import { Plugin } from '../../shared/types'
+  FilterOutlined,
+} from "@ant-design/icons";
+import { useAppStore } from "@/store/useAppStore";
+import { Plugin } from "@shared/types";
 
-const { Title, Text, Paragraph } = Typography
-const { Option } = Select
+const { Title, Text, Paragraph } = Typography;
+const { Option } = Select;
 
 export default function Marketplace() {
-  const { 
-    plugins, 
-    installedPlugins, 
-    loading,
-    loadPlugins,
-    installPlugin
-  } = useAppStore()
+  const { plugins, installedPlugins, loading, loadPlugins, installPlugin } =
+    useAppStore();
 
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
-  const [sortBy, setSortBy] = useState<string>('popular')
-  const [filteredPlugins, setFilteredPlugins] = useState<Plugin[]>([])
-  const [selectedPlugin, setSelectedPlugin] = useState<Plugin | null>(null)
-  const [detailModalVisible, setDetailModalVisible] = useState(false)
-  const [installing, setInstalling] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("popular");
+  const [filteredPlugins, setFilteredPlugins] = useState<Plugin[]>([]);
+  const [selectedPlugin, setSelectedPlugin] = useState<Plugin | null>(null);
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
+  const [installing, setInstalling] = useState<string | null>(null);
 
   useEffect(() => {
-    loadPlugins()
-  }, [loadPlugins])
+    loadPlugins();
+  }, [loadPlugins]);
 
   useEffect(() => {
-    let filtered = [...plugins]
+    let filtered = [...plugins];
 
     // Filter by search term
     if (searchTerm) {
-      filtered = filtered.filter(plugin => 
-        plugin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        plugin.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        plugin.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-      )
+      filtered = filtered.filter(
+        (plugin) =>
+          plugin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          plugin.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          plugin.tags.some((tag) =>
+            tag.toLowerCase().includes(searchTerm.toLowerCase())
+          )
+      );
     }
 
     // Filter by category
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(plugin => plugin.category === selectedCategory)
+    if (selectedCategory !== "all") {
+      filtered = filtered.filter(
+        (plugin) => plugin.category === selectedCategory
+      );
     }
 
     // Sort plugins
     switch (sortBy) {
-      case 'popular':
-        filtered.sort((a, b) => b.downloadCount - a.downloadCount)
-        break
-      case 'rating':
-        filtered.sort((a, b) => b.averageRating - a.averageRating)
-        break
-      case 'newest':
-        filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-        break
-      case 'name':
-        filtered.sort((a, b) => a.name.localeCompare(b.name))
-        break
+      case "popular":
+        filtered.sort((a, b) => b.downloadCount - a.downloadCount);
+        break;
+      case "rating":
+        filtered.sort((a, b) => b.averageRating - a.averageRating);
+        break;
+      case "newest":
+        filtered.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        break;
+      case "name":
+        filtered.sort((a, b) => a.name.localeCompare(b.name));
+        break;
     }
 
-    setFilteredPlugins(filtered)
-  }, [plugins, searchTerm, selectedCategory, sortBy])
+    setFilteredPlugins(filtered);
+  }, [plugins, searchTerm, selectedCategory, sortBy]);
 
-  const categories = Array.from(new Set(plugins.map(p => p.category)))
+  const categories = Array.from(new Set(plugins.map((p) => p.category)));
 
   const handleInstallPlugin = async (plugin: Plugin) => {
     if (isPluginInstalled(plugin.id)) {
-      message.info('Plugin is already installed')
-      return
+      message.info("Plugin is already installed");
+      return;
     }
 
-    setInstalling(plugin.id)
+    setInstalling(plugin.id);
     try {
-      await installPlugin(plugin.id)
-      message.success(`${plugin.name} installed successfully!`)
+      await installPlugin(plugin.id);
+      message.success(`${plugin.name} installed successfully!`);
     } catch (error) {
-      console.error('Failed to install plugin:', error)
-      message.error(`Failed to install ${plugin.name}`)
+      console.error("Failed to install plugin:", error);
+      message.error(`Failed to install ${plugin.name}`);
     } finally {
-      setInstalling(null)
+      setInstalling(null);
     }
-  }
+  };
 
   const isPluginInstalled = (pluginId: string) => {
-    return installedPlugins.some(p => p.id === pluginId)
-  }
+    return installedPlugins.some((p) => p.id === pluginId);
+  };
 
   const showPluginDetails = (plugin: Plugin) => {
-    setSelectedPlugin(plugin)
-    setDetailModalVisible(true)
-  }
+    setSelectedPlugin(plugin);
+    setDetailModalVisible(true);
+  };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <Spin size="large" />
       </div>
-    )
+    );
   }
 
   return (
@@ -153,11 +156,11 @@ export default function Marketplace() {
               placeholder="Category"
               value={selectedCategory}
               onChange={setSelectedCategory}
-              style={{ width: '100%' }}
+              style={{ width: "100%" }}
               suffixIcon={<FilterOutlined />}
             >
               <Option value="all">All Categories</Option>
-              {categories.map(category => (
+              {categories.map((category) => (
                 <Option key={category} value={category}>
                   {category}
                 </Option>
@@ -169,7 +172,7 @@ export default function Marketplace() {
               placeholder="Sort by"
               value={sortBy}
               onChange={setSortBy}
-              style={{ width: '100%' }}
+              style={{ width: "100%" }}
             >
               <Option value="popular">Most Popular</Option>
               <Option value="rating">Highest Rated</Option>
@@ -179,7 +182,8 @@ export default function Marketplace() {
           </Col>
           <Col xs={24} md={8}>
             <Text type="secondary">
-              {filteredPlugins.length} plugin{filteredPlugins.length !== 1 ? 's' : ''} found
+              {filteredPlugins.length} plugin
+              {filteredPlugins.length !== 1 ? "s" : ""} found
             </Text>
           </Col>
         </Row>
@@ -189,8 +193,8 @@ export default function Marketplace() {
       {filteredPlugins.length > 0 ? (
         <Row gutter={[16, 16]}>
           {filteredPlugins.map((plugin) => {
-            const isInstalled = isPluginInstalled(plugin.id)
-            const isInstalling = installing === plugin.id
+            const isInstalled = isPluginInstalled(plugin.id);
+            const isInstalling = installing === plugin.id;
 
             return (
               <Col xs={24} sm={12} lg={8} xl={6} key={plugin.id}>
@@ -208,20 +212,26 @@ export default function Marketplace() {
                     <Button
                       key="install"
                       type="primary"
-                      icon={isInstalled ? <CheckCircleOutlined /> : <DownloadOutlined />}
+                      icon={
+                        isInstalled ? (
+                          <CheckCircleOutlined />
+                        ) : (
+                          <DownloadOutlined />
+                        )
+                      }
                       loading={isInstalling}
                       disabled={isInstalled}
                       onClick={() => handleInstallPlugin(plugin)}
                     >
-                      {isInstalled ? 'Installed' : 'Install'}
-                    </Button>
+                      {isInstalled ? "Installed" : "Install"}
+                    </Button>,
                   ]}
                 >
                   <Card.Meta
                     avatar={
-                      <Avatar 
+                      <Avatar
                         size={48}
-                        src={plugin.iconUrl} 
+                        src={plugin.iconUrl}
                         icon={<AppstoreOutlined />}
                       />
                     }
@@ -229,7 +239,7 @@ export default function Marketplace() {
                       <Space>
                         {plugin.name}
                         {plugin.isVerified && (
-                          <Tag color="green" style={{ fontSize: '10px' }}>
+                          <Tag color="green" style={{ fontSize: "10px" }}>
                             Verified
                           </Tag>
                         )}
@@ -244,10 +254,10 @@ export default function Marketplace() {
                           <Tag color="blue">{plugin.category}</Tag>
                         </div>
                         <Space>
-                          <Text type="secondary" style={{ fontSize: '12px' }}>
+                          <Text type="secondary" style={{ fontSize: "12px" }}>
                             <StarOutlined /> {plugin.averageRating.toFixed(1)}
                           </Text>
-                          <Text type="secondary" style={{ fontSize: '12px' }}>
+                          <Text type="secondary" style={{ fontSize: "12px" }}>
                             <DownloadOutlined /> {plugin.downloadCount}
                           </Text>
                         </Space>
@@ -256,12 +266,12 @@ export default function Marketplace() {
                   />
                 </Card>
               </Col>
-            )
+            );
           })}
         </Row>
       ) : (
         <Card>
-          <Empty 
+          <Empty
             description="No plugins found"
             image={Empty.PRESENTED_IMAGE_SIMPLE}
           />
@@ -280,9 +290,9 @@ export default function Marketplace() {
           <div className="space-y-4">
             {/* Plugin Header */}
             <div className="flex items-start space-x-4">
-              <Avatar 
+              <Avatar
                 size={64}
-                src={selectedPlugin.iconUrl} 
+                src={selectedPlugin.iconUrl}
                 icon={<AppstoreOutlined />}
               />
               <div className="flex-1">
@@ -300,19 +310,30 @@ export default function Marketplace() {
                     <Rate disabled value={selectedPlugin.averageRating} />
                     <Text>({selectedPlugin.averageRating.toFixed(1)})</Text>
                     <Divider type="vertical" />
-                    <Text><DownloadOutlined /> {selectedPlugin.downloadCount} downloads</Text>
+                    <Text>
+                      <DownloadOutlined /> {selectedPlugin.downloadCount}{" "}
+                      downloads
+                    </Text>
                   </Space>
                 </div>
               </div>
               <Button
                 type="primary"
                 size="large"
-                icon={isPluginInstalled(selectedPlugin.id) ? <CheckCircleOutlined /> : <DownloadOutlined />}
+                icon={
+                  isPluginInstalled(selectedPlugin.id) ? (
+                    <CheckCircleOutlined />
+                  ) : (
+                    <DownloadOutlined />
+                  )
+                }
                 loading={installing === selectedPlugin.id}
                 disabled={isPluginInstalled(selectedPlugin.id)}
                 onClick={() => handleInstallPlugin(selectedPlugin)}
               >
-                {isPluginInstalled(selectedPlugin.id) ? 'Installed' : 'Install Plugin'}
+                {isPluginInstalled(selectedPlugin.id)
+                  ? "Installed"
+                  : "Install Plugin"}
               </Button>
             </div>
 
@@ -329,7 +350,7 @@ export default function Marketplace() {
                 <Title level={4}>Category &amp; Tags</Title>
                 <Space wrap>
                   <Tag color="blue">{selectedPlugin.category}</Tag>
-                  {selectedPlugin.tags.map(tag => (
+                  {selectedPlugin.tags.map((tag) => (
                     <Tag key={tag}>{tag}</Tag>
                   ))}
                 </Space>
@@ -345,7 +366,9 @@ export default function Marketplace() {
                 <Col span={12}>
                   <div>
                     <Title level={4}>Size</Title>
-                    <Text>{(selectedPlugin.size / 1024 / 1024).toFixed(1)} MB</Text>
+                    <Text>
+                      {(selectedPlugin.size / 1024 / 1024).toFixed(1)} MB
+                    </Text>
                   </div>
                 </Col>
               </Row>
@@ -353,7 +376,7 @@ export default function Marketplace() {
               <div>
                 <Title level={4}>Permissions Required</Title>
                 <Space wrap>
-                  {selectedPlugin.requiredPermissions.map(permission => (
+                  {selectedPlugin.requiredPermissions.map((permission) => (
                     <Tag key={permission} color="orange">
                       {permission}
                     </Tag>
@@ -363,12 +386,14 @@ export default function Marketplace() {
 
               <div>
                 <Title level={4}>Release Date</Title>
-                <Text>{new Date(selectedPlugin.createdAt).toLocaleDateString()}</Text>
+                <Text>
+                  {new Date(selectedPlugin.createdAt).toLocaleDateString()}
+                </Text>
               </div>
             </div>
           </div>
         )}
       </Modal>
     </div>
-  )
+  );
 }

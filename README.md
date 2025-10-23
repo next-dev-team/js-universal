@@ -88,7 +88,7 @@ _Plugin Manager interface showing Counter Plugin and Todo Plugin running in sand
 
 ### Development & Build
 
-- **Vite** - Build tool with HMR support
+- **Electron-Vite v5** - Modern build tool for Electron with HMR support
 - **Electron Builder** - Application packaging
 - **Vitest** - Unit testing framework
 - **ESLint** - Code linting and formatting
@@ -144,9 +144,9 @@ The application will start with:
 **Development Mode:**
 
 ```bash
-npm run dev          # Start both web and electron in development
-npm run client:dev   # Start only the web version
-npm run electron:dev # Start only the electron version
+npm run dev          # Start electron app with hot reload
+npm run server:dev   # Start API server only
+npm run dev:all      # Start both API server and electron app
 ```
 
 **Production Build:**

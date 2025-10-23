@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react'
-import { 
-  Card, 
-  Table, 
-  Button, 
-  Avatar, 
-  Tag, 
-  Typography, 
+import { useState, useEffect } from "react";
+import {
+  Card,
+  Table,
+  Button,
+  Avatar,
+  Tag,
+  Typography,
   Space,
   Switch,
   Popconfirm,
@@ -14,9 +14,9 @@ import {
   Tabs,
   Progress,
   Tooltip,
-  Input
-} from 'antd'
-import { 
+  Input,
+} from "antd";
+import {
   AppstoreOutlined,
   DeleteOutlined,
   SettingOutlined,
@@ -27,24 +27,24 @@ import {
   ReloadOutlined,
   SearchOutlined,
   InfoCircleOutlined,
-  CloudUploadOutlined
-} from '@ant-design/icons'
-import { useAppStore } from '@/store/useAppStore'
-import { Plugin, UserPlugin } from '../../shared/types'
-import type { ColumnsType } from 'antd/es/table'
+  CloudUploadOutlined,
+} from "@ant-design/icons";
+import { useAppStore } from "@/store/useAppStore";
+import { Plugin, UserPlugin } from "@shared/types";
+import type { ColumnsType } from "antd/es/table";
 
-const { Title, Text } = Typography
-const { TabPane } = Tabs
+const { Title, Text } = Typography;
+const { TabPane } = Tabs;
 
 interface PluginTableData extends Plugin {
-  userPlugin?: UserPlugin
-  isRunning: boolean
+  userPlugin?: UserPlugin;
+  isRunning: boolean;
 }
 
 export default function PluginManager() {
-  const { 
+  const {
     plugins,
-    userPlugins, 
+    userPlugins,
     installedPlugins,
     runningPlugins,
     loading,
@@ -55,284 +55,295 @@ export default function PluginManager() {
     enableUserPlugin,
     disableUserPlugin,
     launchPlugin,
-    closePlugin
-  } = useAppStore()
+    closePlugin,
+  } = useAppStore();
 
-  const [searchTerm, setSearchTerm] = useState('')
-  const [activeTab, setActiveTab] = useState('installed')
-  const [uploadModalVisible, setUploadModalVisible] = useState(false)
-  const [settingsModalVisible, setSettingsModalVisible] = useState(false)
-  const [selectedPlugin, setSelectedPlugin] = useState<Plugin | null>(null)
-  const [isDragOver, setIsDragOver] = useState(false)
-  const [selectedFolderPath, setSelectedFolderPath] = useState<string>('')
-  const [isInstalling, setIsInstalling] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("installed");
+  const [uploadModalVisible, setUploadModalVisible] = useState(false);
+  const [settingsModalVisible, setSettingsModalVisible] = useState(false);
+  const [selectedPlugin, setSelectedPlugin] = useState<Plugin | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [selectedFolderPath, setSelectedFolderPath] = useState<string>("");
+  const [isInstalling, setIsInstalling] = useState(false);
 
   useEffect(() => {
-    loadPlugins()
-    loadUserPlugins()
-  }, [loadPlugins, loadUserPlugins])
+    loadPlugins();
+    loadUserPlugins();
+  }, [loadPlugins, loadUserPlugins]);
 
   const getTableData = (): PluginTableData[] => {
-    let basePlugins: Plugin[] = []
-    
-    if (activeTab === 'installed') {
-      basePlugins = installedPlugins
+    let basePlugins: Plugin[] = [];
+
+    if (activeTab === "installed") {
+      basePlugins = installedPlugins;
     } else {
-      basePlugins = plugins
+      basePlugins = plugins;
     }
 
     return basePlugins
-      .filter(plugin => 
-        plugin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        plugin.description.toLowerCase().includes(searchTerm.toLowerCase())
+      .filter(
+        (plugin) =>
+          plugin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          plugin.description.toLowerCase().includes(searchTerm.toLowerCase())
       )
-      .map(plugin => {
-        const userPlugin = userPlugins.find(up => up.pluginId === plugin.id)
+      .map((plugin) => {
+        const userPlugin = userPlugins.find((up) => up.pluginId === plugin.id);
         return {
           ...plugin,
           userPlugin,
-          isRunning: runningPlugins.includes(plugin.id)
-        }
-      })
-  }
+          isRunning: runningPlugins.includes(plugin.id),
+        };
+      });
+  };
 
   const handleUninstall = async (pluginId: string) => {
     try {
-      await uninstallPlugin(pluginId)
-      message.success('Plugin uninstalled successfully')
+      await uninstallPlugin(pluginId);
+      message.success("Plugin uninstalled successfully");
     } catch (error) {
-      console.error('Failed to uninstall plugin:', error)
-      message.error('Failed to uninstall plugin')
+      console.error("Failed to uninstall plugin:", error);
+      message.error("Failed to uninstall plugin");
     }
-  }
+  };
 
   const handleToggleEnabled = async (pluginId: string, enabled: boolean) => {
     if (!currentUser) {
-      message.error('User not logged in')
-      return
+      message.error("User not logged in");
+      return;
     }
 
     try {
       if (enabled) {
-        const result = await enableUserPlugin(currentUser.id, pluginId)
+        const result = await enableUserPlugin(currentUser.id, pluginId);
         if (result.success) {
-          message.success('Plugin enabled')
+          message.success("Plugin enabled");
         } else {
-          message.error(result.error || 'Failed to enable plugin')
+          message.error(result.error || "Failed to enable plugin");
         }
       } else {
-        const result = await disableUserPlugin(currentUser.id, pluginId)
+        const result = await disableUserPlugin(currentUser.id, pluginId);
         if (result.success) {
-          message.success('Plugin disabled')
+          message.success("Plugin disabled");
         } else {
-          message.error(result.error || 'Failed to disable plugin')
+          message.error(result.error || "Failed to disable plugin");
         }
       }
     } catch (error) {
-      console.error('Failed to toggle plugin:', error)
-      message.error('Failed to update plugin status')
+      console.error("Failed to toggle plugin:", error);
+      message.error("Failed to update plugin status");
     }
-  }
+  };
 
   const handleLaunchPlugin = async (pluginId: string) => {
     try {
-      await launchPlugin(pluginId)
-      message.success('Plugin launched')
+      await launchPlugin(pluginId);
+      message.success("Plugin launched");
     } catch (error) {
-      console.error('Failed to launch plugin:', error)
-      message.error('Failed to launch plugin')
+      console.error("Failed to launch plugin:", error);
+      message.error("Failed to launch plugin");
     }
-  }
+  };
 
   const handleClosePlugin = async (pluginId: string) => {
     try {
-      await closePlugin(pluginId)
-      message.success('Plugin closed')
+      await closePlugin(pluginId);
+      message.success("Plugin closed");
     } catch (error) {
-      console.error('Failed to close plugin:', error)
-      message.error('Failed to close plugin')
+      console.error("Failed to close plugin:", error);
+      message.error("Failed to close plugin");
     }
-  }
+  };
 
   const handleSelectFolder = async () => {
     try {
-      const pluginPath = await window.electronAPI.openDirectoryDialog()
+      const pluginPath = await window.electronAPI.openDirectoryDialog();
       if (pluginPath) {
-        setSelectedFolderPath(pluginPath)
+        setSelectedFolderPath(pluginPath);
       }
     } catch (error) {
-      console.error('Failed to select folder:', error)
-      message.error('Failed to select folder')
+      console.error("Failed to select folder:", error);
+      message.error("Failed to select folder");
     }
-  }
+  };
 
   const handleInstallPlugin = async () => {
     if (!selectedFolderPath) {
-      message.error('Please select a plugin folder first')
-      return
+      message.error("Please select a plugin folder first");
+      return;
     }
 
-    setIsInstalling(true)
+    setIsInstalling(true);
     try {
-      message.info('Installing plugin...')
-      
+      message.info("Installing plugin...");
+
       // Use the actual Electron API to install the plugin
-      const result = await window.electronAPI.installPlugin(selectedFolderPath)
-      
+      const result = await window.electronAPI.installPlugin(selectedFolderPath);
+
       if (result.success) {
-        setUploadModalVisible(false)
-        setSelectedFolderPath('')
-        
+        setUploadModalVisible(false);
+        setSelectedFolderPath("");
+
         // Reload plugins after installation
-        await loadPlugins()
-        await loadUserPlugins()
-        
-        message.success(`Plugin installed successfully! ${result.pluginId ? `Plugin ID: ${result.pluginId}` : ''}`)
+        await loadPlugins();
+        await loadUserPlugins();
+
+        message.success(
+          `Plugin installed successfully! ${
+            result.pluginId ? `Plugin ID: ${result.pluginId}` : ""
+          }`
+        );
       } else {
-        message.error(`Failed to install plugin: ${result.message}`)
+        message.error(`Failed to install plugin: ${result.message}`);
       }
     } catch (error) {
-      console.error('Failed to install plugin:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
-      message.error(`Failed to install plugin: ${errorMessage}`)
+      console.error("Failed to install plugin:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred";
+      message.error(`Failed to install plugin: ${errorMessage}`);
     } finally {
-      setIsInstalling(false)
+      setIsInstalling(false);
     }
-  }
+  };
 
   const handleQuickInstall = async () => {
-    setIsInstalling(true)
+    setIsInstalling(true);
     try {
-      const pluginPath = await window.electronAPI.openDirectoryDialog()
+      const pluginPath = await window.electronAPI.openDirectoryDialog();
       if (pluginPath) {
-        message.info('Installing plugin...')
-        
+        message.info("Installing plugin...");
+
         // Use the actual Electron API to install the plugin
-        const result = await window.electronAPI.installPlugin(pluginPath)
-        
+        const result = await window.electronAPI.installPlugin(pluginPath);
+
         if (result.success) {
-          setUploadModalVisible(false)
-          setSelectedFolderPath('')
-          
+          setUploadModalVisible(false);
+          setSelectedFolderPath("");
+
           // Reload plugins after installation
-          await loadPlugins()
-          await loadUserPlugins()
-          
-          message.success(`Plugin installed successfully! ${result.pluginId ? `Plugin ID: ${result.pluginId}` : ''}`)
+          await loadPlugins();
+          await loadUserPlugins();
+
+          message.success(
+            `Plugin installed successfully! ${
+              result.pluginId ? `Plugin ID: ${result.pluginId}` : ""
+            }`
+          );
         } else {
-          message.error(`Failed to install plugin: ${result.message}`)
+          message.error(`Failed to install plugin: ${result.message}`);
         }
       }
     } catch (error) {
-      console.error('Failed to install plugin:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
-      message.error(`Failed to install plugin: ${errorMessage}`)
+      console.error("Failed to install plugin:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred";
+      message.error(`Failed to install plugin: ${errorMessage}`);
     } finally {
-      setIsInstalling(false)
+      setIsInstalling(false);
     }
-  }
+  };
 
   const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setIsDragOver(true)
-  }
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  };
 
   const handleDragEnter = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setIsDragOver(true)
-  }
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  };
 
   const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
+    e.preventDefault();
+    e.stopPropagation();
     // Only set isDragOver to false if we're leaving the drop zone entirely
     if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-      setIsDragOver(false)
+      setIsDragOver(false);
     }
-  }
+  };
 
   const handleDrop = async (e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setIsDragOver(false)
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
 
     try {
-      const files = Array.from(e.dataTransfer.files)
-      
+      const files = Array.from(e.dataTransfer.files);
+
       if (files.length === 0) {
         // Try to get directory from dataTransfer items
-        const items = Array.from(e.dataTransfer.items)
+        const items = Array.from(e.dataTransfer.items);
         if (items.length === 0) {
-          message.error('No files or folders were dropped')
-          return
+          message.error("No files or folders were dropped");
+          return;
         }
 
         // Handle directory entry for web browsers
-        const item = items[0]
-        if (item.kind === 'file') {
-          const entry = item.webkitGetAsEntry()
+        const item = items[0];
+        if (item.kind === "file") {
+          const entry = item.webkitGetAsEntry();
           if (entry?.isDirectory) {
             // For web browsers, we can't get the actual path, so we need to use the directory name
             // and let the user know they need to use the file dialog instead
-            message.warning('Drag and drop detected a folder, but path cannot be determined in web browser. Please use "Select Plugin Folder" button instead.')
-            return
+            message.warning(
+              'Drag and drop detected a folder, but path cannot be determined in web browser. Please use "Select Plugin Folder" button instead.'
+            );
+            return;
           }
         }
-        
-        message.error('No files were dropped')
-        return
+
+        message.error("No files were dropped");
+        return;
       }
 
       if (files.length > 1) {
-        message.error('Please drop only one folder at a time')
-        return
+        message.error("Please drop only one folder at a time");
+        return;
       }
 
-      const file = files[0]
-      
+      const file = files[0];
+
       // Check if it's a directory by checking the webkitGetAsEntry API
-      const entry = e.dataTransfer.items[0]?.webkitGetAsEntry()
-      
+      const entry = e.dataTransfer.items[0]?.webkitGetAsEntry();
+
       if (!entry?.isDirectory) {
-        message.error('Please drop a folder, not a file')
-        return
+        message.error("Please drop a folder, not a file");
+        return;
       }
 
       // Get the folder path - this works in Electron but not in web browsers
-      const folderPath = (file as File & { path?: string }).path
-      
+      const folderPath = (file as File & { path?: string }).path;
+
       if (!folderPath) {
         // Fallback for web browsers - show a helpful message
-        message.warning('Folder detected, but path cannot be determined in web browser. Please use "Select Plugin Folder" button instead.')
-        return
+        message.warning(
+          'Folder detected, but path cannot be determined in web browser. Please use "Select Plugin Folder" button instead.'
+        );
+        return;
       }
 
-      setSelectedFolderPath(folderPath)
-      message.success('Folder selected! Click Install to proceed.')
+      setSelectedFolderPath(folderPath);
+      message.success("Folder selected! Click Install to proceed.");
     } catch (error) {
-      console.error('Failed to handle dropped folder:', error)
-      message.error('Failed to process dropped folder')
+      console.error("Failed to handle dropped folder:", error);
+      message.error("Failed to process dropped folder");
     }
-  }
+  };
 
   const showPluginSettings = (plugin: Plugin) => {
-    setSelectedPlugin(plugin)
-    setSettingsModalVisible(true)
-  }
+    setSelectedPlugin(plugin);
+    setSettingsModalVisible(true);
+  };
 
   const columns: ColumnsType<PluginTableData> = [
     {
-      title: 'Plugin',
-      key: 'plugin',
+      title: "Plugin",
+      key: "plugin",
       render: (_, record) => (
         <Space>
-          <Avatar 
-            src={record.iconUrl} 
-            icon={<AppstoreOutlined />}
-            size={40}
-          />
+          <Avatar src={record.iconUrl} icon={<AppstoreOutlined />} size={40} />
           <div>
             <div className="font-medium">{record.name}</div>
             <Text type="secondary" className="text-sm">
@@ -343,36 +354,34 @@ export default function PluginManager() {
       ),
     },
     {
-      title: 'Version',
-      dataIndex: 'currentVersion',
-      key: 'version',
+      title: "Version",
+      dataIndex: "currentVersion",
+      key: "version",
       width: 100,
     },
     {
-      title: 'Category',
-      key: 'category',
+      title: "Category",
+      key: "category",
       width: 120,
-      render: (_, record) => (
-        <Tag color="blue">{record.category}</Tag>
-      ),
+      render: (_, record) => <Tag color="blue">{record.category}</Tag>,
     },
     {
-      title: 'Status',
-      key: 'status',
+      title: "Status",
+      key: "status",
       width: 120,
       render: (_, record) => {
         if (record.isRunning) {
-          return <Tag color="green">Running</Tag>
+          return <Tag color="green">Running</Tag>;
         }
         if (record.userPlugin?.isEnabled) {
-          return <Tag color="blue">Enabled</Tag>
+          return <Tag color="blue">Enabled</Tag>;
         }
-        return <Tag color="default">Disabled</Tag>
+        return <Tag color="default">Disabled</Tag>;
       },
     },
     {
-      title: 'Enabled',
-      key: 'enabled',
+      title: "Enabled",
+      key: "enabled",
       width: 80,
       render: (_, record) => (
         <Switch
@@ -383,8 +392,8 @@ export default function PluginManager() {
       ),
     },
     {
-      title: 'Actions',
-      key: 'actions',
+      title: "Actions",
+      key: "actions",
       width: 200,
       render: (_, record) => (
         <Space>
@@ -413,7 +422,7 @@ export default function PluginManager() {
               onClick={() => showPluginSettings(record)}
             />
           </Tooltip>
-          {activeTab === 'installed' && (
+          {activeTab === "installed" && (
             <Popconfirm
               title="Are you sure you want to uninstall this plugin?"
               onConfirm={() => handleUninstall(record.id)}
@@ -433,7 +442,7 @@ export default function PluginManager() {
         </Space>
       ),
     },
-  ]
+  ];
 
   return (
     <div className="space-y-6">
@@ -449,8 +458,8 @@ export default function PluginManager() {
           <Button
             icon={<ReloadOutlined />}
             onClick={() => {
-              loadPlugins()
-              loadUserPlugins()
+              loadPlugins();
+              loadUserPlugins();
             }}
           >
             Refresh
@@ -480,7 +489,10 @@ export default function PluginManager() {
       {/* Plugin Tabs */}
       <Card>
         <Tabs activeKey={activeTab} onChange={setActiveTab}>
-          <TabPane tab={`Installed (${installedPlugins.length})`} key="installed">
+          <TabPane
+            tab={`Installed (${installedPlugins.length})`}
+            key="installed"
+          >
             <Table
               columns={columns}
               dataSource={getTableData()}
@@ -521,19 +533,21 @@ export default function PluginManager() {
           <div>
             <Title level={4}>Install from Local Folder</Title>
             <Text type="secondary">
-              Select a plugin distribution folder to install, or drag and drop a folder below.
+              Select a plugin distribution folder to install, or drag and drop a
+              folder below.
             </Text>
           </div>
-          
+
           {/* Drag and Drop Zone */}
           <div
             className={`
               border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200 cursor-pointer
-              ${isDragOver 
-                ? 'border-blue-500 bg-blue-50 border-solid shadow-lg' 
-                : selectedFolderPath 
-                  ? 'border-green-500 bg-green-50 border-solid shadow-md'
-                  : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'
+              ${
+                isDragOver
+                  ? "border-blue-500 bg-blue-50 border-solid shadow-lg"
+                  : selectedFolderPath
+                  ? "border-green-500 bg-green-50 border-solid shadow-md"
+                  : "border-gray-300 hover:border-blue-400 hover:bg-gray-50"
               }
             `}
             onDragOver={handleDragOver}
@@ -545,37 +559,38 @@ export default function PluginManager() {
             <div className="space-y-4">
               <div className="flex justify-center">
                 {selectedFolderPath ? (
-                  <FolderOpenOutlined 
-                    className="text-4xl text-green-500 animate-pulse" 
-                  />
+                  <FolderOpenOutlined className="text-4xl text-green-500 animate-pulse" />
                 ) : (
-                  <CloudUploadOutlined 
+                  <CloudUploadOutlined
                     className={`text-4xl ${
-                      isDragOver 
-                        ? 'text-blue-500 animate-bounce' 
-                        : 'text-gray-400'
-                    }`} 
+                      isDragOver
+                        ? "text-blue-500 animate-bounce"
+                        : "text-gray-400"
+                    }`}
                   />
                 )}
               </div>
               <div>
-                <Text className={`text-lg font-medium ${
-                  isDragOver 
-                    ? 'text-blue-600' 
-                    : selectedFolderPath 
-                      ? 'text-green-600' 
-                      : 'text-gray-600'
-                }`}>
-                  {isDragOver 
-                    ? 'Drop folder here' 
-                    : selectedFolderPath 
-                      ? '✓ Folder ready for installation!' 
-                      : 'Drag & drop a plugin folder here'
-                  }
+                <Text
+                  className={`text-lg font-medium ${
+                    isDragOver
+                      ? "text-blue-600"
+                      : selectedFolderPath
+                      ? "text-green-600"
+                      : "text-gray-600"
+                  }`}
+                >
+                  {isDragOver
+                    ? "Drop folder here"
+                    : selectedFolderPath
+                    ? "✓ Folder ready for installation!"
+                    : "Drag & drop a plugin folder here"}
                 </Text>
                 <br />
                 <Text type="secondary">
-                  {selectedFolderPath ? 'Click to select a different folder' : 'or click to browse for a folder'}
+                  {selectedFolderPath
+                    ? "Click to select a different folder"
+                    : "or click to browse for a folder"}
                 </Text>
               </div>
             </div>
@@ -586,14 +601,16 @@ export default function PluginManager() {
             <div className="bg-gray-50 p-3 rounded-lg">
               <Text strong>Selected folder:</Text>
               <br />
-              <Text code className="text-sm break-all">{selectedFolderPath}</Text>
+              <Text code className="text-sm break-all">
+                {selectedFolderPath}
+              </Text>
             </div>
           )}
 
           <div className="text-center">
             <Text type="secondary">or</Text>
           </div>
-          
+
           <Button
             type="default"
             icon={<FolderOpenOutlined />}
@@ -615,13 +632,14 @@ export default function PluginManager() {
             size="large"
             className="mt-4"
           >
-            {isInstalling ? 'Installing...' : 'Install Plugin'}
+            {isInstalling ? "Installing..." : "Install Plugin"}
           </Button>
 
           <div className="mt-4">
             <Text type="secondary">
               <InfoCircleOutlined className="mr-1" />
-              Plugin folders should contain a package.json file and the plugin code.
+              Plugin folders should contain a package.json file and the plugin
+              code.
             </Text>
           </div>
 
@@ -640,7 +658,7 @@ export default function PluginManager() {
             size="large"
             className="mt-2"
           >
-            {isInstalling ? 'Installing...' : 'Quick Install Plugin'}
+            {isInstalling ? "Installing..." : "Quick Install Plugin"}
           </Button>
         </div>
       </Modal>
@@ -656,13 +674,15 @@ export default function PluginManager() {
         {selectedPlugin && (
           <div className="space-y-4">
             <div className="flex items-center space-x-4">
-              <Avatar 
+              <Avatar
                 size={64}
-                src={selectedPlugin.iconUrl} 
+                src={selectedPlugin.iconUrl}
                 icon={<AppstoreOutlined />}
               />
               <div>
-                <Title level={4} className="mb-1">{selectedPlugin.name}</Title>
+                <Title level={4} className="mb-1">
+                  {selectedPlugin.name}
+                </Title>
                 <Text type="secondary">Version {selectedPlugin.version}</Text>
                 <div className="mt-2">
                   <Tag color="blue">{selectedPlugin.category}</Tag>
@@ -683,7 +703,7 @@ export default function PluginManager() {
             <div>
               <Title level={5}>Permissions</Title>
               <Space wrap>
-                {selectedPlugin.requiredPermissions.map(permission => (
+                {selectedPlugin.requiredPermissions.map((permission) => (
                   <Tag key={permission} color="orange">
                     {permission}
                   </Tag>
@@ -693,24 +713,28 @@ export default function PluginManager() {
 
             <div>
               <Title level={5}>Storage Usage</Title>
-              <Progress 
-                percent={Math.min((selectedPlugin.size / (100 * 1024 * 1024)) * 100, 100)} 
-                format={() => `${(selectedPlugin.size / 1024 / 1024).toFixed(1)} MB`}
+              <Progress
+                percent={Math.min(
+                  (selectedPlugin.size / (100 * 1024 * 1024)) * 100,
+                  100
+                )}
+                format={() =>
+                  `${(selectedPlugin.size / 1024 / 1024).toFixed(1)} MB`
+                }
               />
             </div>
 
             <div>
               <Title level={5}>Installation Date</Title>
               <Text>
-                {selectedPlugin.createdAt ? 
-                  new Date(selectedPlugin.createdAt).toLocaleDateString() : 
-                  'Unknown'
-                }
+                {selectedPlugin.createdAt
+                  ? new Date(selectedPlugin.createdAt).toLocaleDateString()
+                  : "Unknown"}
               </Text>
             </div>
           </div>
         )}
       </Modal>
     </div>
-  )
+  );
 }

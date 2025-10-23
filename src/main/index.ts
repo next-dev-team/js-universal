@@ -1,6 +1,5 @@
 import { app, BrowserWindow, ipcMain, dialog, shell } from "electron";
 import path from "path";
-import { fileURLToPath } from "url";
 import isDev from "electron-is-dev";
 import { PrismaClient } from "@prisma/client";
 import { IPC_CHANNELS } from "../../shared/types";
@@ -8,8 +7,24 @@ import { PluginManager } from "./plugin-manager";
 import { DatabaseService } from "./database-service";
 import { SecurityManager } from "./security-manager";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Configure Prisma for packaged app
+if (!isDev) {
+  // Set the path to the Prisma client in the packaged app
+  const prismaPath = path.join(
+    process.resourcesPath,
+    "node_modules",
+    ".prisma",
+    "client"
+  );
+  process.env.PRISMA_QUERY_ENGINE_LIBRARY = path.join(
+    prismaPath,
+    "query_engine-windows.dll.node"
+  );
+  process.env.PRISMA_QUERY_ENGINE_BINARY = path.join(
+    prismaPath,
+    "query_engine-windows.dll.node"
+  );
+}
 
 // Automatic restart is now handled by nodemon in the development script
 // which watches dist-main and dist-preload directories for changes
@@ -19,7 +34,7 @@ if (isDev) {
 
 export class ElectronApp {
   private mainWindow: BrowserWindow | null = null;
-  private prisma: PrismaClient;
+  private prisma: any;
   private pluginManager: PluginManager;
   private databaseService: DatabaseService;
   private securityManager: SecurityManager;
@@ -73,7 +88,9 @@ export class ElectronApp {
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
-        preload: path.join(__dirname, "../dist-preload/preload.js"),
+        preload: isDev
+          ? path.join(process.cwd(), "out/preload/index.cjs")
+          : path.join(__dirname, "../preload/index.cjs"),
         webSecurity: true,
       },
       // titleBarStyle: "hiddenInset",
@@ -81,8 +98,8 @@ export class ElectronApp {
     });
 
     // Load the app
-    if (isDev) {
-      this.mainWindow.loadURL("http://localhost:5174");
+    if (isDev && process.env["ELECTRON_RENDERER_URL"]) {
+      this.mainWindow.loadURL(process.env["ELECTRON_RENDERER_URL"]);
       this.mainWindow.webContents.openDevTools();
       console.log(
         "Development mode: Main window created and loaded at:",
@@ -93,9 +110,7 @@ export class ElectronApp {
       );
       console.log("Testing nodemon automatic restart functionality - UPDATED!");
     } else {
-      this.mainWindow.loadFile(
-        path.join(__dirname, "../dist-renderer/index.html")
-      );
+      this.mainWindow.loadFile(path.join(__dirname, "../renderer/index.html"));
     }
 
     // Show window when ready
