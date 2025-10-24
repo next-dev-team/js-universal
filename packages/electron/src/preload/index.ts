@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from "electron";
-import { IPC_CHANNELS } from "./types";
+import { IPC_CHANNELS } from "@js-universal/shared-types";
 
 console.log("Preload script loaded - testing automatic restart functionality");
 

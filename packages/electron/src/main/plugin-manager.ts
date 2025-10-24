@@ -6,7 +6,7 @@ import { SecurityManager } from "./security-manager";
 import { PluginInstaller } from "./plugin-installer";
 import { PluginSandbox } from "./plugin-sandbox";
 import { PluginAPIBridge } from "./plugin-api-bridge";
-import { Plugin, PluginManifest } from "../../shared/types";
+import { Plugin, PluginManifest } from "@js-universal/shared-types";
 
 export class PluginManager {
   private databaseService: DatabaseService;
@@ -28,7 +28,8 @@ export class PluginManager {
     this.pluginsDir = path.join(app.getPath("userData"), "plugins");
     this.pluginInstaller = new PluginInstaller(databaseService);
     this.pluginSandbox = new PluginSandbox(databaseService);
-    this.pluginAPIBridge = pluginAPIBridge || new PluginAPIBridge(databaseService);
+    this.pluginAPIBridge =
+      pluginAPIBridge || new PluginAPIBridge(databaseService);
     // Don't setup IPC handlers here - they will be set up by the main ElectronApp
   }
 
@@ -171,10 +172,10 @@ export class PluginManager {
       pluginId,
       manifest
     );
-    
+
     // Register plugin window with API bridge
     this.pluginAPIBridge.registerPluginWindow(pluginId, pluginWindow);
-    
+
     await this.pluginSandbox.loadPlugin(pluginId, pluginPath);
 
     this.pluginWindows.set(pluginId, pluginWindow);

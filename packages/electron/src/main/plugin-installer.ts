@@ -2,7 +2,7 @@ import { promises as fs } from "fs";
 import path from "path";
 import { app } from "electron";
 import { DatabaseService } from "./database-service";
-import { Plugin, PluginManifest } from "../../shared/types";
+import { Plugin, PluginManifest } from "@js-universal/shared-types";
 
 export class PluginInstaller {
   private databaseService: DatabaseService;

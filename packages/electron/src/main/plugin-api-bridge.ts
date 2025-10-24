@@ -2,7 +2,7 @@ import { BrowserWindow, ipcMain } from "electron";
 import { promises as fs } from "fs";
 import path from "path";
 import { DatabaseService } from "./database-service";
-import { PluginContext } from "../../shared/types";
+import { PluginContext } from "@js-universal/shared-types";
 
 export class PluginAPIBridge {
   private databaseService: DatabaseService;

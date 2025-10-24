@@ -6,7 +6,7 @@ import {
   PluginContext,
   PluginManifest,
   IPC_CHANNELS,
-} from "../../shared/types";
+} from "@js-universal/shared-types";
 import { DatabaseService } from "./database-service";
 
 export class PluginSandbox {

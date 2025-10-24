@@ -41,6 +41,7 @@
   "dependencies": {
     "@ant-design/icons": "^5.5.1",
     "@ant-design/v5-patch-for-react-19": "^1.0.3",
+    "@js-universal/shared-types": "workspace:*",
     "@prisma/client": "^6.1.0",
     "antd": "^5.22.6",
     "clsx": "^2.1.1",

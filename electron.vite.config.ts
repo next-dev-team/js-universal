@@ -9,7 +9,7 @@ export default defineConfig({
   main: {
     build: {
       lib: {
-        entry: path.resolve(__dirname, "packages/electron-main/src/index.ts"),
+        entry: path.resolve(__dirname, "packages/electron/src/main/index.ts"),
       },
       rollupOptions: {
         external: [
@@ -35,6 +35,10 @@ export default defineConfig({
       alias: {
         "@": path.resolve(__dirname, "./src"),
         "@shared": path.resolve(__dirname, "./shared"),
+        "@js-universal/shared-types": path.resolve(
+          __dirname,
+          "./packages/shared-types/dist/esm/index.js"
+        ),
       },
     },
   },
@@ -42,7 +46,10 @@ export default defineConfig({
     build: {
       rollupOptions: {
         input: {
-          index: path.resolve(__dirname, "packages/electron/src/preload/index.ts"),
+          index: path.resolve(
+            __dirname,
+            "packages/electron/src/preload/index.ts"
+          ),
           "plugin-preload": path.resolve(
             __dirname,
             "packages/electron/src/preload/plugin-preload.ts"
@@ -58,6 +65,10 @@ export default defineConfig({
       alias: {
         "@": path.resolve(__dirname, "./src"),
         "@shared": path.resolve(__dirname, "./shared"),
+        "@js-universal/shared-types": path.resolve(
+          __dirname,
+          "./packages/shared-types/dist/esm/index.js"
+        ),
       },
     },
   },
@@ -79,7 +90,10 @@ export default defineConfig({
     },
     build: {
       rollupOptions: {
-        input: "index.html",
+        input: path.resolve(
+          __dirname,
+          "packages/electron/src/renderer/index.html"
+        ),
         external: ["electron"],
         output: {
           manualChunks: isDevelopment

@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain, dialog, shell } from "electron";
 import path from "path";
 import isDev from "electron-is-dev";
 import { PrismaClient } from "@prisma/client";
-import { IPC_CHANNELS } from "../../shared/types";
+import { IPC_CHANNELS } from "@js-universal/shared-types";
 import { PluginManager } from "./plugin-manager";
 import { DatabaseService } from "./database-service";
 import { SecurityManager } from "./security-manager";

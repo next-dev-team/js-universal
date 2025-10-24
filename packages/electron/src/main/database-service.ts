@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { Plugin, UserPlugin, AppSettings } from "../../shared/types";
+import { Plugin, UserPlugin, AppSettings } from "@js-universal/shared-types";
 import path from "path";
 import isDev from "electron-is-dev";
 
