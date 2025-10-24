@@ -3,8 +3,13 @@ import { Plugin, UserPlugin, AppSettings } from "@js-universal/shared-types";
 import path from "path";
 import isDev from "electron-is-dev";
 
-// Configure Prisma for packaged app
-if (!isDev) {
+// Configure Prisma for development and production
+if (isDev) {
+  // For development, use the database in the project root
+  const dbPath = path.resolve(process.cwd(), "prisma", "dev.db");
+  process.env.DATABASE_URL = `file:${dbPath}`;
+  console.log("[DatabaseService] Development database path:", process.env.DATABASE_URL);
+} else {
   // Set the path to the Prisma client in the packaged app
   const prismaPath = path.join(
     process.resourcesPath,
@@ -24,6 +29,25 @@ if (!isDev) {
 
 export class DatabaseService {
   constructor(private prisma: any) {}
+
+  async initialize(): Promise<void> {
+    try {
+      console.log("[DatabaseService] Starting database connection...");
+      console.log("[DatabaseService] DATABASE_URL:", process.env.DATABASE_URL);
+      console.log("[DatabaseService] Prisma client:", !!this.prisma);
+      
+      await this.prisma.$connect();
+      console.log("[DatabaseService] Connected to database successfully");
+      
+      // Test a simple query to make sure the connection works
+      const testResult = await this.prisma.$queryRaw`SELECT 1 as test`;
+      console.log("[DatabaseService] Test query result:", testResult);
+    } catch (error) {
+      console.error("[DatabaseService] Failed to connect to database:", error);
+      console.error("[DatabaseService] Error details:", error);
+      throw error;
+    }
+  }
 
   // Plugin methods
   async getPlugins(): Promise<Plugin[]> {

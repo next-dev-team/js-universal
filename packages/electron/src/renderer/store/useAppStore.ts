@@ -10,6 +10,7 @@ interface AppState {
   userPlugins: UserPlugin[];
   installedPlugins: Plugin[];
   runningPlugins: string[];
+  webviewPlugins: string[];
 
   // Settings state
   settings: Record<string, any>;
@@ -26,6 +27,7 @@ interface AppState {
   setUserPlugins: (userPlugins: UserPlugin[]) => void;
   setInstalledPlugins: (plugins: Plugin[]) => void;
   setRunningPlugins: (pluginIds: string[]) => void;
+  setWebviewPlugins: (pluginIds: string[]) => void;
   setSetting: (key: string, value: any) => void;
   setSettings: (settings: Record<string, any>) => void;
   setCurrentPage: (page: string) => void;
@@ -77,6 +79,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   userPlugins: [],
   installedPlugins: [],
   runningPlugins: [],
+  webviewPlugins: [],
   settings: {},
   currentPage: "dashboard",
   sidebarCollapsed: false,
@@ -89,6 +92,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   setUserPlugins: (userPlugins) => set({ userPlugins }),
   setInstalledPlugins: (plugins) => set({ installedPlugins: plugins }),
   setRunningPlugins: (pluginIds) => set({ runningPlugins: pluginIds }),
+  setWebviewPlugins: (pluginIds) => set({ webviewPlugins: pluginIds }),
   setSetting: (key, value) =>
     set((state) => ({
       settings: { ...state.settings, [key]: value },

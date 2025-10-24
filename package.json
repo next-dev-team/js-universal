@@ -15,6 +15,9 @@
   "main": "out/main/index.js",
   "homepage": "./",
   "scripts": {
+    "===========PLUGIN SCRIPT===========": "================================================",
+    "counter-app-dev": "cd apps/counter-app-dev && npm run dev",
+    "=======================": "==================================================",
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "preview": "electron-vite preview",

@@ -1,6 +1,14 @@
-import { useState } from 'react'
-import { Layout as AntLayout, Menu, Button, Avatar, Dropdown, Space, Typography } from 'antd'
-import { 
+import { useState } from "react";
+import {
+  Layout as AntLayout,
+  Menu,
+  Button,
+  Avatar,
+  Dropdown,
+  Space,
+  Typography,
+} from "antd";
+import {
   DashboardOutlined,
   ShoppingOutlined,
   SettingOutlined,
@@ -22,101 +30,104 @@ import {
   MenuUnfoldOutlined,
   LogoutOutlined,
   MinusOutlined,
-  BorderOutlined
-} from '@ant-design/icons'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { useAppStore } from '@/store/useAppStore'
+  BorderOutlined,
+} from "@ant-design/icons";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAppStore } from "@/store/useAppStore";
 
-const { Header, Sider, Content } = AntLayout
-const { Text } = Typography
+const { Header, Sider, Content } = AntLayout;
+const { Text } = Typography;
 
 interface LayoutProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export default function Layout({ children }: LayoutProps) {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const { 
-    sidebarCollapsed, 
-    setSidebarCollapsed, 
-    currentUser, 
-    theme 
-  } = useAppStore()
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { sidebarCollapsed, setSidebarCollapsed, currentUser, theme } =
+    useAppStore();
 
   const menuItems = [
     {
-      key: '/dashboard',
+      key: "/dashboard",
       icon: <DashboardOutlined />,
-      label: 'Dashboard',
+      label: "Dashboard",
     },
     {
-      key: '/marketplace',
+      key: "/marketplace",
       icon: <AppstoreOutlined />,
-      label: 'Marketplace',
+      label: "Marketplace",
     },
     {
-      key: '/plugins',
+      key: "/plugins",
       icon: <AppstoreOutlined />,
-      label: 'Plugin Manager',
+      label: "Plugin Manager",
     },
     {
-      key: '/settings',
+      key: "/workspace",
+      icon: <AppstoreOutlined />,
+      label: "Plugin Workspace",
+    },
+    {
+      key: "/settings",
       icon: <SettingOutlined />,
-      label: 'Settings',
+      label: "Settings",
     },
     {
-      key: '/developer',
+      key: "/developer",
       icon: <CodeOutlined />,
-      label: 'Developer Console',
+      label: "Developer Console",
     },
-  ]
+  ];
 
   const userMenuItems = [
     {
-      key: 'profile',
+      key: "profile",
       icon: <UserOutlined />,
-      label: 'Profile',
+      label: "Profile",
     },
     {
-      key: 'logout',
+      key: "logout",
       icon: <LogoutOutlined />,
-      label: 'Logout',
+      label: "Logout",
       danger: true,
     },
-  ]
+  ];
 
   const handleMenuClick = ({ key }: { key: string }) => {
-    navigate(key)
-  }
+    navigate(key);
+  };
 
   const handleUserMenuClick = ({ key }: { key: string }) => {
-    if (key === 'logout') {
+    if (key === "logout") {
       // Handle logout
-      console.log('Logout clicked')
-    } else if (key === 'profile') {
+      console.log("Logout clicked");
+    } else if (key === "profile") {
       // Handle profile
-      console.log('Profile clicked')
+      console.log("Profile clicked");
     }
-  }
+  };
 
-  const handleWindowControl = async (action: 'minimize' | 'maximize' | 'close') => {
+  const handleWindowControl = async (
+    action: "minimize" | "maximize" | "close"
+  ) => {
     try {
       switch (action) {
-        case 'minimize':
-          await window.electronAPI.minimizeWindow()
-          break
-        case 'maximize':
-          await window.electronAPI.maximizeWindow()
-          break
-        case 'close':
-          await window.electronAPI.closeWindow()
-          break
+        case "minimize":
+          await window.electronAPI.minimizeWindow();
+          break;
+        case "maximize":
+          await window.electronAPI.maximizeWindow();
+          break;
+        case "close":
+          await window.electronAPI.closeWindow();
+          break;
       }
     } catch (error) {
-      console.error('Window control error:', error)
+      console.error("Window control error:", error);
     }
-  }
+  };
 
   return (
     <AntLayout className="h-screen">
@@ -133,21 +144,21 @@ export default function Layout({ children }: LayoutProps) {
             type="text"
             size="small"
             icon={<MinusOutlined />}
-            onClick={() => handleWindowControl('minimize')}
+            onClick={() => handleWindowControl("minimize")}
             className="hover:bg-gray-200 dark:hover:bg-gray-700"
           />
           <Button
             type="text"
             size="small"
             icon={<BorderOutlined />}
-            onClick={() => handleWindowControl('maximize')}
+            onClick={() => handleWindowControl("maximize")}
             className="hover:bg-gray-200 dark:hover:bg-gray-700"
           />
           <Button
             type="text"
             size="small"
             icon={<CloseOutlined />}
-            onClick={() => handleWindowControl('close')}
+            onClick={() => handleWindowControl("close")}
             className="hover:bg-red-500 hover:text-white"
           />
         </div>
@@ -159,7 +170,7 @@ export default function Layout({ children }: LayoutProps) {
           trigger={null}
           collapsible
           collapsed={sidebarCollapsed}
-          theme={theme === 'dark' ? 'dark' : 'light'}
+          theme={theme === "dark" ? "dark" : "light"}
           className="border-r border-gray-200 dark:border-gray-700"
         >
           <div className="p-4 text-center border-b border-gray-200 dark:border-gray-700">
@@ -177,7 +188,7 @@ export default function Layout({ children }: LayoutProps) {
           </div>
 
           <Menu
-            theme={theme === 'dark' ? 'dark' : 'light'}
+            theme={theme === "dark" ? "dark" : "light"}
             mode="inline"
             selectedKeys={[location.pathname]}
             items={menuItems}
@@ -192,7 +203,13 @@ export default function Layout({ children }: LayoutProps) {
             <div className="flex items-center">
               <Button
                 type="text"
-                icon={sidebarCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                icon={
+                  sidebarCollapsed ? (
+                    <MenuUnfoldOutlined />
+                  ) : (
+                    <MenuFoldOutlined />
+                  )
+                }
                 onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
                 className="mr-4"
               />
@@ -208,7 +225,7 @@ export default function Layout({ children }: LayoutProps) {
               >
                 <Space className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 px-2 py-1 rounded">
                   <Avatar size="small" icon={<UserOutlined />} />
-                  <Text>{currentUser?.username || 'User'}</Text>
+                  <Text>{currentUser?.username || "User"}</Text>
                 </Space>
               </Dropdown>
             </div>
@@ -216,12 +233,10 @@ export default function Layout({ children }: LayoutProps) {
 
           {/* Content */}
           <Content className="bg-gray-50 dark:bg-gray-900 overflow-auto">
-            <div className="p-6">
-              {children}
-            </div>
+            <div className="p-6">{children}</div>
           </Content>
         </AntLayout>
       </AntLayout>
     </AntLayout>
-  )
+  );
 }

@@ -6,6 +6,7 @@ import Layout from "@/components/Layout";
 import Dashboard from "@/pages/Dashboard";
 import Marketplace from "@/pages/Marketplace";
 import PluginManager from "@/pages/PluginManager";
+import PluginWorkspace from "@/pages/PluginWorkspace";
 import Settings from "@/pages/Settings";
 import DeveloperConsole from "@/pages/DeveloperConsole";
 
@@ -58,6 +59,7 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/marketplace" element={<Marketplace />} />
             <Route path="/plugins" element={<PluginManager />} />
+            <Route path="/workspace" element={<PluginWorkspace />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/developer" element={<DeveloperConsole />} />
           </Routes>

@@ -184,21 +184,43 @@ npm run db:seed      # Seed database with sample data
 
 ### Plugin Development
 
-1. **Create a new plugin directory** in `/plugins/`
+1. **Create a new plugin directory** in `/apps/`
 2. **Add a `package.json`** with plugin manifest
 3. **Develop your plugin** using HTML, CSS, and JavaScript
 4. **Use the Plugin API** for storage, notifications, and more
-5. **Test in the Developer Console**
+5. **Test with hot reload** using the development mode
+
+#### Development Mode Features
+
+- **Hot Reload**: Automatic plugin reloading on file changes
+- **Real-time Communication**: Message passing between plugins and main app
+- **Development Tools**: Built-in testing utilities and performance monitoring
+- **Debug Console**: Enhanced logging and debugging capabilities
+
+#### Quick Start for Plugin Development
+
+```bash
+# Start the main Electron app
+npm run dev
+
+# Start the development plugin server (counter-app-dev example)
+npm run counter-app-dev
+```
+
+The counter-app-dev plugin demonstrates all development features including hot reload, real-time communication, and testing utilities.
+
+See [Plugin Development Guide](docs/PLUGIN_DEVELOPMENT_GUIDE.md) for detailed information.
 
 Example plugin structure:
 
 ```
-plugins/my-plugin/
+apps/my-plugin/
 ├── package.json     # Plugin manifest
 ├── index.html       # Entry point
 ├── script.js        # Plugin logic
 ├── styles.css       # Plugin styles
-└── icon.svg         # Plugin icon
+├── vite.config.js   # Development server config
+└── README.md        # Plugin documentation
 ```
 
 ## 🔌 Plugin System
