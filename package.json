@@ -39,7 +39,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "pinokiod:setup": "cd pinokiod && npm install && cd ..",
-    "preinstall": "node scripts/check-package-manager.js",
+    "preinstall": "node scripts/check-package-manager.mjs",
     "postinstall": "npm run db:generate && patch-package",
     "build:workspace": "turbo run build",
     "lint:workspace": "turbo run lint",

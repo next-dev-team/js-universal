@@ -5,8 +5,8 @@
  * Ensures only pnpm is used in this monorepo
  */
 
-const { execSync } = require("child_process");
-const path = require("path");
+import { execSync } from "child_process";
+import path from "path";
 
 // Get the package manager being used
 const userAgent = process.env.npm_config_user_agent;

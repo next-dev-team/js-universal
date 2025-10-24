@@ -51,6 +51,15 @@ if %errorlevel% neq 0 (
     echo [WARNING] Postinstall scripts failed, but continuing...
 )
 
+REM Test package manager enforcement
+echo [INFO] Testing package manager enforcement...
+node scripts/check-package-manager.mjs >nul 2>&1
+if %errorlevel% neq 0 (
+    echo [WARNING] Package manager enforcement test failed
+) else (
+    echo [SUCCESS] Package manager enforcement working correctly
+)
+
 echo [SUCCESS] 🎉 Setup completed successfully!
 echo.
 echo 📋 Next steps:

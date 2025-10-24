@@ -77,6 +77,14 @@ pnpm run db:generate
 print_status "Running postinstall scripts..."
 pnpm run postinstall
 
+# Test package manager enforcement
+print_status "Testing package manager enforcement..."
+if node scripts/check-package-manager.mjs &> /dev/null; then
+    print_success "Package manager enforcement working correctly"
+else
+    print_warning "Package manager enforcement test failed"
+fi
+
 # Verify installation
 print_status "Verifying installation..."
 if pnpm run build:workspace --dry-run &> /dev/null; then
