@@ -4,6 +4,12 @@
   "packageManager": "pnpm@10.19.0",
   "version": "0.0.0",
   "description": "A modern Electron app with plugin system built with React and TypeScript",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0",
+    "npm": "please-use-pnpm",
+    "yarn": "please-use-pnpm"
+  },
   "author": "Electron Plugin App Team",
   "type": "module",
   "main": "out/main/index.js",
@@ -33,10 +39,22 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "pinokiod:setup": "cd pinokiod && npm install && cd ..",
+    "preinstall": "node scripts/check-package-manager.js",
     "postinstall": "npm run db:generate && patch-package",
     "build:workspace": "turbo run build",
     "lint:workspace": "turbo run lint",
-    "test:workspace": "turbo run test"
+    "test:workspace": "turbo run test",
+    "test:watch": "turbo run test:watch",
+    "check-types": "turbo run check-types",
+    "format": "turbo run format",
+    "clean": "turbo run clean",
+    "watch": "turbo watch dev lint test",
+    "install:clean": "pnpm install --frozen-lockfile",
+    "install:dev": "pnpm install --dev",
+    "install:prod": "pnpm install --prod --frozen-lockfile",
+    "update:deps": "pnpm update --recursive",
+    "audit:fix": "pnpm audit --fix",
+    "outdated": "pnpm outdated --recursive"
   },
   "dependencies": {
     "@ant-design/icons": "^5.5.1",
@@ -61,6 +79,8 @@
     "zustand": "^5.0.3"
   },
   "devDependencies": {
+    "@js-universal/shared-config": "workspace:*",
+    "@js-universal/shared-deps": "workspace:*",
     "@eslint/js": "^9.25.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
@@ -84,6 +104,7 @@
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
     "happy-dom": "^20.0.7",
+    "only-allow": "^1.2.1",
     "patch-package": "^8.0.1",
     "postcss": "^8.5.3",
     "prisma": "^6.1.0",

@@ -12,6 +12,8 @@
     "vite/",
     "jest/",
     "vitest/",
+    "plugin/",
+    "workspace/",
     "index.js"
   ],
   "exports": {
@@ -26,19 +28,26 @@
     "./typescript/base": "./typescript/base.json",
     "./typescript/react": "./typescript/react.json",
     "./typescript/node": "./typescript/node.json",
+    "./typescript/plugin": "./typescript/plugin.json",
     "./rollup": "./rollup/index.js",
     "./rollup/library": "./rollup/library.js",
     "./rollup/react": "./rollup/react.js",
     "./vite": "./vite/index.js",
     "./vite/library": "./vite/library.js",
     "./vite/react": "./vite/react.js",
+    "./vite/plugin": "./vite/plugin.js",
     "./jest": "./jest/index.js",
-    "./vitest": "./vitest/index.js"
+    "./vitest": "./vitest/index.js",
+    "./plugin": "./plugin/index.js",
+    "./workspace": "./workspace/index.js"
   },
   "scripts": {
+    "build": "echo \"No build needed for config package\"",
     "test": "echo \"No tests for config package\"",
     "lint": "echo \"No linting for config package\"",
-    "clean": "echo \"No build artifacts to clean\""
+    "clean": "echo \"No build artifacts to clean\"",
+    "check-types": "echo \"No type checking for config package\"",
+    "format": "echo \"No formatting for config package\""
   },
   "keywords": [
     "config",

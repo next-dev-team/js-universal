@@ -3,17 +3,45 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", "out/**", "build/**"],
+      "outputs": [
+        "dist/**",
+        "out/**",
+        "build/**",
+        ".next/**",
+        "!.next/cache/**"
+      ],
       "inputs": ["src/**", "tsconfig.json", "package.json"]
     },
     "lint": {
       "dependsOn": ["^lint"],
-      "inputs": ["src/**", "*.js", "*.ts", "*.tsx", ".eslintrc*", "eslint.config.*"]
+      "inputs": [
+        "src/**",
+        "*.js",
+        "*.ts",
+        "*.tsx",
+        ".eslintrc*",
+        "eslint.config.*"
+      ]
     },
     "test": {
       "dependsOn": ["^test"],
       "outputs": ["coverage/**"],
-      "inputs": ["src/**", "test/**", "*.test.*", "*.spec.*", "vitest.config.*", "jest.config.*"]
+      "inputs": [
+        "src/**",
+        "test/**",
+        "*.test.*",
+        "*.spec.*",
+        "vitest.config.*",
+        "jest.config.*"
+      ]
+    },
+    "test:watch": {
+      "cache": false,
+      "persistent": true
+    },
+    "check-types": {
+      "dependsOn": ["^check-types"],
+      "inputs": ["src/**", "tsconfig.json", "package.json"]
     },
     "dev": {
       "cache": false,
@@ -22,11 +50,16 @@
     "clean": {
       "cache": false,
       "outputs": []
+    },
+    "format": {
+      "inputs": ["src/**", "*.js", "*.ts", "*.tsx", "*.json", "*.md"],
+      "outputs": []
     }
   },
   "globalDependencies": [
     "tsconfig.json",
     "tsconfig.base.json",
-    "package.json"
+    "package.json",
+    "turbo.jsonc"
   ]
 }

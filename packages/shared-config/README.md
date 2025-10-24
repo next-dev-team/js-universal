@@ -13,25 +13,31 @@ npm install @js-universal/shared-config --save-dev
 ### ESLint
 
 ```javascript
-// .eslintrc.js
-const { base, react, typescript, node } = require('@js-universal/shared-config/eslint');
+// eslint.config.js
+import { base, react, typescript } from "@js-universal/shared-config/eslint";
 
-module.exports = {
-  ...base,
-  // or extend specific configurations
-  extends: [
-    ...base.extends,
-    ...react.extends,
-    ...typescript.extends,
-  ],
-};
+export default [
+  { ignores: ["dist", "out", "build", "coverage"] },
+  {
+    ...base,
+    files: ["**/*.{js,ts,tsx}"],
+  },
+  {
+    ...typescript,
+    files: ["**/*.{ts,tsx}"],
+  },
+  {
+    ...react,
+    files: ["**/*.{tsx,jsx}"],
+  },
+];
 ```
 
 ### Prettier
 
 ```javascript
 // prettier.config.js
-module.exports = require('@js-universal/shared-config/prettier');
+module.exports = require("@js-universal/shared-config/prettier");
 ```
 
 ### TypeScript
@@ -51,40 +57,17 @@ module.exports = require('@js-universal/shared-config/prettier');
 {
   "extends": "@js-universal/shared-config/typescript/node.json"
 }
-```
 
-### Rollup
-
-```javascript
-// rollup.config.js
-import { createLibraryConfig } from '@js-universal/shared-config/rollup/library';
-
-export default createLibraryConfig({
-  input: 'src/index.ts',
-  packageName: 'MyLibrary',
-});
-
-// For React libraries
-import { createReactLibraryConfig } from '@js-universal/shared-config/rollup/react';
-
-export default createReactLibraryConfig({
-  input: 'src/index.ts',
-  packageName: 'MyReactLibrary',
-});
+// For Electron plugins
+{
+  "extends": "@js-universal/shared-config/typescript/plugin.json"
+}
 ```
 
 ### Vite
 
 ```javascript
 // vite.config.js
-import { createLibraryConfig } from '@js-universal/shared-config/vite/library';
-
-export default createLibraryConfig({
-  entry: 'src/index.ts',
-  name: 'MyLibrary',
-});
-
-// For React applications
 import { createReactApp } from '@js-universal/shared-config/vite/react';
 
 export default createReactApp();
@@ -96,61 +79,140 @@ export default createReactLibrary({
   entry: 'src/index.ts',
   name: 'MyReactLibrary',
 });
-```
 
-### Jest
+// For Electron plugins
+import { createTrelloCloneViteConfig } from '@js-universal/shared-config/vite/plugin';
 
-```javascript
-// jest.config.js
-import { createJestConfig, createReactJestConfig } from '@js-universal/shared-config/jest';
-
-export default createJestConfig();
-
-// For React projects
-export default createReactJestConfig();
+export default createTrelloCloneViteConfig({
+  base: './',
+});
 ```
 
 ### Vitest
 
 ```javascript
-// vitest.config.js
-import { createVitestConfig, createReactVitestConfig } from '@js-universal/shared-config/vitest';
+// vitest.config.ts
+import { createReactVitestConfig } from "@js-universal/shared-config/vitest";
 
-export default createVitestConfig();
-
-// For React projects
-export default createReactVitestConfig();
+export default createReactVitestConfig({
+  setupFiles: ["./tests/setup.ts"],
+  include: ["tests/**/*.test.ts", "tests/**/*.test.tsx"],
+});
 ```
 
-## Configuration Options
+### Plugin Configuration
 
-Each configuration function accepts an options object to customize the behavior:
+```javascript
+// Generate plugin package.json
+import { createTodoPluginConfig } from "@js-universal/shared-config/plugin";
 
-### ESLint Options
+const packageJson = createTodoPluginConfig({
+  name: "my-todo-plugin",
+  description: "My custom todo plugin",
+});
+```
 
-- `extends`: Additional ESLint configurations to extend
-- `rules`: Custom rules to override
-- `env`: Environment settings
-- `parserOptions`: Parser configuration
+### Workspace Configuration
 
-### Rollup/Vite Options
+```javascript
+// Generate complete workspace setup
+import { generateWorkspaceConfig } from "@js-universal/shared-config/workspace";
 
-- `input`/`entry`: Entry point file
-- `outputDir`/`outDir`: Output directory
-- `packageName`/`name`: Package name for UMD builds
-- `external`: External dependencies
-- `globals`: Global variable mappings
-- `minify`: Enable minification
-- `sourcemap`: Generate source maps
-- `declaration`: Generate TypeScript declarations
+const workspaceConfig = generateWorkspaceConfig({
+  packages: ["shared-utils", "shared-ui"],
+  apps: ["todo-plugin", "trello-clone"],
+  plugins: ["counter-plugin"],
+});
+```
 
-### Jest/Vitest Options
+## Configuration Presets
 
-- `testEnvironment`/`environment`: Test environment (jsdom, node)
-- `setupFilesAfterEnv`/`setupFiles`: Setup files
-- `collectCoverageFrom`: Coverage collection patterns
-- `coverageThreshold`: Coverage thresholds
+### ESLint Presets
 
-## License
+- `base` - Basic JavaScript/TypeScript rules
+- `react` - React-specific rules
+- `typescript` - TypeScript-specific rules
+- `node` - Node.js-specific rules
 
-MIT
+### TypeScript Presets
+
+- `base.json` - Base TypeScript configuration
+- `react.json` - React project configuration
+- `node.json` - Node.js project configuration
+- `plugin.json` - Electron plugin configuration
+
+### Vite Presets
+
+- `createReactApp()` - React application
+- `createReactLibrary()` - React library
+- `createTrelloCloneViteConfig()` - Trello clone plugin
+- `createTodoPluginViteConfig()` - Todo plugin
+- `createCounterPluginViteConfig()` - Counter plugin
+
+### Vitest Presets
+
+- `createReactVitestConfig()` - React testing setup
+- `createNodeVitestConfig()` - Node.js testing setup
+- `createLibraryVitestConfig()` - Library testing setup
+
+## Plugin Types
+
+### Todo Plugin
+
+```javascript
+import { createTodoPluginConfig } from "@js-universal/shared-config/plugin";
+
+const config = createTodoPluginConfig({
+  name: "my-todo",
+  description: "My todo plugin",
+});
+```
+
+### Counter Plugin
+
+```javascript
+import { createCounterPluginConfig } from "@js-universal/shared-config/plugin";
+
+const config = createCounterPluginConfig({
+  name: "my-counter",
+  description: "My counter plugin",
+});
+```
+
+### Trello Clone
+
+```javascript
+import { createTrelloCloneConfig } from "@js-universal/shared-config/plugin";
+
+const config = createTrelloCloneConfig({
+  name: "my-trello",
+  description: "My Trello clone",
+});
+```
+
+## Benefits
+
+1. **Consistency** - All projects use the same configuration standards
+2. **Maintainability** - Update configurations in one place
+3. **DRY Principle** - No duplicate configuration code
+4. **Type Safety** - TypeScript configurations with proper types
+5. **Extensibility** - Easy to extend and customize configurations
+6. **Documentation** - Well-documented configuration options
+
+## Contributing
+
+When adding new configurations:
+
+1. Add the configuration to the appropriate directory
+2. Update the `package.json` exports
+3. Add documentation to this README
+4. Test with existing projects
+5. Update version and publish
+
+## Version Compatibility
+
+- ESLint: ^9.25.0
+- TypeScript: ^5.8.3
+- Vite: ^7.1.11
+- Vitest: ^3.2.4
+- React: ^18.2.0

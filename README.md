@@ -4,6 +4,25 @@
 
 A modern, extensible desktop application built with Electron and React that provides a plugin-based ecosystem for running mini-applications. Designed with AI development in mind, featuring a secure sandbox environment and comprehensive plugin management system.
 
+## ⚠️ Package Manager Requirement
+
+**This project requires pnpm as the package manager.** Using npm or yarn will result in errors.
+
+### Quick Setup
+
+```bash
+# Install pnpm globally
+npm install -g pnpm
+
+# Run the setup script
+./scripts/setup.sh    # Linux/macOS
+# or
+scripts/setup.bat     # Windows
+
+# Or manually install dependencies
+pnpm install
+```
+
 ![Electron Super App Demo](.trae/documents/demo_app.jpg)
 _Plugin Manager interface showing Counter Plugin and Todo Plugin running in sandboxed windows_
 
