@@ -191,7 +191,7 @@ interface ValidationResult {
 export interface PluginStore {
   search(query: string, options?: SearchOptions): Promise<PluginSearchResult[]>;
   get(id: string): Promise<PluginStoreEntry | undefined>;
-  download(id: string, version?: string): Promise<Buffer>;
+  download(id: string, version?: string): Promise<Uint8Array>;
   getVersions(id: string): Promise<string[]>;
   getMetadata(id: string, version?: string): Promise<PluginMetadata>;
 }
@@ -235,7 +235,7 @@ interface PluginStoreEntry {
 }
 
 // Plugin events
-export interface PluginEvent {
+export interface PluginSystemEvent {
   type: 'plugin:registered' | 'plugin:unregistered' | 'plugin:loaded' | 'plugin:unloaded' | 
         'plugin:started' | 'plugin:stopped' | 'plugin:error' | 'plugin:configured';
   pluginId: string;

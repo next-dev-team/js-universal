@@ -45,7 +45,7 @@ router.get("/version", async (req: Request, res: Response): Promise<void> => {
     // Get versions from Pinokio daemon
     try {
       const response = await fetch(`${PINOKIO_DAEMON_URL}/pinokio/version`);
-      const data = await response.json();
+      const data = await response.json() as any;
 
       versions.pinokiod = data.pinokiod
         ? `pinokiod@${data.pinokiod}`
@@ -106,7 +106,7 @@ router.get(
       } else {
         // Get other versions from Pinokio daemon
         const response = await fetch(`${PINOKIO_DAEMON_URL}/pinokio/version`);
-        const data = await response.json();
+        const data = await response.json() as any;
 
         if (component === "pinokiod") {
           version = data.pinokiod
@@ -204,7 +204,7 @@ router.get(
         throw new Error(`Daemon responded with ${response.status}`);
       }
 
-      const data = await response.json();
+      const data = await response.json() as any;
       res.status(200).json({
         success: true,
         data: data.text || "",

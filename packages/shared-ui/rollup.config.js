@@ -3,8 +3,9 @@ import commonjs from '@rollup/plugin-commonjs';
 import typescript from '@rollup/plugin-typescript';
 import peerDepsExternal from 'rollup-plugin-peer-deps-external';
 import dts from 'rollup-plugin-dts';
+import { readFileSync } from 'fs';
 
-const packageJson = require('./package.json');
+const packageJson = JSON.parse(readFileSync('./package.json', 'utf8'));
 
 export default [
   {

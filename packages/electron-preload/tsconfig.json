@@ -1,5 +1,5 @@
 {
-  "extends": "../../packages/shared-config/typescript/node.json",
+  "extends": "@js-universal/shared-config/typescript/node.json",
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src"

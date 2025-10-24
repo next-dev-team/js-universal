@@ -26,7 +26,7 @@
     },
     
     // Types for React development
-    "types": ["react", "react-dom", "node"]
+    "types": ["react", "react-dom"]
   },
   "include": [
     "src/**/*",

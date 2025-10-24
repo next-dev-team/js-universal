@@ -1,4 +1,4 @@
-import { Dictionary, PaginatedResponse, SortParams, FilterCondition } from './common';
+import { Dictionary, PaginatedResponse, FilterCondition } from './common';
 
 // HTTP Methods
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS';
@@ -63,7 +63,8 @@ export interface QueryParams {
   [key: string]: string | number | boolean | string[] | number[] | undefined;
 }
 
-export interface ListQueryParams extends QueryParams {
+export interface ListQueryParams {
+  [key: string]: string | number | boolean | string[] | number[] | FilterCondition[] | undefined;
   page?: number;
   limit?: number;
   sort?: string;
@@ -166,7 +167,7 @@ export interface RateLimitInfo {
 }
 
 // Cache types
-export interface CacheConfig {
+export interface ApiCacheConfig {
   ttl?: number; // Time to live in seconds
   maxSize?: number;
   strategy?: 'lru' | 'fifo' | 'lifo';

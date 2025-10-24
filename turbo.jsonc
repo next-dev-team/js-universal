@@ -3,17 +3,30 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", "out/**", "build/**"]
+      "outputs": ["dist/**", "out/**", "build/**"],
+      "inputs": ["src/**", "tsconfig.json", "package.json"]
     },
     "lint": {
-      "dependsOn": ["^lint"]
+      "dependsOn": ["^lint"],
+      "inputs": ["src/**", "*.js", "*.ts", "*.tsx", ".eslintrc*", "eslint.config.*"]
     },
     "test": {
       "dependsOn": ["^test"],
-      "outputs": ["coverage/**"]
+      "outputs": ["coverage/**"],
+      "inputs": ["src/**", "test/**", "*.test.*", "*.spec.*", "vitest.config.*", "jest.config.*"]
     },
     "dev": {
-      "cache": false
+      "cache": false,
+      "persistent": true
+    },
+    "clean": {
+      "cache": false,
+      "outputs": []
     }
-  }
+  },
+  "globalDependencies": [
+    "tsconfig.json",
+    "tsconfig.base.json",
+    "package.json"
+  ]
 }

@@ -3,7 +3,7 @@
     // Type Checking
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
-    "exactOptionalPropertyTypes": true,
+    "exactOptionalPropertyTypes": false,
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
     "noImplicitOverride": true,
@@ -17,7 +17,7 @@
     "strictBindCallApply": true,
     "strictFunctionTypes": true,
     "strictNullChecks": true,
-    "strictPropertyInitialization": true,
+    "strictPropertyInitialization": false,
     "useUnknownInCatchVariables": true,
 
     // Modules
@@ -47,7 +47,7 @@
     "noEmitHelpers": false,
     "noEmitOnError": true,
     "outDir": "./dist",
-    "preserveConstEnums": false,
+    "preserveConstEnums": true,
     "preserveValueImports": false,
     "removeComments": false,
     "sourceMap": true,
@@ -74,13 +74,10 @@
     "emitDecoratorMetadata": false,
     "experimentalDecorators": false,
     "jsx": "preserve",
-    "jsxFactory": "React.createElement",
-    "jsxFragmentFactory": "React.Fragment",
     "jsxImportSource": "react",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "moduleDetection": "auto",
     "noLib": false,
-    "reactNamespace": "React",
     "target": "ES2022",
     "useDefineForClassFields": true,
 

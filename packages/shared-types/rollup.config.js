@@ -24,6 +24,10 @@ export default [
         tsconfig: './tsconfig.json',
         declaration: false,
         declarationDir: undefined,
+        declarationMap: false,
+        compilerOptions: {
+          types: []
+        }
       }),
     ],
   },
@@ -37,8 +41,13 @@ export default [
       typescript({
         tsconfig: './tsconfig.json',
         declaration: true,
-        declarationDir: 'dist/esm/types',
+        declarationDir: './dist/esm/types',
+        declarationMap: true,
         emitDeclarationOnly: true,
+        compilerOptions: {
+          types: [],
+          outDir: './dist/esm/types'
+        }
       }),
     ],
   },

@@ -55,3 +55,4 @@ android
 .metro-health-check*
 
 /node_modules/
+.rollup.cache/

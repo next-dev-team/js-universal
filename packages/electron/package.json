@@ -96,24 +96,6 @@
     "vitest": "^3.2.4",
     "turbo": "2.5.8"
   },
-  "turbo": {
-    "tasks": {
-      "build": {
-        "dependsOn": ["^build"],
-        "outputs": ["dist/**", "out/**", "build/**"]
-      },
-      "lint": {
-        "dependsOn": ["^lint"]
-      },
-      "test": {
-        "dependsOn": ["^test"],
-        "outputs": ["coverage/**"]
-      },
-      "dev": {
-        "cache": false
-      }
-    }
-  },
   "build": {
     "appId": "com.superapp.electron-plugin-app",
     "productName": "Super App",

@@ -42,10 +42,10 @@ export default defineConfig({
     build: {
       rollupOptions: {
         input: {
-          index: path.resolve(__dirname, "src/preload/index.ts"),
+          index: path.resolve(__dirname, "packages/electron/src/preload/index.ts"),
           "plugin-preload": path.resolve(
             __dirname,
-            "src/preload/plugin-preload.ts"
+            "packages/electron/src/preload/plugin-preload.ts"
           ),
         },
         external: ["electron"],
@@ -62,6 +62,7 @@ export default defineConfig({
     },
   },
   renderer: {
+    root: path.resolve(__dirname, "packages/electron/src/renderer"),
     plugins: [
       react({
         babel: {
@@ -72,12 +73,13 @@ export default defineConfig({
     ],
     resolve: {
       alias: {
-        "@": path.resolve(__dirname, "./src/renderer"),
+        "@": path.resolve(__dirname, "./packages/electron/src/renderer"),
         "@shared": path.resolve(__dirname, "./shared"),
       },
     },
     build: {
       rollupOptions: {
+        input: "index.html",
         external: ["electron"],
         output: {
           manualChunks: isDevelopment

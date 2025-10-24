@@ -82,14 +82,13 @@ export interface NotificationEvent extends UIEvent {
 }
 
 // Data events
-export interface DataEvent<T = any> extends BaseEvent<T> {
+export interface DataEvent<T = any> extends BaseEvent<{
+  entity: string;
+  data?: T;
+  id?: string | number;
+  error?: string;
+}> {
   type: 'data:create' | 'data:update' | 'data:delete' | 'data:fetch' | 'data:error';
-  payload: {
-    entity: string;
-    data?: T;
-    id?: string | number;
-    error?: string;
-  };
 }
 
 export interface CacheEvent extends BaseEvent {
@@ -102,15 +101,14 @@ export interface CacheEvent extends BaseEvent {
 }
 
 // Form events
-export interface FormEvent<T = any> extends BaseEvent<T> {
+export interface FormEvent<T = any> extends BaseEvent<{
+  formId: string;
+  field?: string;
+  value?: any;
+  values?: T;
+  errors?: Record<string, string[]>;
+}> {
   type: 'form:change' | 'form:submit' | 'form:reset' | 'form:validate' | 'form:error';
-  payload: {
-    formId: string;
-    field?: string;
-    value?: any;
-    values?: T;
-    errors?: Record<string, string[]>;
-  };
 }
 
 // WebSocket events

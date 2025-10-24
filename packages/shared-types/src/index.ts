@@ -7,9 +7,6 @@ export * from './api';
 // UI component types
 export * from './ui';
 
-// Form and validation types
-export * from './forms';
-
 // Event types
 export * from './events';
 

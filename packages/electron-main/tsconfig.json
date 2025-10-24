@@ -1,17 +1,8 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../shared-config/typescript/node.json",
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "strict": false,
-    "declaration": true,
     "outDir": "./dist",
-    "rootDir": "./src",
-    "sourceMap": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "rootDir": "./src"
   },
   "include": [
     "src/**/*"

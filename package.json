@@ -68,7 +68,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^4.17.21",
     "@types/multer": "^1.4.12",
-    "@types/node": "^22.15.30",
+    "@types/node": "^22.18.12",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vercel/node": "^2.3.0",
@@ -96,36 +96,6 @@
     "vite-plugin-trae-solo-badge": "^1.0.0",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.2.4"
-  },
-  "turbo": {
-    "tasks": {
-      "build": {
-        "dependsOn": [
-          "^build"
-        ],
-        "outputs": [
-          "dist/**",
-          "out/**",
-          "build/**"
-        ]
-      },
-      "lint": {
-        "dependsOn": [
-          "^lint"
-        ]
-      },
-      "test": {
-        "dependsOn": [
-          "^test"
-        ],
-        "outputs": [
-          "coverage/**"
-        ]
-      },
-      "dev": {
-        "cache": false
-      }
-    }
   },
   "build": {
     "appId": "com.superapp.electron-plugin-app",
