@@ -9,7 +9,7 @@
   "main": "out/main/index.js",
   "homepage": "./",
   "scripts": {
-    "dev": "cross-env ELECTRON_PATH=electron electron-vite dev",
+    "dev": "cross-env ELECTRON_EXEC_PATH=C:\\Users\\dila\\Documents\\GitHub\\js-universal\\node_modules\\.ignored\\electron\\dist\\electron.exe electron-vite dev",
     "build": "electron-vite build",
     "preview": "cross-env ELECTRON_PATH=electron electron-vite preview",
     "release": "npm run build && electron-builder --publish=never",
@@ -76,7 +76,7 @@
     "autoprefixer": "^10.4.21",
     "babel-plugin-react-dev-locator": "^1.0.0",
     "concurrently": "^9.2.0",
-    "electron": "^38.3.0",
+    "electron": "28.0.0",
     "electron-builder": "^25.1.8",
     "electron-vite": "^5.0.0-beta.0",
     "eslint": "^9.25.0",

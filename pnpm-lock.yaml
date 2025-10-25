@@ -26,9 +26,6 @@ importers:
       cors:
         specifier: ^2.8.5
         version: 2.8.5
-      cross-env:
-        specifier: ^10.1.0
-        version: 10.1.0
       dotenv:
         specifier: ^17.2.1
         version: 17.2.3
@@ -120,9 +117,12 @@ importers:
       concurrently:
         specifier: ^9.2.0
         version: 9.2.1
+      cross-env:
+        specifier: ^10.1.0
+        version: 10.1.0
       electron:
-        specifier: 38.4.0
-        version: 38.4.0
+        specifier: 28.0.0
+        version: 28.0.0
       electron-builder:
         specifier: ^25.1.8
         version: 25.1.8(electron-builder-squirrel-windows@25.1.8)
@@ -518,8 +518,8 @@ importers:
         specifier: ^9.2.0
         version: 9.2.1
       electron:
-        specifier: ^38.3.0
-        version: 38.4.0
+        specifier: 28.0.0
+        version: 28.0.0
       electron-builder:
         specifier: ^25.1.8
         version: 25.1.8(electron-builder-squirrel-windows@25.1.8)
@@ -728,7 +728,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^1.2.0
-        version: 1.6.1(@edge-runtime/vm@3.2.0)(@types/node@24.9.1)(@vitest/ui@3.2.4)(happy-dom@20.0.8)(jsdom@24.1.3(bufferutil@4.0.9))(lightningcss@1.30.2)(terser@5.44.0)
+        version: 1.6.1(@edge-runtime/vm@3.2.0)(@types/node@24.9.1)(@vitest/ui@3.2.4(vitest@3.2.4))(happy-dom@20.0.8)(jsdom@24.1.3(bufferutil@4.0.9))(lightningcss@1.30.2)(terser@5.44.0)
 
   packages/shared-ui:
     dependencies:
@@ -777,7 +777,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^1.3.1
-        version: 1.6.1(@edge-runtime/vm@3.2.0)(@types/node@24.9.1)(@vitest/ui@3.2.4)(happy-dom@20.0.8)(jsdom@24.1.3(bufferutil@4.0.9))(lightningcss@1.30.2)(terser@5.44.0)
+        version: 1.6.1(@edge-runtime/vm@3.2.0)(@types/node@24.9.1)(@vitest/ui@3.2.4(vitest@3.2.4))(happy-dom@20.0.8)(jsdom@24.1.3(bufferutil@4.0.9))(lightningcss@1.30.2)(terser@5.44.0)
 
   packages/shared-utils:
     devDependencies:
@@ -2813,6 +2813,9 @@ packages:
   '@types/node@16.18.11':
     resolution: {integrity: sha512-3oJbGBUWuS6ahSnEq1eN2XrCyf4YsWI8OyCvo7c64zQJNplk3mO84t53o8lfTk+2ji59g5ycfc6qQ3fdHliHuA==}
 
+  '@types/node@18.19.130':
+    resolution: {integrity: sha512-GRaXQx6jGfL8sKfaIDD6OupbIHBr9jv7Jnaml9tB7l4v068PAOXqfcujMMo5PhbIs6ggR1XODELqahT2R8v0fg==}
+
   '@types/node@20.19.23':
     resolution: {integrity: sha512-yIdlVVVHXpmqRhtyovZAcSy0MiPcYWGkoO4CGe/+jpP0hmNuihm4XhHbADpK++MsiLHP5MVlv+bcgdF99kSiFQ==}
 
@@ -4490,13 +4493,13 @@ packages:
       '@swc/core':
         optional: true
 
-  electron@33.4.11:
-    resolution: {integrity: sha512-xmdAs5QWRkInC7TpXGNvzo/7exojubk+72jn1oJL7keNeIlw7xNglf8TGtJtkR4rWC5FJq0oXiIXPS9BcK2Irg==}
+  electron@28.0.0:
+    resolution: {integrity: sha512-eDhnCFBvG0PGFVEpNIEdBvyuGUBsFdlokd+CtuCe2ER3P+17qxaRfWRxMmksCOKgDHb5Wif5UxqOkZSlA4snlw==}
     engines: {node: '>= 12.20.55'}
     hasBin: true
 
-  electron@38.4.0:
-    resolution: {integrity: sha512-9CsXKbGf2qpofVe2pQYSgom2E//zLDJO2rGLLbxgy9tkdTOs7000Gte+d/PUtzLjI/DS95jDK0ojYAeqjLvpYg==}
+  electron@33.4.11:
+    resolution: {integrity: sha512-xmdAs5QWRkInC7TpXGNvzo/7exojubk+72jn1oJL7keNeIlw7xNglf8TGtJtkR4rWC5FJq0oXiIXPS9BcK2Irg==}
     engines: {node: '>= 12.20.55'}
     hasBin: true
 
@@ -8851,6 +8854,9 @@ packages:
   unbzip2-stream@1.4.3:
     resolution: {integrity: sha512-mlExGW4w71ebDJviH16lQLtZS32VKqsSfk80GCfUlwT/4/hNRFsoscrF/c++9xinkMzECL1uL9DDwXqFWkruPg==}
 
+  undici-types@5.26.5:
+    resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
+
   undici-types@6.21.0:
     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
@@ -11795,6 +11801,10 @@ snapshots:
 
   '@types/node@16.18.11': {}
 
+  '@types/node@18.19.130':
+    dependencies:
+      undici-types: 5.26.5
+
   '@types/node@20.19.23':
     dependencies:
       undici-types: 6.21.0
@@ -14148,18 +14158,18 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  electron@33.4.11:
+  electron@28.0.0:
     dependencies:
       '@electron/get': 2.0.3
-      '@types/node': 20.19.23
+      '@types/node': 18.19.130
       extract-zip: 2.0.1
     transitivePeerDependencies:
       - supports-color
 
-  electron@38.4.0:
+  electron@33.4.11:
     dependencies:
       '@electron/get': 2.0.3
-      '@types/node': 22.18.12
+      '@types/node': 20.19.23
       extract-zip: 2.0.1
     transitivePeerDependencies:
       - supports-color
@@ -16732,24 +16742,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  metro-transform-worker@0.83.2:
-    dependencies:
-      '@babel/core': 7.28.5
-      '@babel/generator': 7.28.5
-      '@babel/parser': 7.28.5
-      '@babel/types': 7.28.5
-      flow-enums-runtime: 0.0.6
-      metro: 0.83.2(bufferutil@4.0.9)
-      metro-babel-transformer: 0.83.2
-      metro-cache: 0.83.2
-      metro-cache-key: 0.83.2
-      metro-minify-terser: 0.83.2
-      metro-source-map: 0.83.2
-      metro-transform-plugins: 0.83.2
-      nullthrows: 1.1.1
-    transitivePeerDependencies:
-      - supports-color
-
   metro-transform-worker@0.83.2(bufferutil@4.0.9):
     dependencies:
       '@babel/core': 7.28.5
@@ -16824,7 +16816,7 @@ snapshots:
       metro-source-map: 0.83.2
       metro-symbolicate: 0.83.2
       metro-transform-plugins: 0.83.2
-      metro-transform-worker: 0.83.2
+      metro-transform-worker: 0.83.2(bufferutil@4.0.9)
       mime-types: 2.1.35
       nullthrows: 1.1.1
       serialize-error: 2.1.0
@@ -19485,6 +19477,8 @@ snapshots:
       buffer: 5.7.1
       through: 2.3.8
 
+  undici-types@5.26.5: {}
+
   undici-types@6.21.0: {}
 
   undici-types@7.16.0: {}
@@ -19855,7 +19849,7 @@ snapshots:
       - supports-color
       - terser
 
-  vitest@1.6.1(@edge-runtime/vm@3.2.0)(@types/node@24.9.1)(@vitest/ui@3.2.4)(happy-dom@20.0.8)(jsdom@24.1.3(bufferutil@4.0.9))(lightningcss@1.30.2)(terser@5.44.0):
+  vitest@1.6.1(@edge-runtime/vm@3.2.0)(@types/node@24.9.1)(@vitest/ui@3.2.4(vitest@3.2.4))(happy-dom@20.0.8)(jsdom@24.1.3(bufferutil@4.0.9))(lightningcss@1.30.2)(terser@5.44.0):
     dependencies:
       '@vitest/expect': 1.6.1
       '@vitest/runner': 1.6.1
