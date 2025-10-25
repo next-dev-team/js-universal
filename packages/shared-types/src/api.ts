@@ -64,7 +64,6 @@ export interface QueryParams {
 }
 
 export interface ListQueryParams {
-  [key: string]: string | number | boolean | string[] | number[] | FilterCondition[] | undefined;
   page?: number;
   limit?: number;
   sort?: string;

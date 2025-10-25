@@ -1,3 +1,5 @@
+/// <reference types="node" />
+
 import { EventEmitter } from './events';
 import { Config } from './config';
 
@@ -23,7 +25,7 @@ export interface PluginMetadata {
 }
 
 // Plugin configuration
-export interface PluginConfig {
+export interface PluginDefinitionConfig {
   enabled?: boolean;
   autoStart?: boolean;
   loadOrder?: number;
@@ -51,7 +53,7 @@ export interface PluginHooks {
   onUnload?: (context: PluginContext) => void | Promise<void>;
   onDestroy?: (context: PluginContext) => void | Promise<void>;
   onError?: (error: Error, context: PluginContext) => void | Promise<void>;
-  onConfigChange?: (config: PluginConfig, context: PluginContext) => void | Promise<void>;
+  onConfigChange?: (config: PluginDefinitionConfig, context: PluginContext) => void | Promise<void>;
 }
 
 // Plugin API
@@ -72,7 +74,7 @@ export interface PluginAPI {
 // Plugin interface
 export interface Plugin {
   metadata: PluginMetadata;
-  config?: PluginConfig;
+  config?: PluginDefinitionConfig;
   hooks?: PluginHooks;
   
   // Plugin lifecycle methods
@@ -98,7 +100,7 @@ export interface PluginDescriptor {
   path?: string;
   url?: string;
   source: 'local' | 'npm' | 'url' | 'inline';
-  config?: PluginConfig;
+  config?: PluginDefinitionConfig;
   metadata?: Partial<PluginMetadata>;
 }
 
@@ -108,7 +110,7 @@ export interface PluginInstance {
   plugin: Plugin;
   status: PluginStatus;
   context: PluginContext;
-  config: PluginConfig;
+  config: PluginDefinitionConfig;
   metadata: PluginMetadata;
   loadTime?: number;
   startTime?: number;
@@ -119,6 +121,7 @@ export interface PluginInstance {
 
 // Plugin manager interface
 export interface PluginManager extends EventEmitter {
+
   // Plugin registration
   register(descriptor: PluginDescriptor): Promise<void>;
   unregister(id: string): Promise<void>;
@@ -143,8 +146,8 @@ export interface PluginManager extends EventEmitter {
   uninstall(id: string): Promise<void>;
   
   // Configuration
-  configure(id: string, config: Partial<PluginConfig>): Promise<void>;
-  getConfig(id: string): PluginConfig | undefined;
+  configure(id: string, config: Partial<PluginDefinitionConfig>): Promise<void>;
+  getConfig(id: string): PluginDefinitionConfig | undefined;
   
   // Dependencies
   resolveDependencies(id: string): string[];
@@ -177,7 +180,7 @@ export interface PluginRegistry {
 export interface PluginValidator {
   validate(plugin: Plugin): ValidationResult;
   validateMetadata(metadata: PluginMetadata): ValidationResult;
-  validateConfig(config: PluginConfig): ValidationResult;
+  validateConfig(config: PluginDefinitionConfig): ValidationResult;
   validateDependencies(dependencies: Record<string, string>): ValidationResult;
 }
 
@@ -191,7 +194,7 @@ interface ValidationResult {
 export interface PluginStore {
   search(query: string, options?: SearchOptions): Promise<PluginSearchResult[]>;
   get(id: string): Promise<PluginStoreEntry | undefined>;
-  download(id: string, version?: string): Promise<Uint8Array>;
+  download(id: string, version?: string): Promise<Buffer>;
   getVersions(id: string): Promise<string[]>;
   getMetadata(id: string, version?: string): Promise<PluginMetadata>;
 }
@@ -235,13 +238,13 @@ interface PluginStoreEntry {
 }
 
 // Plugin events
-export interface PluginSystemEvent {
+export interface PluginManagerEvent {
   type: 'plugin:registered' | 'plugin:unregistered' | 'plugin:loaded' | 'plugin:unloaded' | 
         'plugin:started' | 'plugin:stopped' | 'plugin:error' | 'plugin:configured';
   pluginId: string;
   plugin?: PluginInstance;
   error?: Error;
-  config?: PluginConfig;
+  config?: PluginDefinitionConfig;
   timestamp: number;
 }
 
@@ -275,7 +278,7 @@ export interface PluginDevelopment {
 export interface PluginManifest extends PluginMetadata {
   main: string;
   plugin: {
-    config?: PluginConfig;
+    config?: PluginDefinitionConfig;
     hooks?: string[];
     services?: string[];
     commands?: string[];

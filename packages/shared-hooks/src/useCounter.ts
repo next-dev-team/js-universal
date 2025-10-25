@@ -32,7 +32,7 @@ export function useCounter(
   }, [initialValue]);
 
   const set = useCallback((value: number) => {
-    setCount(() => {
+    setCount(prev => {
       let newValue = value;
       if (min !== undefined) newValue = Math.max(newValue, min);
       if (max !== undefined) newValue = Math.min(newValue, max);

@@ -82,13 +82,6 @@ export interface ModalEvent extends UIEvent {
 
 export interface NotificationEvent extends UIEvent {
   type: "ui:notification:show" | "ui:notification:hide";
-  payload: {
-    id: string;
-    title?: string;
-    message: string;
-    type?: "info" | "success" | "warning" | "error";
-    duration?: number;
-  };
 }
 
 // Data events
@@ -107,6 +100,7 @@ export interface DataEvent<T = any>
     | "data:error";
 }
 
+// Cache events
 export interface CacheEvent extends BaseEvent {
   type:
     | "cache:hit"

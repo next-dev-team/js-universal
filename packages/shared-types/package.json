@@ -1,6 +1,7 @@
 {
   "name": "@js-universal/shared-types",
   "version": "1.0.0",
+  "type": "module",
   "description": "Shared TypeScript type definitions for JS Universal packages",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
@@ -16,13 +17,13 @@
     "clean": "rimraf dist"
   },
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-typescript": "^11.1.5",
+    "@types/node": "24.9.1",
+    "rimraf": "^5.0.5",
     "rollup": "^4.9.6",
     "typescript": "^5.3.3",
-    "vitest": "^1.2.0",
-    "rimraf": "^5.0.5"
-  },
-  "dependencies": {}
+    "vitest": "^1.2.0"
+  }
 }

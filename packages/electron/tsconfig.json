@@ -23,7 +23,7 @@
       "@/*": ["./src/renderer/*"],
       "@shared/*": ["./shared/*"]
     },
-    "types": ["express"]
+    "types": ["node", "express"]
   },
   "include": ["src", "api", "shared"]
 }

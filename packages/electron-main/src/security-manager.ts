@@ -310,7 +310,7 @@ export class SecurityManager {
       show: async (
         title: string,
         body: string,
-        options?: any
+        options?: NotificationOptions
       ) => {
         // Implementation would show system notifications
         console.log(`[Plugin ${pluginId}] Notification:`, {

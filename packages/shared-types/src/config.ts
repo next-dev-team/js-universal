@@ -233,7 +233,7 @@ export interface BuildConfig {
 }
 
 // Plugin configuration
-export interface AppPluginConfig {
+export interface PluginConfig {
   name: string;
   version?: string;
   enabled?: boolean;
@@ -288,7 +288,7 @@ export interface Config extends BaseConfig {
   monitoring?: MonitoringConfig;
   featureFlags?: FeatureFlagsConfig;
   build?: BuildConfig;
-  plugins?: AppPluginConfig[];
+  plugins?: PluginConfig[];
   theme?: ThemeConfig;
   i18n?: I18nConfig;
   [key: string]: any; // Allow custom configuration sections

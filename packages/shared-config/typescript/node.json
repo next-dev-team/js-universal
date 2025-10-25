@@ -2,7 +2,7 @@
   "extends": "./base.json",
   "compilerOptions": {
     // Node.js specific settings
-    "module": "ESNext",
+    "module": "CommonJS",
     "target": "ES2022",
     "lib": ["ES2022"],
     "moduleResolution": "node",
@@ -38,7 +38,7 @@
     },
     
     // Types for Node.js development
-    "types": [],
+    "types": ["node"],
     
     // Output settings for Node.js
     "outDir": "./dist",

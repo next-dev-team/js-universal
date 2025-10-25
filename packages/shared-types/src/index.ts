@@ -7,6 +7,9 @@ export * from './api';
 // UI component types
 export * from './ui';
 
+// Form and validation types
+
+
 // Event types
 export * from './events';
 
@@ -15,3 +18,4 @@ export * from './config';
 
 // Plugin system types
 export * from './plugins';
+export { IPC_CHANNELS } from './events';

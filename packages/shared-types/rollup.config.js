@@ -18,36 +18,10 @@ export default [
       },
     ],
     plugins: [
-      resolve(),
+      resolve({ extensions: ['.js', '.jsx', '.ts', '.tsx'] }),
       commonjs(),
       typescript({
         tsconfig: './tsconfig.json',
-        declaration: false,
-        declarationDir: undefined,
-        declarationMap: false,
-        compilerOptions: {
-          types: []
-        }
-      }),
-    ],
-  },
-  {
-    input: 'src/index.ts',
-    output: {
-      dir: 'dist/esm/types',
-      format: 'esm',
-    },
-    plugins: [
-      typescript({
-        tsconfig: './tsconfig.json',
-        declaration: true,
-        declarationDir: './dist/esm/types',
-        declarationMap: true,
-        emitDeclarationOnly: true,
-        compilerOptions: {
-          types: [],
-          outDir: './dist/esm/types'
-        }
       }),
     ],
   },
