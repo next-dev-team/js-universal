@@ -49,26 +49,83 @@ export default function PluginWebview({
   const [, setIsReady] = useState(false);
   const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Determine the correct preload script path
+  const getPreloadPath = () => {
+    if (preloadPath) {
+      return preloadPath;
+    }
+
+    // Use the built preload scripts from the out directory
+    const preloadScript = isDevelopment
+      ? "dev-plugin-preload.cjs"
+      : "plugin-preload.cjs";
+
+    // Use file:// protocol to access the built preload scripts
+    // The out directory is at the project root level
+    if (isDevelopment) {
+      // In development, construct the path using file:// protocol
+      return `file://${process
+        .cwd()
+        .replace(/\\/g, "/")}/out/preload/${preloadScript}`;
+    } else {
+      // In production, use a relative path from the app's resource directory
+      return `file://${process.resourcesPath}/app/out/preload/${preloadScript}`;
+    }
+  };
+
+  const handleTestPluginAPI = () => {
+    const webview = webviewRef.current;
+    if (webview) {
+      webview.executeJavaScript(`
+        (async () => {
+          console.log('[PluginWebview] Testing pluginAPI...');
+          console.log('pluginAPI available:', typeof window.pluginAPI !== 'undefined');
+          console.log('devPluginAPI available:', typeof window.devPluginAPI !== 'undefined');
+          
+          if (window.pluginAPI) {
+            console.log('Plugin ID:', window.pluginAPI.getPluginId());
+            console.log('Is Development:', window.pluginAPI.isDevelopment ? window.pluginAPI.isDevelopment() : 'N/A');
+          }
+          
+          if (window.devPluginAPI) {
+            try {
+              const devInfo = await window.devPluginAPI.getInfo();
+              console.log('Dev Plugin Info:', devInfo);
+            } catch (error) {
+              console.error('Error getting dev plugin info:', error);
+            }
+          }
+        })();
+      `);
+    }
+  };
+
+  const handleOpenDevTools = () => {
+    const webview = webviewRef.current;
+    if (webview && typeof webview.openDevTools === "function") {
+      webview.openDevTools();
+    }
+  };
+
   useEffect(() => {
     const webview = webviewRef.current;
     if (!webview) return;
 
+    console.log(`[PluginWebview ${pluginId}] Setting up event listeners`);
+
+    // Set a loading timeout
+    loadingTimeoutRef.current = setTimeout(() => {
+      if (loading) {
+        console.warn(`[PluginWebview ${pluginId}] Loading timeout reached`);
+        setLoading(false);
+        setError("Plugin loading timed out");
+      }
+    }, 30000); // 30 second timeout
+
     const handleLoadStart = () => {
-      console.log(`[PluginWebview ${pluginId}] Load started: ${pluginUrl}`);
+      console.log(`[PluginWebview ${pluginId}] Load started`);
       setLoading(true);
       setError(null);
-
-      // Set a timeout to prevent infinite loading
-      if (loadingTimeoutRef.current) {
-        clearTimeout(loadingTimeoutRef.current);
-      }
-      loadingTimeoutRef.current = setTimeout(() => {
-        console.warn(
-          `[PluginWebview ${pluginId}] Loading timeout after 10 seconds`
-        );
-        setLoading(false);
-        setError("Loading timeout - plugin may not be responding");
-      }, 10000);
     };
 
     const handleLoadStop = () => {
@@ -95,110 +152,30 @@ export default function PluginWebview({
     };
 
     const handleDomReady = () => {
+      console.log(
+        `[PluginWebview ${pluginId}] DOM ready - preload script should have injected pluginAPI`
+      );
       setIsReady(true);
       setLoading(false);
 
-      // Inject pluginAPI into the webview context
-      if (isDevelopment) {
-        webview.executeJavaScript(`
-          console.log('[PluginWebview] DOM ready, injecting pluginAPI...');
-          
-          // Create a mock pluginAPI for development
-          window.pluginAPI = {
-            isDevelopment: () => true,
-            getPluginId: () => '${pluginId}',
-            getVersion: () => '1.0.0',
-            getManifest: () => ({
-              id: '${pluginId}',
-              name: '${pluginName}',
-              version: '1.0.0',
-              description: 'Development plugin',
-              author: 'Super App Team',
-              main: 'index.html',
-              permissions: ['storage', 'notifications', 'communication']
-            }),
-            storage: {
-              get: async (key) => {
-                console.log('[PluginAPI] Storage get:', key);
-                return localStorage.getItem(key);
-              },
-              set: async (key, value) => {
-                console.log('[PluginAPI] Storage set:', key, value);
-                localStorage.setItem(key, JSON.stringify(value));
-                return true;
-              },
-              remove: async (key) => {
-                console.log('[PluginAPI] Storage remove:', key);
-                localStorage.removeItem(key);
-                return true;
-              },
-              clear: async () => {
-                console.log('[PluginAPI] Storage clear');
-                localStorage.clear();
-                return true;
-              }
-            },
-            events: {
-              on: (event, callback) => {
-                console.log('[PluginAPI] Event listener added:', event);
-                window.addEventListener(event, callback);
-              },
-              off: (event, callback) => {
-                console.log('[PluginAPI] Event listener removed:', event);
-                window.removeEventListener(event, callback);
-              },
-              emit: (event, data) => {
-                console.log('[PluginAPI] Event emitted:', event, data);
-                window.dispatchEvent(new CustomEvent(event, { detail: data }));
-              }
-            },
-            notifications: {
-              show: (title, body, options) => {
-                console.log('[PluginAPI] Notification:', title, body, options);
-                if (Notification.permission === 'granted') {
-                  new Notification(title, { body, ...options });
-                }
-              },
-              requestPermission: async () => {
-                console.log('[PluginAPI] Requesting notification permission');
-                return await Notification.requestPermission();
-              }
-            },
-            communication: {
-              send: (channel, data) => {
-                console.log('[PluginAPI] Communication send:', channel, data);
-                // Mock communication
-                return Promise.resolve({ success: true, data });
-              },
-              receive: (channel, callback) => {
-                console.log('[PluginAPI] Communication receive:', channel);
-                // Mock communication listener
-                window.addEventListener(channel, callback);
-              }
-            }
-          };
-          
-          // Also expose as devPluginAPI for development-specific features
-          window.devPluginAPI = {
-            reload: async () => {
-              console.log('[DevPluginAPI] Reload requested');
-              window.location.reload();
-              return { success: true, message: 'Plugin reloaded' };
-            },
-            getInfo: async () => {
-              return {
-                id: '${pluginId}',
-                name: '${pluginName}',
-                version: '1.0.0',
-                isDevelopment: true,
-                url: '${pluginUrl}'
-              };
-            }
-          };
-          
-          console.log('[PluginWebview] pluginAPI injected successfully');
-        `);
+      // Clear the loading timeout
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+        loadingTimeoutRef.current = null;
       }
+
+      // Verify that the pluginAPI was injected by the preload script
+      webview.executeJavaScript(`
+        console.log('[PluginWebview] Verifying pluginAPI injection...');
+        console.log('pluginAPI available:', typeof window.pluginAPI !== 'undefined');
+        console.log('devPluginAPI available:', typeof window.devPluginAPI !== 'undefined');
+        
+        if (typeof window.pluginAPI === 'undefined') {
+          console.error('[PluginWebview] pluginAPI not found! Preload script may have failed.');
+        } else {
+          console.log('[PluginWebview] pluginAPI successfully loaded via preload script');
+        }
+      `);
     };
 
     const handleFailLoad = (event: unknown) => {
@@ -297,42 +274,6 @@ export default function PluginWebview({
     }
   };
 
-  const handleOpenDevTools = () => {
-    const webview = webviewRef.current;
-    if (webview) {
-      webview.openDevTools();
-    }
-  };
-
-  const handleTestPluginAPI = () => {
-    const webview = webviewRef.current;
-    if (webview) {
-      webview.executeJavaScript(`
-        // Test if pluginAPI is available
-        if (typeof window.pluginAPI !== 'undefined') {
-          console.log('[PluginWebview] pluginAPI is available:', window.pluginAPI);
-          
-          // Test basic functionality
-          try {
-            const pluginId = window.pluginAPI.getPluginId();
-            const isDev = window.pluginAPI.isDevelopment ? window.pluginAPI.isDevelopment() : false;
-            console.log('[PluginWebview] Plugin ID:', pluginId);
-            console.log('[PluginWebview] Development mode:', isDev);
-            
-            // Show success message
-            alert('PluginAPI is working!\\nPlugin ID: ' + pluginId + '\\nDev Mode: ' + isDev);
-          } catch (error) {
-            console.error('[PluginWebview] PluginAPI test failed:', error);
-            alert('PluginAPI test failed: ' + error.message);
-          }
-        } else {
-          console.error('[PluginWebview] pluginAPI is not available');
-          alert('PluginAPI is not available in the webview context');
-        }
-      `);
-    }
-  };
-
   return (
     <Card
       title={
@@ -425,7 +366,7 @@ export default function PluginWebview({
           ref={webviewRef}
           src={pluginUrl}
           style={{ width: "100%", height: "80vh" }}
-          preload={preloadPath}
+          preload={getPreloadPath()}
           allowpopups
           webpreferences="contextIsolation=yes,nodeIntegration=no"
           data-plugin-id={pluginId}

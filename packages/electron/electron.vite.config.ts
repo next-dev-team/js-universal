@@ -47,6 +47,10 @@ export default defineConfig({
             __dirname,
             "src/preload/plugin-preload.ts"
           ),
+          "dev-plugin-preload": path.resolve(
+            __dirname,
+            "src/preload/dev-plugin-preload.ts"
+          ),
         },
         external: ["electron"],
         output: {
