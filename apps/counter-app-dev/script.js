@@ -7,10 +7,15 @@ class CounterAppDev {
     this.sessionStartTime = new Date();
     this.performanceScore = null;
     this.messageCount = 0;
-    
+
     // Test change for workspace scanner hot reload - UPDATED WITH NEW TIMESTAMP!
-    console.log('🚀 HOT RELOAD TEST: Counter app updated successfully! Time:', new Date().toLocaleTimeString());
-    console.log('🔥 WORKSPACE SCANNER TEST: File change detected and hot reload triggered!');
+    console.log(
+      "🚀 HOT RELOAD TEST: Counter app updated successfully! Time:",
+      new Date().toLocaleTimeString()
+    );
+    console.log(
+      "🔥 WORKSPACE SCANNER TEST: File change detected and hot reload triggered!"
+    );
 
     // Debug: Check if pluginAPI is available
     console.log(
@@ -351,7 +356,8 @@ class CounterAppDev {
     if (counterValueElement) {
       counterValueElement.textContent = this.counter;
       // Add a visual indicator for hot reload testing
-      counterValueElement.style.backgroundColor = this.counter > 0 ? "#4CAF50" : "#f44336";
+      counterValueElement.style.backgroundColor =
+        this.counter > 0 ? "#4CAF50" : "#f44336";
       counterValueElement.style.color = "white";
       counterValueElement.style.padding = "10px";
       counterValueElement.style.borderRadius = "8px";

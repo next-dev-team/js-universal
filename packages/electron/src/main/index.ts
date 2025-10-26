@@ -187,6 +187,7 @@ export class ElectronApp {
           ? path.join(process.cwd(), "out/preload/index.cjs")
           : path.join(__dirname, "../preload/index.cjs"),
         webSecurity: true,
+        webviewTag: true,
       },
       // titleBarStyle: "hiddenInset",
       // show: false,
