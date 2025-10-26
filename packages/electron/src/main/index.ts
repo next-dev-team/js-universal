@@ -79,9 +79,36 @@ export class ElectronApp {
     // Initialize workspace scanner
     const appsDirectory = path.resolve(__dirname, "../../../..", "apps");
     console.log("[ElectronApp] Apps directory path:", appsDirectory);
-    console.log("[ElectronApp] Apps directory exists:", fs.existsSync(appsDirectory));
+    console.log(
+      "[ElectronApp] Apps directory exists:",
+      fs.existsSync(appsDirectory)
+    );
+
+    // If the default apps directory doesn't exist, try alternative paths
+    let finalAppsDirectory = appsDirectory;
+    if (!fs.existsSync(appsDirectory)) {
+      const alternativePaths = [
+        path.resolve(process.cwd(), "apps"),
+        path.resolve(__dirname, "../../../../apps"),
+        path.resolve(__dirname, "../../../../../apps"),
+      ];
+
+      for (const altPath of alternativePaths) {
+        console.log(
+          `[ElectronApp] Trying alternative apps directory: ${altPath}`
+        );
+        if (fs.existsSync(altPath)) {
+          finalAppsDirectory = altPath;
+          console.log(
+            `[ElectronApp] Found apps directory at: ${finalAppsDirectory}`
+          );
+          break;
+        }
+      }
+    }
+
     this.workspaceScanner = new WorkspaceScanner(
-      appsDirectory,
+      finalAppsDirectory,
       this.pluginDevLoader,
       this.pluginWebviewManager
     );
@@ -166,22 +193,32 @@ export class ElectronApp {
     });
 
     // Capture renderer console logs with more details
-    this.mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
-      console.log(`[Renderer Console] Level: ${level}, Message: ${message}, Line: ${line}, Source: ${sourceId}`);
-    });
+    this.mainWindow.webContents.on(
+      "console-message",
+      (event, level, message, line, sourceId) => {
+        console.log(
+          `[Renderer Console] Level: ${level}, Message: ${message}, Line: ${line}, Source: ${sourceId}`
+        );
+      }
+    );
 
     // Also capture other renderer events
-    this.mainWindow.webContents.on('did-finish-load', () => {
-      console.log('[Main] Renderer finished loading');
+    this.mainWindow.webContents.on("did-finish-load", () => {
+      console.log("[Main] Renderer finished loading");
     });
 
-    this.mainWindow.webContents.on('dom-ready', () => {
-      console.log('[Main] Renderer DOM ready');
+    this.mainWindow.webContents.on("dom-ready", () => {
+      console.log("[Main] Renderer DOM ready");
     });
 
-    this.mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
-      console.log(`[Main] Renderer failed to load: ${errorCode} - ${errorDescription}`);
-    });
+    this.mainWindow.webContents.on(
+      "did-fail-load",
+      (event, errorCode, errorDescription) => {
+        console.log(
+          `[Main] Renderer failed to load: ${errorCode} - ${errorDescription}`
+        );
+      }
+    );
 
     // Load the app
     if (isDev && process.env["ELECTRON_RENDERER_URL"]) {
@@ -213,8 +250,14 @@ export class ElectronApp {
   private setupBasicIpcHandlers() {
     console.log("[ElectronApp] Setting up basic IPC handlers...");
     console.log("[ElectronApp] IPC_CHANNELS object:", IPC_CHANNELS);
-    console.log("[ElectronApp] WORKSPACE_RESCAN channel:", IPC_CHANNELS.WORKSPACE_RESCAN);
-    console.log("[ElectronApp] WORKSPACE_GET_PROJECTS channel:", IPC_CHANNELS.WORKSPACE_GET_PROJECTS);
+    console.log(
+      "[ElectronApp] WORKSPACE_RESCAN channel:",
+      IPC_CHANNELS.WORKSPACE_RESCAN
+    );
+    console.log(
+      "[ElectronApp] WORKSPACE_GET_PROJECTS channel:",
+      IPC_CHANNELS.WORKSPACE_GET_PROJECTS
+    );
 
     // Window management
     ipcMain.handle(IPC_CHANNELS.WINDOW_MINIMIZE, () => {
@@ -255,7 +298,7 @@ export class ElectronApp {
     // Workspace operations - setup with null checks since services may not be initialized yet
     if (IPC_CHANNELS.WORKSPACE_RESCAN && IPC_CHANNELS.WORKSPACE_GET_PROJECTS) {
       console.log("[ElectronApp] Setting up workspace IPC handlers...");
-      
+
       ipcMain.handle(IPC_CHANNELS.WORKSPACE_RESCAN, async () => {
         try {
           console.log("[WORKSPACE] Rescanning workspace...");
@@ -265,11 +308,17 @@ export class ElectronApp {
           }
           await this.workspaceScanner.scanAndRegisterProjects();
           const projects = this.workspaceScanner.getRegisteredProjects();
-          console.log(`[WORKSPACE] Rescan completed. Found ${projects.length} projects:`, projects.map(p => p.id));
+          console.log(
+            `[WORKSPACE] Rescan completed. Found ${projects.length} projects:`,
+            projects.map((p) => p.id)
+          );
           return { success: true, projectCount: projects.length };
         } catch (error) {
           console.error("[WORKSPACE] Error during rescan:", error);
-          return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
+          return {
+            success: false,
+            error: error instanceof Error ? error.message : "Unknown error",
+          };
         }
       });
 
@@ -281,19 +330,23 @@ export class ElectronApp {
             return [];
           }
           const projects = this.workspaceScanner.getRegisteredProjects();
-          console.log(`[WORKSPACE] Getting projects. Found ${projects.length} projects:`, projects.map(p => p.id));
-          
-          const result = projects.map(project => ({
+          console.log(
+            `[WORKSPACE] Getting projects. Found ${projects.length} projects:`,
+            projects.map((p) => p.id)
+          );
+
+          const result = projects.map((project) => ({
             id: project.id,
             name: project.name,
             version: project.version,
-            description: project.packageJson?.description || project.description,
+            description:
+              project.packageJson?.description || project.description,
             author: project.packageJson?.author || project.author,
             hasDevServer: project.hasDevServer,
             devServerPort: project.devServerPort,
-            isDevelopment: true
+            isDevelopment: true,
           }));
-          
+
           console.log("[WORKSPACE] Returning result:", result);
           return result;
         } catch (error) {
@@ -302,7 +355,9 @@ export class ElectronApp {
         }
       });
     } else {
-      console.error("[ElectronApp] Workspace IPC channels are undefined! Cannot set up handlers.");
+      console.error(
+        "[ElectronApp] Workspace IPC channels are undefined! Cannot set up handlers."
+      );
     }
 
     // Database operations with mock responses until database is ready
@@ -396,8 +451,6 @@ export class ElectronApp {
         return { success: false, error: error.message };
       }
     });
-
-
   }
 
   private setupIpcHandlers() {
@@ -563,7 +616,6 @@ export class ElectronApp {
     );
 
     // Note: Workspace operations are now handled in setupBasicIpcHandlers() to be available immediately
-
   }
 
   async initialize(): Promise<void> {
@@ -619,11 +671,12 @@ export class ElectronApp {
       // Use workspace scanner to automatically detect and register all projects
       console.log("[ElectronApp] Starting automatic workspace detection...");
       await this.workspaceScanner.scanAndRegisterProjects();
-      
-      const registeredProjects = this.workspaceScanner.getRegisteredProjects();
-      console.log(`[ElectronApp] Workspace scanner registered ${registeredProjects.length} projects:`, 
-        registeredProjects.map(p => p.id));
 
+      const registeredProjects = this.workspaceScanner.getRegisteredProjects();
+      console.log(
+        `[ElectronApp] Workspace scanner registered ${registeredProjects.length} projects:`,
+        registeredProjects.map((p) => p.id)
+      );
     } catch (error) {
       console.error(
         "[ElectronApp] Failed to setup development plugins:",
@@ -635,7 +688,7 @@ export class ElectronApp {
   private async cleanup() {
     try {
       console.log("[ElectronApp] Starting cleanup...");
-      
+
       await this.pluginManager.cleanup();
 
       // Cleanup development plugin loader
@@ -652,7 +705,7 @@ export class ElectronApp {
       if (this.workspaceScanner) {
         this.workspaceScanner.cleanup();
       }
-      
+
       // Close database connection
       if (this.prisma) {
         await this.prisma.$disconnect();

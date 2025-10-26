@@ -106,12 +106,22 @@ export class WorkspaceScanner {
         return;
       }
 
-      const devServerPort = this.extractPortFromDevScript(packageJson.scripts?.dev || packageJson.scripts?.start);
+      const configuredPort = this.extractPortFromDevScript(packageJson.scripts?.dev || packageJson.scripts?.start);
       
-      if (!devServerPort) {
+      if (!configuredPort) {
         console.log(`[WorkspaceScanner] Skipping ${projectName} - could not determine dev server port`);
         return;
       }
+
+      // Check if the project is actually running and find the real port
+      const actualPort = await this.findRunningPort(configuredPort, projectName);
+      
+      if (!actualPort) {
+        console.log(`[WorkspaceScanner] Skipping ${projectName} - dev server not running on port ${configuredPort} or nearby ports`);
+        return;
+      }
+
+      const devServerPort = actualPort;
 
       // Use development config if available, otherwise use defaults
       const devConfig = packageJson.development || {
@@ -335,6 +345,65 @@ export class WorkspaceScanner {
     }
 
     console.log(`[WorkspaceScanner] Could not extract port from script: ${devScript}`);
+    return undefined;
+  }
+
+  /**
+   * Check if a port is in use by trying to connect to it
+   */
+  private async isPortInUse(port: number): Promise<boolean> {
+    return new Promise((resolve) => {
+      const net = require('net');
+      const socket = new net.Socket();
+      
+      socket.setTimeout(1000);
+      
+      socket.on('connect', () => {
+        socket.destroy();
+        resolve(true); // Port is in use
+      });
+      
+      socket.on('timeout', () => {
+        socket.destroy();
+        resolve(false); // Port is not in use
+      });
+      
+      socket.on('error', () => {
+        resolve(false); // Port is not in use
+      });
+      
+      socket.connect(port, 'localhost');
+    });
+  }
+
+  /**
+   * Find the actual running port for a project by checking common port ranges
+   */
+  private async findRunningPort(basePort: number, projectName: string): Promise<number | undefined> {
+    console.log(`[WorkspaceScanner] Looking for running port for ${projectName}, base port: ${basePort}`);
+    
+    // Check the base port first
+    const isBasePortInUse = await this.isPortInUse(basePort);
+    if (isBasePortInUse) {
+      console.log(`[WorkspaceScanner] Found ${projectName} running on base port ${basePort}`);
+      return basePort;
+    }
+
+    // If base port is not in use, check nearby ports (common behavior when port is in use)
+    const portsToCheck = [];
+    for (let i = 1; i <= 10; i++) {
+      portsToCheck.push(basePort + i);
+    }
+
+    for (const port of portsToCheck) {
+      const isInUse = await this.isPortInUse(port);
+      if (isInUse) {
+        console.log(`[WorkspaceScanner] Found ${projectName} running on port ${port}`);
+        return port;
+      }
+    }
+
+    console.log(`[WorkspaceScanner] Could not find running port for ${projectName}`);
     return undefined;
   }
 

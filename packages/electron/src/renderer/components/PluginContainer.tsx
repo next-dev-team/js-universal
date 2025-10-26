@@ -8,6 +8,7 @@ import {
 } from "@ant-design/icons";
 import PluginWebview from "./PluginWebview";
 import { useAppStore } from "@/store/useAppStore";
+import { discoverDirectPlugins, directPluginRegistry, DirectPlugin } from "@/plugins";
 
 const { Title, Text } = Typography;
 
@@ -34,6 +35,7 @@ export default function PluginContainer() {
     useAppStore();
 
   const [embeddedPlugins, setEmbeddedPlugins] = useState<EmbeddedPlugin[]>([]);
+  const [directPlugins, setDirectPlugins] = useState<DirectPlugin[]>([]);
   const [workspaceProjects, setWorkspaceProjects] = useState<WorkspaceProject[]>([]);
   const [activeTab, setActiveTab] = useState<string>("");
   const [fullscreenPlugin, setFullscreenPlugin] = useState<string | null>(null);
@@ -61,8 +63,17 @@ export default function PluginContainer() {
           // Convert workspace projects to embedded plugins
           const embedded = projects
             .filter(project => {
-              console.log(`[PluginContainer] Checking project ${project.id}: hasDevServer=${project.hasDevServer}, devServerPort=${project.devServerPort}`);
-              return project.hasDevServer && project.devServerPort;
+              console.log(`[PluginContainer] Checking project ${project.id}:`);
+              console.log(`  - hasDevServer: ${project.hasDevServer} (type: ${typeof project.hasDevServer})`);
+              console.log(`  - devServerPort: ${project.devServerPort} (type: ${typeof project.devServerPort})`);
+              console.log(`  - isDevelopment: ${project.isDevelopment} (type: ${typeof project.isDevelopment})`);
+              const hasServer = project.hasDevServer === true;
+              const hasPort = project.devServerPort && project.devServerPort > 0;
+              console.log(`  - hasServer check: ${hasServer}`);
+              console.log(`  - hasPort check: ${hasPort}`);
+              const result = hasServer && hasPort;
+              console.log(`  - final result: ${result}`);
+              return result;
             })
             .map(project => ({
               id: project.id,
@@ -97,14 +108,27 @@ export default function PluginContainer() {
     }
   };
 
+  // Load direct plugins
+  const loadDirectPlugins = async () => {
+    try {
+      console.log("[PluginContainer] Loading direct plugins...");
+      const plugins = await discoverDirectPlugins();
+      setDirectPlugins(plugins);
+      console.log("[PluginContainer] Loaded direct plugins:", plugins);
+    } catch (error) {
+      console.error("[PluginContainer] Failed to load direct plugins:", error);
+    }
+  };
+
   useEffect(() => {
     console.log("[PluginContainer] useEffect triggered - starting to load plugins and workspace projects");
     console.log("[PluginContainer] Component mounted, embeddedPlugins length:", embeddedPlugins.length);
     console.log("[PluginContainer] Current workspaceProjects:", workspaceProjects);
     
-    // Load both database plugins and workspace projects
+    // Load database plugins, workspace projects, and direct plugins
     loadPlugins();
     loadWorkspaceProjects();
+    loadDirectPlugins();
 
     // Listen for webview reload messages from main process
     const handleWebviewReload = (event: any, data: { pluginId: string }) => {
@@ -180,7 +204,10 @@ export default function PluginContainer() {
     });
   };
 
-  if (embeddedPlugins.length === 0) {
+  // Check if we have any plugins at all (embedded or direct)
+  const hasAnyPlugins = embeddedPlugins.length > 0 || directPlugins.length > 0;
+
+  if (!hasAnyPlugins) {
     return (
       <div className="flex flex-col items-center justify-center h-96 text-center">
         <AppstoreOutlined className="text-6xl text-gray-300 mb-4" />
@@ -188,7 +215,7 @@ export default function PluginContainer() {
           No Plugins Running
         </Title>
         <Text type="secondary" className="mb-4">
-          Launch a plugin from the Plugin Manager to see it here.
+          Launch a plugin from the Plugin Manager or develop plugins directly in src/plugins/.
         </Text>
         <Space>
           <Button
@@ -237,20 +264,22 @@ export default function PluginContainer() {
         hideAdd
         className="h-full"
         tabBarStyle={{ marginBottom: 0 }}
-        items={embeddedPlugins.map((plugin) => ({
-          key: plugin.id,
-          label: (
-            <div 
-              className="flex items-center space-x-2"
-              data-testid={`plugin-tab-${plugin.id}`}
-            >
-              <span>{plugin.name}</span>
-              {plugin.isDevelopment && (
-                <span 
-                  className="text-xs bg-orange-100 text-orange-600 px-1 rounded"
-                  data-testid={`dev-indicator-${plugin.id}`}
-                >
-                  DEV
+        items={[
+          // Embedded plugins (webview-based)
+          ...embeddedPlugins.map((plugin) => ({
+            key: plugin.id,
+            label: (
+              <div 
+                className="flex items-center space-x-2"
+                data-testid={`plugin-tab-${plugin.id}`}
+              >
+                <span>{plugin.name}</span>
+                {plugin.isDevelopment && (
+                  <span 
+                    className="text-xs bg-orange-100 text-orange-600 px-1 rounded"
+                    data-testid={`dev-indicator-${plugin.id}`}
+                  >
+                    DEV
                 </span>
               )}
             </div>
@@ -275,10 +304,59 @@ export default function PluginContainer() {
               />
             </div>
           ),
-        }))}
+        })),
+        // Direct plugins (component-based)
+        ...directPlugins.map((plugin) => ({
+          key: `direct-${plugin.id}`,
+          label: (
+            <div 
+              className="flex items-center space-x-2"
+              data-testid={`plugin-tab-direct-${plugin.id}`}
+            >
+              <span>{plugin.name}</span>
+              <span 
+                className="text-xs bg-blue-100 text-blue-600 px-1 rounded"
+                data-testid={`direct-indicator-${plugin.id}`}
+              >
+                DIRECT
+              </span>
+            </div>
+          ),
+          closable: true,
+          closeIcon: (
+            <CloseOutlined 
+              data-testid={`plugin-close-direct-${plugin.id}`}
+            />
+          ),
+          children: (
+            <div className="h-full p-4">
+              <plugin.component />
+            </div>
+          ),
+        }))
+        ]}
         onEdit={(targetKey, action) => {
           if (action === "remove" && typeof targetKey === "string") {
-            handleClosePlugin(targetKey);
+            if (targetKey.startsWith('direct-')) {
+              // Handle direct plugin close
+              const pluginId = targetKey.replace('direct-', '');
+              console.log(`[PluginContainer] Closing direct plugin: ${pluginId}`);
+              // For direct plugins, we just remove them from the active tab
+              if (activeTab === targetKey) {
+                const remainingTabs = [...embeddedPlugins, ...directPlugins];
+                if (remainingTabs.length > 1) {
+                  const currentIndex = remainingTabs.findIndex(p => 
+                    (p as any).id === pluginId || `direct-${(p as any).id}` === targetKey
+                  );
+                  const nextTab = remainingTabs[currentIndex + 1] || remainingTabs[currentIndex - 1];
+                  setActiveTab(nextTab ? (nextTab as any).id : '');
+                } else {
+                  setActiveTab('');
+                }
+              }
+            } else {
+              handleClosePlugin(targetKey);
+            }
           }
         }}
       />

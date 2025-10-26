@@ -256,7 +256,38 @@ export default function PluginWebview({
   const handleReload = () => {
     const webview = webviewRef.current;
     if (webview) {
-      webview.reload();
+      console.log(`[PluginWebview ${pluginId}] Attempting to reload webview`);
+      
+      // Check if reload method exists
+      if (typeof webview.reload === 'function') {
+        console.log(`[PluginWebview ${pluginId}] Using webview.reload()`);
+        webview.reload();
+      } else if (typeof webview.src === 'string') {
+        // Fallback: reload by resetting src
+        console.log(`[PluginWebview ${pluginId}] Fallback: reloading by resetting src`);
+        const currentSrc = webview.src;
+        webview.src = '';
+        setTimeout(() => {
+          webview.src = currentSrc;
+        }, 100);
+      } else {
+        // Last resort: reload the entire component
+        console.log(`[PluginWebview ${pluginId}] Last resort: forcing component reload`);
+        setLoading(true);
+        setError(null);
+        setIsReady(false);
+        
+        // Force re-render by updating the key
+        const timestamp = Date.now();
+        webview.setAttribute('data-reload-key', timestamp.toString());
+        
+        // Reset src to trigger reload
+        setTimeout(() => {
+          webview.src = pluginUrl;
+        }, 100);
+      }
+    } else {
+      console.error(`[PluginWebview ${pluginId}] Webview ref is null, cannot reload`);
     }
   };
 
@@ -391,11 +422,6 @@ export default function PluginWebview({
           preload={preloadPath}
           allowpopups="true"
           webpreferences="contextIsolation=yes,nodeIntegration=no"
-          onDomReady={handleDomReady}
-          onDidFailLoad={handleFailLoad}
-          onDidFinishLoad={handleFinishLoad}
-          onNewWindow={handleNewWindow}
-          onConsoleMessage={handleConsoleMessage}
           data-plugin-id={pluginId}
         />
       </div>

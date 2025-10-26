@@ -28,6 +28,7 @@ export default defineConfig({
           "url",
           "querystring",
           "dotenv",
+          "net",
         ],
       },
     },
@@ -113,10 +114,10 @@ export default defineConfig({
       reportCompressedSize: !isDevelopment,
     },
     server: {
-      port: 5174,
-      strictPort: true,
+      port: 5175,
+      strictPort: false,
       hmr: {
-        port: 5174,
+        port: 5175,
       },
       proxy: {
         "/api": {
