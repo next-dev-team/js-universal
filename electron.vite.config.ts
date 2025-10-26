@@ -8,6 +8,9 @@ const isDevelopment = process.env.NODE_ENV === "development";
 export default defineConfig({
   main: {
     build: {
+      lib: {
+        entry: path.resolve(__dirname, "packages/electron/src/main/index.ts"),
+      },
       rollupOptions: {
         external: [
           "electron",
@@ -25,6 +28,7 @@ export default defineConfig({
           "url",
           "querystring",
           "dotenv",
+          "net",
         ],
       },
     },
@@ -32,6 +36,10 @@ export default defineConfig({
       alias: {
         "@": path.resolve(__dirname, "./src"),
         "@shared": path.resolve(__dirname, "./shared"),
+        "@js-universal/shared-types": path.resolve(
+          __dirname,
+          "./packages/shared-types/dist/esm/index.js"
+        ),
       },
     },
   },
@@ -39,10 +47,17 @@ export default defineConfig({
     build: {
       rollupOptions: {
         input: {
-          index: path.resolve(__dirname, "src/preload/index.ts"),
+          index: path.resolve(
+            __dirname,
+            "packages/electron/src/preload/index.ts"
+          ),
           "plugin-preload": path.resolve(
             __dirname,
-            "src/preload/plugin-preload.ts"
+            "packages/electron/src/preload/plugin-preload.ts"
+          ),
+          "dev-plugin-preload": path.resolve(
+            __dirname,
+            "packages/electron/src/preload/dev-plugin-preload.ts"
           ),
         },
         external: ["electron"],
@@ -55,10 +70,15 @@ export default defineConfig({
       alias: {
         "@": path.resolve(__dirname, "./src"),
         "@shared": path.resolve(__dirname, "./shared"),
+        "@js-universal/shared-types": path.resolve(
+          __dirname,
+          "./packages/shared-types/dist/esm/index.js"
+        ),
       },
     },
   },
   renderer: {
+    root: path.resolve(__dirname, "packages/electron/src/renderer"),
     plugins: [
       react({
         babel: {
@@ -69,12 +89,16 @@ export default defineConfig({
     ],
     resolve: {
       alias: {
-        "@": path.resolve(__dirname, "./src/renderer"),
+        "@": path.resolve(__dirname, "./packages/electron/src/renderer"),
         "@shared": path.resolve(__dirname, "./shared"),
       },
     },
     build: {
       rollupOptions: {
+        input: path.resolve(
+          __dirname,
+          "packages/electron/src/renderer/index.html"
+        ),
         external: ["electron"],
         output: {
           manualChunks: isDevelopment
@@ -90,10 +114,10 @@ export default defineConfig({
       reportCompressedSize: !isDevelopment,
     },
     server: {
-      port: 5174,
-      strictPort: true,
+      port: 5175,
+      strictPort: false,
       hmr: {
-        port: 5174,
+        port: 5175,
       },
       proxy: {
         "/api": {

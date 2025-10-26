@@ -7,6 +7,10 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Package manager lock files (keep only pnpm-lock.yaml)
+package-lock.json
+yarn.lock
+
 node_modules
 dist-*
 dist/
@@ -44,7 +48,7 @@ web-build/
 
 
 
-
+.turbo
 ios
 android
 
@@ -55,3 +59,4 @@ android
 .metro-health-check*
 
 /node_modules/
+.rollup.cache/
