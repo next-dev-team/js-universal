@@ -1,4 +1,4 @@
-// Enhanced Counter Plugin for Development Mode
+// Enhanced Counter Plugin for Development Mode - WORKSPACE SCANNER TEST
 class CounterAppDev {
   constructor() {
     this.counter = 0;
@@ -7,6 +7,10 @@ class CounterAppDev {
     this.sessionStartTime = new Date();
     this.performanceScore = null;
     this.messageCount = 0;
+    
+    // Test change for workspace scanner hot reload - UPDATED WITH NEW TIMESTAMP!
+    console.log('🚀 HOT RELOAD TEST: Counter app updated successfully! Time:', new Date().toLocaleTimeString());
+    console.log('🔥 WORKSPACE SCANNER TEST: File change detected and hot reload triggered!');
 
     // Debug: Check if pluginAPI is available
     console.log(
@@ -346,6 +350,12 @@ class CounterAppDev {
 
     if (counterValueElement) {
       counterValueElement.textContent = this.counter;
+      // Add a visual indicator for hot reload testing
+      counterValueElement.style.backgroundColor = this.counter > 0 ? "#4CAF50" : "#f44336";
+      counterValueElement.style.color = "white";
+      counterValueElement.style.padding = "10px";
+      counterValueElement.style.borderRadius = "8px";
+      counterValueElement.style.transition = "all 0.3s ease";
 
       // Add visual feedback for counter value
       counterValueElement.classList.remove("positive", "negative", "zero");
@@ -368,6 +378,18 @@ class CounterAppDev {
 
     if (performanceScoreElement) {
       performanceScoreElement.textContent = this.performanceScore || "--";
+    }
+
+    // Add hot reload test indicator
+    const hotReloadIndicator = document.getElementById("hot-reload-indicator");
+    if (hotReloadIndicator) {
+      hotReloadIndicator.textContent = `🔥 HOT RELOAD TEST - Last Update: ${new Date().toLocaleTimeString()}`;
+      hotReloadIndicator.style.backgroundColor = "#FF9800";
+      hotReloadIndicator.style.color = "white";
+      hotReloadIndicator.style.padding = "5px 10px";
+      hotReloadIndicator.style.borderRadius = "4px";
+      hotReloadIndicator.style.fontSize = "12px";
+      hotReloadIndicator.style.fontWeight = "bold";
     }
   }
 

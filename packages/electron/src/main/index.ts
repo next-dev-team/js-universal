@@ -1,13 +1,15 @@
 import { app, BrowserWindow, ipcMain, dialog, shell } from "electron";
 import path from "path";
+import fs from "fs";
 import isDev from "electron-is-dev";
 import { PrismaClient } from "@prisma/client";
-import { IPC_CHANNELS } from "@js-universal/shared-types";
+import { IPC_CHANNELS } from "../preload/types";
 import { PluginManager } from "./plugin-manager";
 import { DatabaseService } from "./database-service";
 import { SecurityManager } from "./security-manager";
 import { PluginDevLoader } from "./plugin-dev-loader";
 import { PluginWebviewManager } from "./plugin-webview-manager";
+import { WorkspaceScanner } from "./workspace-scanner";
 
 // Configure Prisma for packaged app
 if (!isDev) {
@@ -42,6 +44,7 @@ export class ElectronApp {
   private securityManager: SecurityManager;
   private pluginDevLoader: PluginDevLoader;
   private pluginWebviewManager: PluginWebviewManager;
+  private workspaceScanner: WorkspaceScanner;
 
   constructor() {
     console.log(
@@ -73,6 +76,16 @@ export class ElectronApp {
       isDev
     );
 
+    // Initialize workspace scanner
+    const appsDirectory = path.resolve(__dirname, "../../../..", "apps");
+    console.log("[ElectronApp] Apps directory path:", appsDirectory);
+    console.log("[ElectronApp] Apps directory exists:", fs.existsSync(appsDirectory));
+    this.workspaceScanner = new WorkspaceScanner(
+      appsDirectory,
+      this.pluginDevLoader,
+      this.pluginWebviewManager
+    );
+
     this.initializeApp();
   }
 
@@ -90,41 +103,33 @@ export class ElectronApp {
       this.setupBasicIpcHandlers();
       console.log("[ElectronApp] Basic IPC handlers setup completed");
 
+      // Setup full IPC handlers immediately to avoid "No handler registered" errors
+      console.log("[ElectronApp] Setting up full IPC handlers...");
+      this.setupIpcHandlers();
+      console.log("[ElectronApp] Full IPC handlers setup completed");
+
       // Initialize the app (database, plugin manager, etc.) in background
       console.log("[ElectronApp] Starting app initialization in background...");
-      this.initialize()
-        .then(() => {
-          console.log(
-            "[ElectronApp] App initialization completed successfully"
-          );
-          // Setup full IPC handlers after initialization
-          this.setupIpcHandlers();
-          console.log("[ElectronApp] Full IPC handlers setup completed");
-        })
-        .catch((error) => {
-          console.error("[ElectronApp] App initialization failed:", error);
-        });
+      try {
+        await this.initialize();
+        console.log("[ElectronApp] App initialization completed successfully");
 
-      // Setup development plugins if in development mode
-      if (isDev) {
-        console.log("[ElectronApp] Setting up development plugins...");
-        this.setupDevelopmentPlugins()
-          .then(() => {
-            console.log("[ElectronApp] Development plugins setup completed");
-          })
-          .catch((error) => {
-            console.error(
-              "[ElectronApp] Development plugins setup failed:",
-              error
-            );
-          });
-      }
-
-      app.on("activate", () => {
-        if (BrowserWindow.getAllWindows().length === 0) {
-          this.createMainWindow();
+        // Setup development plugins if in development mode
+        if (isDev) {
+          console.log("[ElectronApp] Setting up development plugins...");
+          await this.setupDevelopmentPlugins();
+          console.log("[ElectronApp] Development plugins setup completed");
         }
-      });
+      } catch (error) {
+        console.error("[ElectronApp] App initialization failed:", error);
+        console.error("[ElectronApp] Error stack:", error.stack);
+      }
+    });
+
+    app.on("activate", () => {
+      if (BrowserWindow.getAllWindows().length === 0) {
+        this.createMainWindow();
+      }
     });
 
     // Handle app window closed
@@ -160,6 +165,24 @@ export class ElectronApp {
       // show: false,
     });
 
+    // Capture renderer console logs with more details
+    this.mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
+      console.log(`[Renderer Console] Level: ${level}, Message: ${message}, Line: ${line}, Source: ${sourceId}`);
+    });
+
+    // Also capture other renderer events
+    this.mainWindow.webContents.on('did-finish-load', () => {
+      console.log('[Main] Renderer finished loading');
+    });
+
+    this.mainWindow.webContents.on('dom-ready', () => {
+      console.log('[Main] Renderer DOM ready');
+    });
+
+    this.mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+      console.log(`[Main] Renderer failed to load: ${errorCode} - ${errorDescription}`);
+    });
+
     // Load the app
     if (isDev && process.env["ELECTRON_RENDERER_URL"]) {
       this.mainWindow.loadURL(process.env["ELECTRON_RENDERER_URL"]);
@@ -189,6 +212,9 @@ export class ElectronApp {
 
   private setupBasicIpcHandlers() {
     console.log("[ElectronApp] Setting up basic IPC handlers...");
+    console.log("[ElectronApp] IPC_CHANNELS object:", IPC_CHANNELS);
+    console.log("[ElectronApp] WORKSPACE_RESCAN channel:", IPC_CHANNELS.WORKSPACE_RESCAN);
+    console.log("[ElectronApp] WORKSPACE_GET_PROJECTS channel:", IPC_CHANNELS.WORKSPACE_GET_PROJECTS);
 
     // Window management
     ipcMain.handle(IPC_CHANNELS.WINDOW_MINIMIZE, () => {
@@ -197,7 +223,7 @@ export class ElectronApp {
 
     ipcMain.handle(IPC_CHANNELS.WINDOW_MAXIMIZE, () => {
       if (this.mainWindow?.isMaximized()) {
-        this.mainWindow.restore();
+        this.mainWindow.unmaximize();
       } else {
         this.mainWindow?.maximize();
       }
@@ -207,71 +233,120 @@ export class ElectronApp {
       this.mainWindow?.close();
     });
 
+    // File dialog for plugin installation - needs to be available immediately
+    ipcMain.handle(IPC_CHANNELS.DIALOG_OPEN_DIRECTORY, async () => {
+      const result = await dialog.showOpenDialog(this.mainWindow!, {
+        properties: ["openDirectory"],
+        title: "Select Plugin Directory",
+        buttonLabel: "Install Plugin",
+      });
+
+      if (!result.canceled && result.filePaths.length > 0) {
+        return result.filePaths[0];
+      }
+      return null;
+    });
+
+    // Open external links - needs to be available immediately
+    ipcMain.handle(IPC_CHANNELS.SHELL_OPEN_EXTERNAL, async (_, url: string) => {
+      await shell.openExternal(url);
+    });
+
+    // Workspace operations - setup with null checks since services may not be initialized yet
+    if (IPC_CHANNELS.WORKSPACE_RESCAN && IPC_CHANNELS.WORKSPACE_GET_PROJECTS) {
+      console.log("[ElectronApp] Setting up workspace IPC handlers...");
+      
+      ipcMain.handle(IPC_CHANNELS.WORKSPACE_RESCAN, async () => {
+        try {
+          console.log("[WORKSPACE] Rescanning workspace...");
+          if (!this.workspaceScanner) {
+            console.warn("[WORKSPACE] Workspace scanner not initialized yet");
+            return { success: false, error: "Workspace scanner not ready" };
+          }
+          await this.workspaceScanner.scanAndRegisterProjects();
+          const projects = this.workspaceScanner.getRegisteredProjects();
+          console.log(`[WORKSPACE] Rescan completed. Found ${projects.length} projects:`, projects.map(p => p.id));
+          return { success: true, projectCount: projects.length };
+        } catch (error) {
+          console.error("[WORKSPACE] Error during rescan:", error);
+          return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
+        }
+      });
+
+      ipcMain.handle(IPC_CHANNELS.WORKSPACE_GET_PROJECTS, () => {
+        try {
+          console.log("[WORKSPACE] IPC handler called for getting projects");
+          if (!this.workspaceScanner) {
+            console.warn("[WORKSPACE] Workspace scanner not initialized yet");
+            return [];
+          }
+          const projects = this.workspaceScanner.getRegisteredProjects();
+          console.log(`[WORKSPACE] Getting projects. Found ${projects.length} projects:`, projects.map(p => p.id));
+          
+          const result = projects.map(project => ({
+            id: project.id,
+            name: project.name,
+            version: project.version,
+            description: project.packageJson?.description || project.description,
+            author: project.packageJson?.author || project.author,
+            hasDevServer: project.hasDevServer,
+            devServerPort: project.devServerPort,
+            isDevelopment: true
+          }));
+          
+          console.log("[WORKSPACE] Returning result:", result);
+          return result;
+        } catch (error) {
+          console.error("[WORKSPACE] Error getting projects:", error);
+          return [];
+        }
+      });
+    } else {
+      console.error("[ElectronApp] Workspace IPC channels are undefined! Cannot set up handlers.");
+    }
+
     // Database operations with mock responses until database is ready
     ipcMain.handle(IPC_CHANNELS.DB_GET_PLUGINS, async () => {
       console.log("[ElectronApp] DB_GET_PLUGINS called (basic handler)");
-      if (this.databaseService) {
-        try {
-          return await this.databaseService.getPlugins();
-        } catch (error) {
-          console.error("[ElectronApp] Database error in getPlugins:", error);
-          return []; // Return empty array as fallback
-        }
+      try {
+        // Return empty array until database is ready
+        return [];
+      } catch (error) {
+        console.error("[ElectronApp] DB_GET_PLUGINS error:", error);
+        return [];
       }
-      return []; // Return empty array if database not ready
     });
 
-    ipcMain.handle(
-      IPC_CHANNELS.DB_GET_USER_PLUGINS,
-      async (_, userId: string) => {
-        console.log("[ElectronApp] DB_GET_USER_PLUGINS called (basic handler)");
-        if (this.databaseService) {
-          try {
-            return await this.databaseService.getUserPlugins(userId);
-          } catch (error) {
-            console.error(
-              "[ElectronApp] Database error in getUserPlugins:",
-              error
-            );
-            return []; // Return empty array as fallback
-          }
-        }
-        return []; // Return empty array if database not ready
+    ipcMain.handle(IPC_CHANNELS.DB_GET_USER_PLUGINS, async () => {
+      console.log("[ElectronApp] DB_GET_USER_PLUGINS called (basic handler)");
+      try {
+        return [];
+      } catch (error) {
+        console.error("[ElectronApp] DB_GET_USER_PLUGINS error:", error);
+        return [];
       }
-    );
+    });
 
     ipcMain.handle(IPC_CHANNELS.DB_GET_SETTINGS, async () => {
       console.log("[ElectronApp] DB_GET_SETTINGS called (basic handler)");
-      if (this.databaseService) {
-        try {
-          return await this.databaseService.getAppSettings();
-        } catch (error) {
-          console.error(
-            "[ElectronApp] Database error in getAppSettings:",
-            error
-          );
-          return {}; // Return empty object as fallback
-        }
+      try {
+        return {};
+      } catch (error) {
+        console.error("[ElectronApp] DB_GET_SETTINGS error:", error);
+        return {};
       }
-      return {}; // Return empty object if database not ready
     });
 
     ipcMain.handle(
       IPC_CHANNELS.DB_UPDATE_SETTINGS,
       async (_, key: string, value: any) => {
         console.log("[ElectronApp] DB_UPDATE_SETTINGS called (basic handler)");
-        if (this.databaseService) {
-          try {
-            return await this.databaseService.updateSetting(key, value);
-          } catch (error) {
-            console.error(
-              "[ElectronApp] Database error in updateSetting:",
-              error
-            );
-            return { success: false, error: error.message };
-          }
+        try {
+          return { success: false, error: "Database not ready" };
+        } catch (error) {
+          console.error("[ElectronApp] DB_UPDATE_SETTINGS error:", error);
+          return { success: false, error: error.message };
         }
-        return { success: false, error: "Database not ready" };
       }
     );
 
@@ -280,15 +355,12 @@ export class ElectronApp {
       IPC_CHANNELS.PLUGIN_INSTALL,
       async (_, sourcePath: string) => {
         console.log("[ElectronApp] PLUGIN_INSTALL called (basic handler)");
-        if (this.pluginManager) {
-          try {
-            return await this.pluginManager.installPlugin(sourcePath);
-          } catch (error) {
-            console.error("[ElectronApp] Plugin install error:", error);
-            return { success: false, error: error.message };
-          }
+        try {
+          return { success: false, error: "Plugin manager not ready" };
+        } catch (error) {
+          console.error("[ElectronApp] Plugin install error:", error);
+          return { success: false, error: error.message };
         }
-        return { success: false, error: "Plugin manager not ready" };
       }
     );
 
@@ -296,48 +368,36 @@ export class ElectronApp {
       IPC_CHANNELS.PLUGIN_UNINSTALL,
       async (_, pluginId: string) => {
         console.log("[ElectronApp] PLUGIN_UNINSTALL called (basic handler)");
-        if (this.pluginManager) {
-          try {
-            return await this.pluginManager.uninstallPlugin(pluginId);
-          } catch (error) {
-            console.error("[ElectronApp] Plugin uninstall error:", error);
-            return { success: false, error: error.message };
-          }
+        try {
+          return { success: false, error: "Plugin manager not ready" };
+        } catch (error) {
+          console.error("[ElectronApp] Plugin uninstall error:", error);
+          return { success: false, error: error.message };
         }
-        return { success: false, error: "Plugin manager not ready" };
       }
     );
 
     ipcMain.handle(IPC_CHANNELS.PLUGIN_LAUNCH, async (_, pluginId: string) => {
       console.log("[ElectronApp] PLUGIN_LAUNCH called (basic handler)");
-      if (this.pluginManager) {
-        try {
-          return await this.pluginManager.launchPlugin(pluginId);
-        } catch (error) {
-          console.error("[ElectronApp] Plugin launch error:", error);
-          return { success: false, error: error.message };
-        }
+      try {
+        return { success: false, error: "Plugin manager not ready" };
+      } catch (error) {
+        console.error("[ElectronApp] Plugin launch error:", error);
+        return { success: false, error: error.message };
       }
-      return { success: false, error: "Plugin manager not ready" };
     });
 
     ipcMain.handle(IPC_CHANNELS.PLUGIN_CLOSE, async (_, pluginId: string) => {
       console.log("[ElectronApp] PLUGIN_CLOSE called (basic handler)");
-      if (this.pluginManager) {
-        try {
-          return await this.pluginManager.closePlugin(pluginId);
-        } catch (error) {
-          console.error("[ElectronApp] Plugin close error:", error);
-          return { success: false, error: error.message };
-        }
+      try {
+        return { success: false, error: "Plugin manager not ready" };
+      } catch (error) {
+        console.error("[ElectronApp] Plugin close error:", error);
+        return { success: false, error: error.message };
       }
-      return { success: false, error: "Plugin manager not ready" };
     });
 
-    // Shell operations
-    ipcMain.handle(IPC_CHANNELS.SHELL_OPEN_EXTERNAL, async (_, url: string) => {
-      await shell.openExternal(url);
-    });
+
   }
 
   private setupIpcHandlers() {
@@ -365,28 +425,13 @@ export class ElectronApp {
       }
     }
 
-    // Window management
-    ipcMain.handle(IPC_CHANNELS.WINDOW_MINIMIZE, () => {
-      this.mainWindow?.minimize();
-    });
-
-    ipcMain.handle(IPC_CHANNELS.WINDOW_MAXIMIZE, () => {
-      if (this.mainWindow?.isMaximized()) {
-        this.mainWindow.restore();
-      } else {
-        this.mainWindow?.maximize();
-      }
-    });
-
-    ipcMain.handle(IPC_CHANNELS.WINDOW_CLOSE, () => {
-      this.mainWindow?.close();
-    });
-
-    // Database operations
+    // Database operations - enhanced versions that replace basic handlers
+    ipcMain.removeHandler(IPC_CHANNELS.DB_GET_PLUGINS);
     ipcMain.handle(IPC_CHANNELS.DB_GET_PLUGINS, async () => {
       return await this.databaseService.getPlugins();
     });
 
+    ipcMain.removeHandler(IPC_CHANNELS.DB_GET_USER_PLUGINS);
     ipcMain.handle(
       IPC_CHANNELS.DB_GET_USER_PLUGINS,
       async (_, userId: string) => {
@@ -394,10 +439,12 @@ export class ElectronApp {
       }
     );
 
+    ipcMain.removeHandler(IPC_CHANNELS.DB_GET_SETTINGS);
     ipcMain.handle(IPC_CHANNELS.DB_GET_SETTINGS, async () => {
       return await this.databaseService.getAppSettings();
     });
 
+    ipcMain.removeHandler(IPC_CHANNELS.DB_UPDATE_SETTINGS);
     ipcMain.handle(
       IPC_CHANNELS.DB_UPDATE_SETTINGS,
       async (_, key: string, value: any) => {
@@ -417,7 +464,8 @@ export class ElectronApp {
       }
     );
 
-    // Plugin management
+    // Plugin management - enhanced versions that replace basic handlers
+    ipcMain.removeHandler(IPC_CHANNELS.PLUGIN_INSTALL);
     ipcMain.handle(
       IPC_CHANNELS.PLUGIN_INSTALL,
       async (_, pluginPath: string) => {
@@ -430,6 +478,7 @@ export class ElectronApp {
       }
     );
 
+    ipcMain.removeHandler(IPC_CHANNELS.PLUGIN_UNINSTALL);
     ipcMain.handle(
       IPC_CHANNELS.PLUGIN_UNINSTALL,
       async (_, pluginId: string) => {
@@ -450,10 +499,12 @@ export class ElectronApp {
       return await this.pluginManager.disablePlugin(pluginId);
     });
 
+    ipcMain.removeHandler(IPC_CHANNELS.PLUGIN_LAUNCH);
     ipcMain.handle(IPC_CHANNELS.PLUGIN_LAUNCH, async (_, pluginId: string) => {
       return await this.pluginManager.launchPlugin(pluginId);
     });
 
+    ipcMain.removeHandler(IPC_CHANNELS.PLUGIN_CLOSE);
     ipcMain.handle(IPC_CHANNELS.PLUGIN_CLOSE, async (_, pluginId: string) => {
       return await this.pluginManager.closePlugin(pluginId);
     });
@@ -485,6 +536,7 @@ export class ElectronApp {
     );
 
     // User plugin management
+    ipcMain.removeHandler(IPC_CHANNELS.USER_PLUGIN_ENABLE);
     ipcMain.handle(
       IPC_CHANNELS.USER_PLUGIN_ENABLE,
       async (_, userId: string, pluginId: string) => {
@@ -497,6 +549,7 @@ export class ElectronApp {
       }
     );
 
+    ipcMain.removeHandler(IPC_CHANNELS.USER_PLUGIN_DISABLE);
     ipcMain.handle(
       IPC_CHANNELS.USER_PLUGIN_DISABLE,
       async (_, userId: string, pluginId: string) => {
@@ -509,24 +562,8 @@ export class ElectronApp {
       }
     );
 
-    // File dialog for plugin installation
-    ipcMain.handle(IPC_CHANNELS.DIALOG_OPEN_DIRECTORY, async () => {
-      const result = await dialog.showOpenDialog(this.mainWindow!, {
-        properties: ["openDirectory"],
-        title: "Select Plugin Directory",
-        buttonLabel: "Install Plugin",
-      });
+    // Note: Workspace operations are now handled in setupBasicIpcHandlers() to be available immediately
 
-      if (!result.canceled && result.filePaths.length > 0) {
-        return result.filePaths[0];
-      }
-      return null;
-    });
-
-    // Open external links
-    ipcMain.handle(IPC_CHANNELS.SHELL_OPEN_EXTERNAL, async (_, url: string) => {
-      await shell.openExternal(url);
-    });
   }
 
   async initialize(): Promise<void> {
@@ -579,71 +616,14 @@ export class ElectronApp {
         !!this.databaseService
       );
 
-      // Register counter-app-dev plugin for webview
-      const counterAppDevWebviewConfig = {
-        id: "counter-app-dev",
-        name: "Counter App Dev",
-        version: "1.0.0",
-        url: "http://localhost:3003",
-        isDevelopment: true,
-        manifest: {
-          id: "counter-app-dev",
-          name: "Counter App Dev",
-          version: "1.0.0",
-          description:
-            "Counter App Development Mode - Testing plugin with hot reload and real-time changes",
-          author: "Super App Team",
-          main: "index.html",
-          permissions: ["storage", "notifications", "communication"],
-        },
-      };
+      // Use workspace scanner to automatically detect and register all projects
+      console.log("[ElectronApp] Starting automatic workspace detection...");
+      await this.workspaceScanner.scanAndRegisterProjects();
+      
+      const registeredProjects = this.workspaceScanner.getRegisteredProjects();
+      console.log(`[ElectronApp] Workspace scanner registered ${registeredProjects.length} projects:`, 
+        registeredProjects.map(p => p.id));
 
-      const webviewResult =
-        await this.pluginWebviewManager.registerWebviewPlugin(
-          counterAppDevWebviewConfig
-        );
-      console.log(
-        "[ElectronApp] Webview plugin registration result:",
-        webviewResult
-      );
-
-      // Also register for traditional dev loader (for fallback)
-      const counterAppDevConfig = {
-        id: "counter-app-dev",
-        name: "Counter App Dev",
-        version: "1.0.0",
-        devPath: path.resolve(__dirname, "../../../apps/counter-app-dev"),
-        manifest: {
-          id: "counter-app-dev",
-          name: "Counter App Dev",
-          version: "1.0.0",
-          description:
-            "Counter App Development Mode - Testing plugin with hot reload and real-time changes",
-          author: "Super App Team",
-          main: "index.html",
-          permissions: ["storage", "notifications", "communication"],
-        },
-      };
-
-      const devResult = await this.pluginDevLoader.registerDevPlugin(
-        counterAppDevConfig
-      );
-      console.log(
-        "[ElectronApp] Development plugin registration result:",
-        devResult
-      );
-
-      // Auto-launch the webview plugin
-      if (webviewResult.success) {
-        const launchResult =
-          await this.pluginWebviewManager.launchWebviewPlugin(
-            "counter-app-dev"
-          );
-        console.log(
-          "[ElectronApp] Webview plugin launch result:",
-          launchResult
-        );
-      }
     } catch (error) {
       console.error(
         "[ElectronApp] Failed to setup development plugins:",
@@ -654,6 +634,8 @@ export class ElectronApp {
 
   private async cleanup() {
     try {
+      console.log("[ElectronApp] Starting cleanup...");
+      
       await this.pluginManager.cleanup();
 
       // Cleanup development plugin loader
@@ -666,9 +648,18 @@ export class ElectronApp {
         this.pluginWebviewManager.cleanup();
       }
 
-      await this.prisma.$disconnect();
+      // Cleanup workspace scanner
+      if (this.workspaceScanner) {
+        this.workspaceScanner.cleanup();
+      }
+      
+      // Close database connection
+      if (this.prisma) {
+        await this.prisma.$disconnect();
+        console.log("[ElectronApp] Database disconnected");
+      }
     } catch (error) {
-      console.error("Cleanup error:", error);
+      console.error("[ElectronApp] Error during cleanup:", error);
     }
   }
 }

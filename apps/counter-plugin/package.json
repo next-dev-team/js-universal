@@ -13,6 +13,11 @@
     "build": "mkdir -p dist && cp -r *.html *.js *.css *.svg dist/"
   },
   "dependencies": {},
+  "development": {
+    "hotReload": true,
+    "devTools": true,
+    "fileWatcher": true
+  },
   "window": {
     "width": 400,
     "height": 300,

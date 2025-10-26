@@ -58,6 +58,11 @@ export class PluginWebviewManager {
         return await this.injectPluginAPI(pluginId);
       }
     );
+
+    // Reload webview plugin
+    ipcMain.handle("webview-plugin:reload", async (event, pluginId: string) => {
+      return await this.reloadWebviewPlugin(pluginId);
+    });
   }
 
   async registerWebviewPlugin(
@@ -146,6 +151,53 @@ export class PluginWebviewManager {
       return {
         success: false,
         message: `Failed to launch webview plugin: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      };
+    }
+  }
+
+  async reloadWebviewPlugin(
+    pluginId: string
+  ): Promise<{ success: boolean; message: string }> {
+    try {
+      const config = this.webviewPlugins.get(pluginId);
+      if (!config) {
+        return {
+          success: false,
+          message: `Webview plugin ${pluginId} not found`,
+        };
+      }
+
+      // Send message to renderer to reload webview
+      const mainWindow = BrowserWindow.getAllWindows().find((window) =>
+        window.webContents.getURL().includes("localhost:5174")
+      );
+
+      if (mainWindow) {
+        mainWindow.webContents.send("webview-plugin:reload", { pluginId });
+
+        console.log(
+          `[PluginWebviewManager] Successfully reloaded webview plugin: ${pluginId}`
+        );
+        return {
+          success: true,
+          message: `Webview plugin ${pluginId} reloaded successfully`,
+        };
+      } else {
+        return {
+          success: false,
+          message: "Main window not found",
+        };
+      }
+    } catch (error) {
+      console.error(
+        `[PluginWebviewManager] Failed to reload webview plugin ${pluginId}:`,
+        error
+      );
+      return {
+        success: false,
+        message: `Failed to reload webview plugin: ${
           error instanceof Error ? error.message : "Unknown error"
         }`,
       };

@@ -348,4 +348,8 @@ export const IPC_CHANNELS = {
 
   // Shell operations
   SHELL_OPEN_EXTERNAL: "shell:open-external",
+
+  // Workspace operations
+  WORKSPACE_RESCAN: "workspace:rescan",
+  WORKSPACE_GET_PROJECTS: "workspace:get-projects",
 } as const;

@@ -31,10 +31,16 @@ export const IPC_CHANNELS = {
 
   // Plugin communication
   PLUGIN_MESSAGE: 'plugin:message',
+  PLUGIN_RESPONSE: 'plugin:response',
+  PLUGIN_API_CALL: 'plugin:api-call',
 
   // Dialog operations
   DIALOG_OPEN_DIRECTORY: 'dialog:open-directory',
 
   // Shell operations
   SHELL_OPEN_EXTERNAL: 'shell:open-external',
+
+  // Workspace operations
+  WORKSPACE_RESCAN: 'workspace:rescan',
+  WORKSPACE_GET_PROJECTS: 'workspace:get-projects',
 } as const;

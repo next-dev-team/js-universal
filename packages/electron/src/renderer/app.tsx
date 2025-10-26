@@ -19,9 +19,13 @@ export default function App() {
   } = useAppStore();
 
   useEffect(() => {
+    console.log("[App] App component mounted");
+    
     // Initialize app data
     const initializeApp = async () => {
       try {
+        console.log("[App] Starting app initialization");
+        
         // Set default user (in a real app, this would come from authentication)
         setCurrentUser({
           id: "admin",
@@ -33,6 +37,7 @@ export default function App() {
 
         // Load initial data
         await Promise.all([loadSettings(), loadPlugins()]);
+        console.log("[App] App initialization completed");
       } catch (error) {
         console.error("Failed to initialize app:", error);
       }

@@ -37,6 +37,8 @@
     "test:api": "vitest run tests/api",
     "test:integration": "vitest run tests/integration",
     "test:unit": "vitest run tests/main",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
@@ -71,7 +73,7 @@
     "express": "^4.21.2",
     "lucide-react": "^0.511.0",
     "multer": "^1.4.5-lts.1",
-    "pinokiod": "^3.170.0",
+    "pinokiod": "^3.180.0",
     "pterm": "^0.0.14",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -119,7 +121,8 @@
     "vite": "^7.1.11",
     "vite-plugin-trae-solo-badge": "^1.0.0",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "@playwright/test": "^1.56.1"
   },
   "build": {
     "appId": "com.superapp.electron-plugin-app",

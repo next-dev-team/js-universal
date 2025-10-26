@@ -20,6 +20,11 @@
   "devDependencies": {
     "vite": "^5.0.0"
   },
+  "development": {
+    "hotReload": true,
+    "devTools": true,
+    "fileWatcher": true
+  },
   "manifest": {
     "id": "counter-app-dev",
     "name": "Counter App Dev",

@@ -127,6 +127,10 @@ export const IPC_CHANNELS = {
 
   // Shell
   SHELL_OPEN_EXTERNAL: 'shell:openExternal',
+
+  // Workspace operations
+  WORKSPACE_RESCAN: 'workspace:rescan',
+  WORKSPACE_GET_PROJECTS: 'workspace:get-projects',
 } as const
 
 export type IPCChannel = typeof IPC_CHANNELS[keyof typeof IPC_CHANNELS]

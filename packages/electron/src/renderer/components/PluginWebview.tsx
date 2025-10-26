@@ -26,10 +26,11 @@ interface PluginWebviewProps {
   pluginId: string;
   pluginName: string;
   pluginUrl: string;
-  onClose: () => void;
+  onClose?: () => void;
   onFullscreen?: () => void;
   onSettings?: () => void;
   isDevelopment?: boolean;
+  preloadPath?: string;
 }
 
 export default function PluginWebview({
@@ -40,6 +41,7 @@ export default function PluginWebview({
   onFullscreen,
   onSettings,
   isDevelopment = false,
+  preloadPath,
 }: PluginWebviewProps) {
   const webviewRef = useRef<WebViewElement | null>(null);
   const [loading, setLoading] = useState(true);
@@ -199,6 +201,29 @@ export default function PluginWebview({
       }
     };
 
+    const handleFailLoad = (event: unknown) => {
+      console.error(`[PluginWebview ${pluginId}] Load failed:`, event);
+      setLoading(false);
+      setError(
+        `Failed to load plugin: ${
+          (event as { errorDescription?: string })?.errorDescription ||
+          "Unknown error"
+        }`
+      );
+      message.error(`Failed to load plugin ${pluginName}`);
+    };
+
+    const handleFinishLoad = () => {
+      console.log(`[PluginWebview ${pluginId}] Load finished`);
+      setLoading(false);
+    };
+
+    const handleNewWindow = (event: unknown) => {
+      console.log(`[PluginWebview ${pluginId}] New window requested:`, event);
+      // Prevent new windows by default for security
+      event.preventDefault?.();
+    };
+
     const handleConsoleMessage = (event: unknown) => {
       console.log(
         `[PluginWebview ${pluginId}] Console:`,
@@ -209,14 +234,14 @@ export default function PluginWebview({
     // Add event listeners
     webview.addEventListener("loadstart", handleLoadStart);
     webview.addEventListener("loadstop", handleLoadStop);
-    webview.addEventListener("loaderror", handleLoadError);
+    webview.addEventListener("loaderror", handleFailLoad);
     webview.addEventListener("dom-ready", handleDomReady);
     webview.addEventListener("console-message", handleConsoleMessage);
 
     return () => {
       webview.removeEventListener("loadstart", handleLoadStart);
       webview.removeEventListener("loadstop", handleLoadStop);
-      webview.removeEventListener("loaderror", handleLoadError);
+      webview.removeEventListener("loaderror", handleFailLoad);
       webview.removeEventListener("dom-ready", handleDomReady);
       webview.removeEventListener("console-message", handleConsoleMessage);
 
@@ -293,12 +318,14 @@ export default function PluginWebview({
                   icon={<BugOutlined />}
                   onClick={handleTestPluginAPI}
                   title="Test PluginAPI"
+                  data-testid={`plugin-test-api-${pluginId}`}
                 />
                 <Button
                   size="small"
                   icon={<BugOutlined />}
                   onClick={handleOpenDevTools}
                   title="Open DevTools"
+                  data-testid={`plugin-devtools-${pluginId}`}
                 />
               </>
             )}
@@ -307,6 +334,7 @@ export default function PluginWebview({
               icon={<ReloadOutlined />}
               onClick={handleReload}
               title="Reload Plugin"
+              data-testid={`plugin-reload-${pluginId}`}
             />
             {onFullscreen && (
               <Button
@@ -359,10 +387,16 @@ export default function PluginWebview({
         <webview
           ref={webviewRef}
           src={pluginUrl}
-          className="w-full h-full"
-          style={{ display: "block" }}
-          webpreferences="contextIsolation=yes,nodeIntegration=no,sandbox=no"
-          partition={`persist:plugin-${pluginId}`}
+          style={{ width: "100%", height: "100%" }}
+          preload={preloadPath}
+          allowpopups="true"
+          webpreferences="contextIsolation=yes,nodeIntegration=no"
+          onDomReady={handleDomReady}
+          onDidFailLoad={handleFailLoad}
+          onDidFinishLoad={handleFinishLoad}
+          onNewWindow={handleNewWindow}
+          onConsoleMessage={handleConsoleMessage}
+          data-plugin-id={pluginId}
         />
       </div>
     </Card>

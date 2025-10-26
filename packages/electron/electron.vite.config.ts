@@ -9,7 +9,7 @@ export default defineConfig({
   main: {
     build: {
       lib: {
-        entry: path.resolve(__dirname, "../electron-main/src/index.ts"),
+        entry: path.resolve(__dirname, "src/main/index.ts"),
       },
       rollupOptions: {
         external: [
@@ -93,10 +93,10 @@ export default defineConfig({
       reportCompressedSize: !isDevelopment,
     },
     server: {
-      port: 5174,
-      strictPort: true,
+      port: 5175,
+      strictPort: false,
       hmr: {
-        port: 5174,
+        port: 5175,
       },
       proxy: {
         "/api": {

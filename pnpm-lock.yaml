@@ -42,8 +42,8 @@ importers:
         specifier: ^1.4.5-lts.1
         version: 1.4.5-lts.2
       pinokiod:
-        specifier: ^3.170.0
-        version: 3.170.0(bufferutil@4.0.9)(encoding@0.1.13)(xterm@5.3.0)
+        specifier: ^3.180.0
+        version: 3.180.0(bufferutil@4.0.9)(encoding@0.1.13)(xterm@5.3.0)
       pterm:
         specifier: ^0.0.14
         version: 0.0.14(ws@8.18.3(bufferutil@4.0.9))
@@ -72,6 +72,9 @@ importers:
       '@js-universal/shared-deps':
         specifier: workspace:*
         version: link:packages/shared-deps
+      '@playwright/test':
+        specifier: 1.56.1
+        version: 1.56.1
       '@testing-library/jest-dom':
         specifier: ^6.9.1
         version: 6.9.1
@@ -2172,6 +2175,11 @@ packages:
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
+
+  '@playwright/test@1.56.1':
+    resolution: {integrity: sha512-vSMYtL/zOcFpvJCW71Q/OEGQb7KYBPAdKh35WNSkaZA75JlAO8ED8UN6GUNTm3drWomcbcqRPFqQbLae8yBTdg==}
+    engines: {node: '>=18'}
+    hasBin: true
 
   '@polka/url@1.0.0-next.29':
     resolution: {integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==}
@@ -5409,6 +5417,11 @@ packages:
   fs.realpath@1.0.0:
     resolution: {integrity: sha512-OO0pH2lK6a0hZnAdau5ItzHPI6pUlvI7jMVnxUQRtw4owF2wk8lOSabtGDCTP4Ggrg2MbGnWO9X8K1t4+fGMDw==}
 
+  fsevents@2.3.2:
+    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
+    engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
+    os: [darwin]
+
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
@@ -7163,6 +7176,9 @@ packages:
   pinokiod@3.170.0:
     resolution: {integrity: sha512-VY4qMXyLy9TR5RzpIL0hRzyg3gD+j9seePfxTBTAHrw73k4T3hw+vEmLUSxKN/A8nvyRfkfeGZjxP6j8LN5byQ==}
 
+  pinokiod@3.180.0:
+    resolution: {integrity: sha512-/AvuKWSgaziPZ1Fl67FjMVEai6fhlbqEGkRhxpIsFNgwjbm/k6jSUuNzypNBR17ZugOhredvt0uXzJqziElPWQ==}
+
   pirates@4.0.7:
     resolution: {integrity: sha512-TfySrs/5nm8fQJDcBDuUng3VOUKsd7S+zqvbOTiGXHfxX4wK31ard+hoNuvkicM/2YFzlpDgABOevKSsB4G/FA==}
     engines: {node: '>= 6'}
@@ -7172,6 +7188,16 @@ packages:
 
   pkg-types@2.3.0:
     resolution: {integrity: sha512-SIqCzDRg0s9npO5XQ3tNZioRY1uK06lA41ynBC1YmFTmnY6FjUjVt6s4LoADmwoig1qqD0oK8h1p/8mlMx8Oig==}
+
+  playwright-core@1.56.1:
+    resolution: {integrity: sha512-hutraynyn31F+Bifme+Ps9Vq59hKuUCz7H1kDOcBs+2oGguKkWTU50bBWrtz34OUWmIwpBTWDxaRPXrIXkgvmQ==}
+    engines: {node: '>=18'}
+    hasBin: true
+
+  playwright@1.56.1:
+    resolution: {integrity: sha512-aFi5B0WovBHTEvpM3DzXTUaeN6eN0qWnTkKx4NQaH4Wvcmc153PdaY2UBdSYKaGYw+UyWXSVyxDUg5DoPEttjw==}
+    engines: {node: '>=18'}
+    hasBin: true
 
   plist@3.1.0:
     resolution: {integrity: sha512-uysumyrvkUX0rX/dEVqt8gC3sTBzd4zoWfLeS29nb53imdaXVvLINYXTI2GNqzaMuvacNx4uJQ8+b3zXR0pkgQ==}
@@ -11121,6 +11147,10 @@ snapshots:
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
+
+  '@playwright/test@1.56.1':
+    dependencies:
+      playwright: 1.56.1
 
   '@polka/url@1.0.0-next.29': {}
 
@@ -15411,6 +15441,9 @@ snapshots:
 
   fs.realpath@1.0.0: {}
 
+  fsevents@2.3.2:
+    optional: true
+
   fsevents@2.3.3:
     optional: true
 
@@ -17546,6 +17579,94 @@ snapshots:
       - utf-8-validate
       - xterm
 
+  pinokiod@3.180.0(bufferutil@4.0.9)(encoding@0.1.13)(xterm@5.3.0):
+    dependencies:
+      7zip-min-win-asar-support: 1.4.4
+      '@homebridge/node-pty-prebuilt-multiarch': 0.12.0-beta.5
+      '@xterm/headless': 5.5.0
+      accepts: 1.3.8
+      async-retry: 1.3.3
+      axios: 1.12.2
+      batch: 0.6.1
+      clear-module: 4.1.2
+      compressing: 1.10.3
+      cookie-parser: 1.4.7
+      copy-paste: 2.2.0
+      cors: 2.8.5
+      cross-fetch: 3.2.0(encoding@0.1.13)
+      csv-parse: 5.6.0
+      decompress: 4.2.1
+      diff: 8.0.2
+      dotenv: 16.6.1
+      ejs: 3.1.10
+      eol: 0.9.1
+      escape-html: 1.0.3
+      express: 4.21.2
+      express-http-proxy-cp: 2.0.3
+      express-session: 1.18.2
+      fake-useragent: 1.0.1
+      fastq: 1.19.1
+      form-data: 4.0.4
+      fs-extra: 11.3.2
+      glob: 10.4.5
+      glob-gitignore: 1.0.15
+      go-get-folder-size: 0.5.5
+      gray-matter: 4.0.3
+      http-errors: 2.0.0
+      http-proxy: 1.18.1
+      http-proxy-middleware: 3.0.5
+      http-terminator: 3.2.0
+      https: 1.0.0
+      ini: 5.0.0
+      isbinaryfile: 5.0.6
+      isomorphic-git: 1.34.0
+      jimini: 0.0.8
+      jsdom: 24.1.3(bufferutil@4.0.9)
+      key-store: 1.2.0
+      kill-sync: 1.0.3
+      kleur: 4.1.5
+      lodash: 4.17.21
+      marked: 5.1.2
+      mime-types: 2.1.35
+      multer: 1.4.5-lts.2
+      node-downloader-helper: 2.1.9
+      node-gradio-client: 0.14.6
+      normalize-path: 3.0.0
+      p-limit: 3.1.0
+      parseurl: 1.3.3
+      pdrive: 0.0.27
+      portfinder-cp: 1.0.34
+      proxy-agent: 6.5.0
+      qrcode: 1.5.4
+      querystring: 0.2.1
+      random-useragent: 0.5.0
+      rimraf: 5.0.10
+      sanitize-filename: 1.6.3
+      semver: 7.7.3
+      shell-path: 2.1.0
+      sudo-prompt-programfiles-x86: 9.2.10
+      symlink-dir: 5.2.1
+      systeminformation: 5.27.11
+      toasted-notifier: 10.1.0
+      twitter-api-v2: 1.27.0
+      uuid: 9.0.1
+      wait-on: 7.2.0
+      which: 5.0.0
+      ws: 8.18.3(bufferutil@4.0.9)
+      xterm-addon-fit: 0.8.0(xterm@5.3.0)
+      xterm-addon-serialize: 0.9.0(xterm@5.3.0)
+      xterm-headless: 5.3.0
+      yaml: 2.8.1
+      yargs-unparser-custom-flag: 2.0.0
+    transitivePeerDependencies:
+      - bufferutil
+      - canvas
+      - debug
+      - encoding
+      - supports-color
+      - utf-8-validate
+      - xterm
+
   pirates@4.0.7: {}
 
   pkg-types@1.3.1:
@@ -17559,6 +17680,14 @@ snapshots:
       confbox: 0.2.2
       exsolve: 1.0.7
       pathe: 2.0.3
+
+  playwright-core@1.56.1: {}
+
+  playwright@1.56.1:
+    dependencies:
+      playwright-core: 1.56.1
+    optionalDependencies:
+      fsevents: 2.3.2
 
   plist@3.1.0:
     dependencies:

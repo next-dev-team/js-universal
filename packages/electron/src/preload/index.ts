@@ -1,5 +1,11 @@
 import { contextBridge, ipcRenderer } from "electron";
-import { IPC_CHANNELS } from "@js-universal/shared-types";
+import { IPC_CHANNELS } from "./types";
+
+console.log("Preload script loaded - IPC_CHANNELS:", IPC_CHANNELS);
+console.log("Workspace channels:", {
+  WORKSPACE_RESCAN: IPC_CHANNELS.WORKSPACE_RESCAN,
+  WORKSPACE_GET_PROJECTS: IPC_CHANNELS.WORKSPACE_GET_PROJECTS
+});
 
 console.log("Preload script loaded - testing automatic restart functionality");
 
@@ -66,13 +72,29 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
   // External links
   openExternal: (url: string) =>
-    ipcRenderer.invoke(IPC_CHANNELS.SHELL_OPEN_EXTERNAL),
+    ipcRenderer.invoke(IPC_CHANNELS.SHELL_OPEN_EXTERNAL, url),
+
+  // Workspace operations
+  rescanWorkspace: () => ipcRenderer.invoke(IPC_CHANNELS.WORKSPACE_RESCAN),
+  getWorkspaceProjects: () => {
+    console.log("[Preload] Calling WORKSPACE_GET_PROJECTS with channel:", IPC_CHANNELS.WORKSPACE_GET_PROJECTS);
+    return ipcRenderer.invoke(IPC_CHANNELS.WORKSPACE_GET_PROJECTS);
+  },
 
   // Event listeners
   onPluginMessage: (callback: (pluginId: string, message: any) => void) => {
     ipcRenderer.on(IPC_CHANNELS.PLUGIN_RESPONSE, (_, pluginId, message) => {
       callback(pluginId, message);
     });
+  },
+
+  // Webview reload listener
+  onWebviewReload: (callback: (event: any, data: { pluginId: string }) => void) => {
+    ipcRenderer.on("webview-plugin:reload", callback);
+  },
+
+  removeWebviewReloadListener: (callback: (event: any, data: { pluginId: string }) => void) => {
+    ipcRenderer.removeListener("webview-plugin:reload", callback);
   },
 
   removeAllListeners: (channel: string) => {
@@ -143,10 +165,32 @@ declare global {
       // External links
       openExternal: (url: string) => Promise<void>;
 
+      // Workspace operations
+      rescanWorkspace: () => Promise<{ success: boolean; projectCount: number }>;
+      getWorkspaceProjects: () => Promise<Array<{
+        id: string;
+        name: string;
+        version: string;
+        description: string;
+        author: string;
+        hasDevServer: boolean;
+        devServerPort?: number;
+        isDevelopment: boolean;
+      }>>;
+
       // Event listeners
       onPluginMessage: (
         callback: (pluginId: string, message: any) => void
       ) => void;
+      
+      // Webview reload listeners
+      onWebviewReload: (
+        callback: (event: any, data: { pluginId: string }) => void
+      ) => void;
+      removeWebviewReloadListener: (
+        callback: (event: any, data: { pluginId: string }) => void
+      ) => void;
+      
       removeAllListeners: (channel: string) => void;
     };
   }
