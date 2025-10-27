@@ -54,12 +54,35 @@
     "format": {
       "inputs": ["src/**", "*.js", "*.ts", "*.tsx", "*.json", "*.md"],
       "outputs": []
+    },
+    "preview": {
+      "cache": false,
+      "persistent": true
+    },
+    "release": {
+      "dependsOn": ["build"],
+      "cache": false
+    },
+    "release:dir": {
+      "dependsOn": ["build"],
+      "cache": false
+    },
+    "release:win": {
+      "dependsOn": ["build"],
+      "cache": false
+    },
+    "release:mac": {
+      "dependsOn": ["build"],
+      "cache": false
+    },
+    "release:linux": {
+      "dependsOn": ["build"],
+      "cache": false
+    },
+    "release:all": {
+      "dependsOn": ["build"],
+      "cache": false
     }
   },
-  "globalDependencies": [
-    "tsconfig.json",
-    "tsconfig.base.json",
-    "package.json",
-    "turbo.jsonc"
-  ]
+  "globalDependencies": ["tsconfig.json", "package.json", "turbo.jsonc"]
 }

@@ -1,5 +1,5 @@
 {
-  "extends": "@js-universal/shared-config/typescript/plugin.json",
+  "extends": "@js-universal/shared-config/typescript/plugin",
   "compilerOptions": {
     "target": "ESNext",
     "useDefineForClassFields": true,

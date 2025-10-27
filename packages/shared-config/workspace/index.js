@@ -173,11 +173,7 @@ export const generateWorkspaceConfig = (options = {}) => {
           outputs: [],
         },
       },
-      globalDependencies: [
-        "tsconfig.json",
-        "tsconfig.base.json",
-        "package.json",
-      ],
+      globalDependencies: ["tsconfig.json", "package.json"],
     },
   };
 };
