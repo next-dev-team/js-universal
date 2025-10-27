@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain, dialog, shell } from "electron";
 import path from "path";
 import fs from "fs";
-import isDev from "electron-is-dev";
+const isDev = process.env.NODE_ENV === "development" || !app.isPackaged;
 import { PrismaClient } from "@prisma/client";
 import { IPC_CHANNELS } from "../preload/types";
 import { PluginManager } from "./plugin-manager";
@@ -50,78 +50,144 @@ export class ElectronApp {
     console.log(
       "[ElectronApp] Constructor called - starting initialization..."
     );
-    console.log("[ElectronApp] Creating Prisma client...");
-    this.prisma = new PrismaClient();
-    console.log("[ElectronApp] Prisma client created:", !!this.prisma);
-    this.databaseService = new DatabaseService(this.prisma);
-    console.log(
-      "[ElectronApp] Database service created:",
-      !!this.databaseService
-    );
-    this.securityManager = new SecurityManager();
-    this.pluginManager = new PluginManager(
-      this.databaseService,
-      this.securityManager
-    );
+    
+    try {
+      console.log("[ElectronApp] Creating Prisma client...");
+      this.prisma = new PrismaClient();
+      console.log("[ElectronApp] Prisma client created:", !!this.prisma);
+      this.databaseService = new DatabaseService(this.prisma);
+      console.log(
+        "[ElectronApp] Database service created:",
+        !!this.databaseService
+      );
+      this.securityManager = new SecurityManager();
+      this.pluginManager = new PluginManager(
+        this.databaseService,
+        this.securityManager
+      );
 
-    // Initialize development plugin loader
-    this.pluginDevLoader = new PluginDevLoader(
-      (this.pluginManager as any).pluginAPIBridge,
-      isDev
-    );
+      // Initialize development plugin loader
+      this.pluginDevLoader = new PluginDevLoader(
+        (this.pluginManager as any).pluginAPIBridge,
+        isDev
+      );
 
-    // Initialize webview plugin manager
-    this.pluginWebviewManager = new PluginWebviewManager(
-      (this.pluginManager as any).pluginAPIBridge,
-      isDev
-    );
+      // Initialize webview plugin manager
+      this.pluginWebviewManager = new PluginWebviewManager(
+        (this.pluginManager as any).pluginAPIBridge,
+        isDev
+      );
 
-    // Initialize workspace scanner
-    const appsDirectory = path.resolve(__dirname, "../../../..", "apps");
-    console.log("[ElectronApp] Apps directory path:", appsDirectory);
-    console.log(
-      "[ElectronApp] Apps directory exists:",
-      fs.existsSync(appsDirectory)
-    );
+      // Initialize workspace scanner
+      const appsDirectory = path.resolve(__dirname, "../../../..", "apps");
+      console.log("[ElectronApp] Apps directory path:", appsDirectory);
+      console.log(
+        "[ElectronApp] Apps directory exists:",
+        fs.existsSync(appsDirectory)
+      );
 
-    // If the default apps directory doesn't exist, try alternative paths
-    let finalAppsDirectory = appsDirectory;
-    if (!fs.existsSync(appsDirectory)) {
-      const alternativePaths = [
-        path.resolve(process.cwd(), "apps"),
-        path.resolve(__dirname, "../../../../apps"),
-        path.resolve(__dirname, "../../../../../apps"),
-      ];
+      // If the default apps directory doesn't exist, try alternative paths
+      let finalAppsDirectory = appsDirectory;
+      if (!fs.existsSync(appsDirectory)) {
+        const alternativePaths = [
+          path.resolve(process.cwd(), "apps"),
+          path.resolve(__dirname, "../../../../apps"),
+          path.resolve(__dirname, "../../../../../apps"),
+        ];
 
-      for (const altPath of alternativePaths) {
-        console.log(
-          `[ElectronApp] Trying alternative apps directory: ${altPath}`
-        );
-        if (fs.existsSync(altPath)) {
-          finalAppsDirectory = altPath;
+        for (const altPath of alternativePaths) {
           console.log(
-            `[ElectronApp] Found apps directory at: ${finalAppsDirectory}`
+            `[ElectronApp] Trying alternative apps directory: ${altPath}`
           );
-          break;
+          if (fs.existsSync(altPath)) {
+            finalAppsDirectory = altPath;
+            console.log(
+              `[ElectronApp] Found apps directory at: ${finalAppsDirectory}`
+            );
+            break;
+          }
         }
       }
+
+      this.workspaceScanner = new WorkspaceScanner(
+        finalAppsDirectory,
+        this.pluginDevLoader,
+        this.pluginWebviewManager
+      );
+
+      // Initialize the app immediately since we're already in the ready state
+      console.log("[ElectronApp] Starting app ready initialization...");
+      this.onAppReady().catch((error) => {
+        console.error("[ElectronApp] Failed to initialize app:", error);
+        console.error("[ElectronApp] Error stack:", error.stack);
+      });
+    } catch (error) {
+      console.error("[ElectronApp] Constructor error:", error);
+      console.error("[ElectronApp] Constructor error stack:", error.stack);
+      throw error;
     }
-
-    this.workspaceScanner = new WorkspaceScanner(
-      finalAppsDirectory,
-      this.pluginDevLoader,
-      this.pluginWebviewManager
-    );
-
-    this.initializeApp();
   }
 
-  private initializeApp() {
+  private async initializeApp() {
     console.log("[ElectronApp] Setting up app ready handler...");
 
-    // Handle app ready
-    app.whenReady().then(async () => {
-      console.log("[ElectronApp] App is ready, starting initialization...");
+    // Prevent app from quitting when all windows are closed on macOS
+    app.on("window-all-closed", () => {
+      console.log("[ElectronApp] All windows closed");
+      if (process.platform !== "darwin") {
+        console.log("[ElectronApp] Quitting app (not macOS)");
+        app.quit();
+      }
+    });
+
+    app.on("activate", () => {
+      console.log("[ElectronApp] App activated");
+      if (BrowserWindow.getAllWindows().length === 0) {
+        console.log("[ElectronApp] No windows open, creating main window");
+        this.createMainWindow();
+      }
+    });
+
+    // Handle app before quit
+    app.on("before-quit", async (event) => {
+      console.log("[ElectronApp] App before quit");
+      event.preventDefault();
+      await this.cleanup();
+      app.exit();
+    });
+
+    // Set up the ready handler first
+    const readyHandler = async () => {
+      console.log("[ElectronApp] App ready event received, calling onAppReady");
+      // Double check that app is actually ready before proceeding
+      if (!app.isReady()) {
+        console.log("[ElectronApp] App not ready yet, waiting for actual ready state...");
+        await app.whenReady();
+      }
+      await this.onAppReady();
+    };
+    
+    if (app.isReady()) {
+      console.log("[ElectronApp] App is already ready, calling onAppReady immediately");
+      await readyHandler();
+    } else {
+      console.log("[ElectronApp] App not ready yet, setting up ready event listener...");
+      app.once('ready', readyHandler);
+      
+      // Also listen for activate event (macOS specific)
+      app.once('activate', async () => {
+        console.log("[ElectronApp] App activate event received");
+        if (!this.mainWindow) {
+          await readyHandler();
+        }
+      });
+    }
+  }
+
+  private async onAppReady() {
+    console.log("[ElectronApp] Starting app ready initialization...");
+    
+    try {
       this.createMainWindow();
       console.log("[ElectronApp] Main window created");
 
@@ -137,42 +203,24 @@ export class ElectronApp {
 
       // Initialize the app (database, plugin manager, etc.) in background
       console.log("[ElectronApp] Starting app initialization in background...");
-      try {
-        await this.initialize();
-        console.log("[ElectronApp] App initialization completed successfully");
+      await this.initialize();
+      console.log("[ElectronApp] App initialization completed successfully");
 
-        // Setup development plugins if in development mode
-        if (isDev) {
-          console.log("[ElectronApp] Setting up development plugins...");
-          await this.setupDevelopmentPlugins();
-          console.log("[ElectronApp] Development plugins setup completed");
-        }
-      } catch (error) {
-        console.error("[ElectronApp] App initialization failed:", error);
-        console.error("[ElectronApp] Error stack:", error.stack);
+      // Setup development plugins if in development mode
+      if (isDev) {
+        console.log("[ElectronApp] Setting up development plugins...");
+        await this.setupDevelopmentPlugins();
+        console.log("[ElectronApp] Development plugins setup completed");
       }
-    });
-
-    app.on("activate", () => {
-      if (BrowserWindow.getAllWindows().length === 0) {
-        this.createMainWindow();
-      }
-    });
-
-    // Handle app window closed
-    app.on("window-all-closed", () => {
-      if (process.platform !== "darwin") {
-        app.quit();
-      }
-    });
-
-    // Handle app before quit
-    app.on("before-quit", async () => {
-      await this.cleanup();
-    });
+    } catch (error) {
+      console.error("[ElectronApp] App initialization failed:", error);
+      console.error("[ElectronApp] Error stack:", error.stack);
+      // Don't quit the app on initialization error, just log it
+    }
   }
 
   private createMainWindow() {
+    console.log("[ElectronApp] Creating main window...");
     this.mainWindow = new BrowserWindow({
       // width: 1200,
       // height: 800,
@@ -190,8 +238,9 @@ export class ElectronApp {
         webviewTag: true,
       },
       // titleBarStyle: "hiddenInset",
-      // show: false,
+      show: true, // Show window immediately
     });
+    console.log("[ElectronApp] BrowserWindow instance created");
 
     // Capture renderer console logs with more details
     this.mainWindow.webContents.on(
@@ -720,9 +769,24 @@ export class ElectronApp {
 
 // Initialize the app
 console.log("[MAIN] Starting Electron app initialization...");
-try {
-  new ElectronApp();
-  console.log("[MAIN] ElectronApp instance created successfully");
-} catch (error) {
-  console.error("[MAIN] Failed to create ElectronApp instance:", error);
-}
+
+// Wait for app to be ready first
+app.whenReady().then(async () => {
+  console.log("[MAIN] App is ready, creating ElectronApp instance...");
+  
+  try {
+    const electronApp = new ElectronApp();
+    console.log("[MAIN] ElectronApp instance created successfully");
+    
+    // Keep a reference to prevent garbage collection
+    global.electronApp = electronApp;
+    
+    console.log("[MAIN] App initialization complete");
+  } catch (error) {
+    console.error("[MAIN] Failed to create ElectronApp instance:", error);
+    process.exit(1);
+  }
+}).catch((error) => {
+  console.error("[MAIN] App failed to become ready:", error);
+  process.exit(1);
+});

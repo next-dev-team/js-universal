@@ -1,17 +1,11 @@
-# pnpm workspace configuration
-# This file defines the workspace structure for pnpm
-
 packages:
-  # Root packages
-  - "packages/*"
-  - "apps/*"
+  - packages/*
+  - apps/*
+  - '!**/node_modules'
+  - '!**/dist'
+  - '!**/build'
+  - '!**/out'
+  - '!**/coverage'
 
-  # Exclude specific directories
-  - "!**/node_modules"
-  - "!**/dist"
-  - "!**/build"
-  - "!**/out"
-  - "!**/coverage"
-
-  # Include specific subdirectories if needed
-  # - 'packages/*/packages/*'
+onlyBuiltDependencies:
+  - electron

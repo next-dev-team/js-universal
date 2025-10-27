@@ -11,7 +11,7 @@
     "esModuleInterop": true,
 
     // Module resolution for plugin projects
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "resolveJsonModule": true,
 
     // Paths for common plugin project structure

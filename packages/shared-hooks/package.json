@@ -1,6 +1,7 @@
 {
   "name": "@js-universal/shared-hooks",
   "version": "1.0.0",
+  "type": "module",
   "description": "Shared React hooks for common state management patterns",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
