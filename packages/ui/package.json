@@ -1,0 +1,44 @@
+{
+  "name": "@js-universal/ui",
+  "main": "index.ts",
+  "types": "index.d.ts",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "echo 'Library package - no build needed'",
+    "clean": "rm -rf node_modules"
+  },
+  "dependencies": {
+    "@react-navigation/native": "^7.0.0",
+    "@rn-primitives/slot": "^1.2.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react-native": "^0.545.0",
+    "nativewind": "^4.2.1",
+    "react": "19.1.0",
+    "react-native": "0.81.5",
+    "react-native-svg": "15.12.1",
+    "tailwind-merge": "^3.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "~19.1.10",
+    "prettier": "^3.6.2",
+    "prettier-plugin-tailwindcss": "^0.6.14",
+    "tailwindcss": "^3.4.14",
+    "tailwindcss-animate": "^1.0.7",
+    "typescript": "~5.9.2"
+  },
+  "private": true,
+  "files": [
+    "components/**/*",
+    "lib/**/*",
+    "global.css",
+    "tailwind.config.js",
+    "components.json",
+    "index.ts",
+    "index.d.ts"
+  ],
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-native": ">=0.70.0"
+  }
+}

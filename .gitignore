@@ -60,3 +60,5 @@ android
 
 /node_modules/
 .rollup.cache/
+
+~

@@ -1,11 +1,3 @@
 packages:
-  - packages/*
   - apps/*
-  - '!**/node_modules'
-  - '!**/dist'
-  - '!**/build'
-  - '!**/out'
-  - '!**/coverage'
-
-onlyBuiltDependencies:
-  - electron
+  - packages/**/*

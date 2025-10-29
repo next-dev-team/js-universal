@@ -9,7 +9,7 @@
   "editor.fontSize": 14,
   "prettier.enable": true,
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
+    "source.fixAll.eslint": "never"
   },
   "files.associations": {
     "*.css": "css"
