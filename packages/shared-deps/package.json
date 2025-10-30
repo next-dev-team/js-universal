@@ -21,7 +21,7 @@
     "./linting": "./linting/index.js"
   },
   "scripts": {
-    "build": "echo \"No build needed for deps package\"",
+    "build": "mkdir -p dist && echo 'Deps package built' > dist/build.txt",
     "test": "echo \"No tests for deps package\"",
     "lint": "echo \"No linting for deps package\"",
     "clean": "echo \"No build artifacts to clean\"",

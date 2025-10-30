@@ -11,7 +11,7 @@
     "esModuleInterop": true,
     
     // Module resolution for React projects
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "resolveJsonModule": true,
     
     // Paths for common React project structure

@@ -10,7 +10,8 @@
         ".next/**",
         "!.next/cache/**"
       ],
-      "inputs": ["src/**", "tsconfig.json", "package.json"]
+      "inputs": ["src/**", "tsconfig.json", "package.json"],
+      "env": ["NODE_ENV"]
     },
     "lint": {
       "dependsOn": ["^lint"],
@@ -45,7 +46,8 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "dependsOn": ["^build"]
     },
     "clean": {
       "cache": false,

@@ -42,7 +42,7 @@
     "./workspace": "./workspace/index.js"
   },
   "scripts": {
-    "build": "echo \"No build needed for config package\"",
+    "build": "mkdir -p dist && echo 'Config package built' > dist/build.txt",
     "test": "echo \"No tests for config package\"",
     "lint": "echo \"No linting for config package\"",
     "clean": "echo \"No build artifacts to clean\"",

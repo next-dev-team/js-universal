@@ -8,9 +8,6 @@ const isDevelopment = process.env.NODE_ENV === "development";
 export default defineConfig({
   main: {
     build: {
-      lib: {
-        entry: path.resolve(__dirname, "src/main/index.ts"),
-      },
       rollupOptions: {
         external: [
           "electron",
@@ -19,7 +16,6 @@ export default defineConfig({
           "fs/promises",
           "os",
           "@prisma/client",
-          "electron-is-dev",
           "crypto",
           "util",
           "events",
@@ -29,6 +25,9 @@ export default defineConfig({
           "querystring",
           "dotenv",
         ],
+        output: {
+          format: "cjs",
+        },
       },
     },
     resolve: {

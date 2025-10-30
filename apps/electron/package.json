@@ -5,7 +5,6 @@
   "version": "0.0.0",
   "description": "A modern Electron app with plugin system built with React and TypeScript",
   "author": "Electron Plugin App Team",
-  "type": "module",
   "main": "out/main/index.js",
   "homepage": "./",
   "scripts": {
@@ -47,6 +46,7 @@
     "clsx": "^2.1.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
+    "electron": "38.4.0",
     "electron-is-dev": "^3.0.1",
     "express": "^4.21.2",
     "lucide-react": "^0.511.0",
@@ -76,7 +76,6 @@
     "autoprefixer": "^10.4.21",
     "babel-plugin-react-dev-locator": "^1.0.0",
     "concurrently": "^9.2.0",
-    "electron": "28.0.0",
     "electron-builder": "^25.1.8",
     "electron-vite": "^5.0.0-beta.0",
     "eslint": "^9.25.0",
@@ -89,13 +88,13 @@
     "prisma": "^6.1.0",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.20.3",
+    "turbo": "2.5.8",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.30.1",
     "vite": "^7.1.11",
     "vite-plugin-trae-solo-badge": "^1.0.0",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.2.4",
-    "turbo": "2.5.8"
+    "vitest": "^3.2.4"
   },
   "build": {
     "appId": "com.superapp.electron-plugin-app",

@@ -24,7 +24,7 @@
     "allowUmdGlobalAccess": false,
     "baseUrl": ".",
     "module": "ESNext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "paths": {},
     "resolveJsonModule": true,
     "rootDir": "./src",

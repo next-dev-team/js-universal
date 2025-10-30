@@ -1,11 +1,24 @@
 {
-  "extends": "../shared-config/typescript/base.json",
   "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "declaration": true,
     "outDir": "dist",
     "rootDir": "src",
-    "declaration": true,
     "declarationDir": "dist/esm/types",
-    "emitDeclarationOnly": false
+    "emitDeclarationOnly": false,
+    "sourceMap": true,
+    "strict": false,
+    "noImplicitAny": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "types": ["node"]
   },
   "include": [
     "src/**/*"
