@@ -50,7 +50,7 @@ export class ElectronApp {
     console.log(
       "[ElectronApp] Constructor called - starting initialization..."
     );
-    
+
     try {
       console.log("[ElectronApp] Creating Prisma client...");
       this.prisma = new PrismaClient();
@@ -109,11 +109,11 @@ export class ElectronApp {
         }
       }
 
-      this.workspaceScanner = new WorkspaceScanner(
-        finalAppsDirectory,
-        this.pluginDevLoader,
-        this.pluginWebviewManager
-      );
+      // this.workspaceScanner = new WorkspaceScanner(
+      //   finalAppsDirectory,
+      //   this.pluginDevLoader,
+      //   this.pluginWebviewManager
+      // );
 
       // Initialize the app immediately since we're already in the ready state
       console.log("[ElectronApp] Starting app ready initialization...");
@@ -161,21 +161,27 @@ export class ElectronApp {
       console.log("[ElectronApp] App ready event received, calling onAppReady");
       // Double check that app is actually ready before proceeding
       if (!app.isReady()) {
-        console.log("[ElectronApp] App not ready yet, waiting for actual ready state...");
+        console.log(
+          "[ElectronApp] App not ready yet, waiting for actual ready state..."
+        );
         await app.whenReady();
       }
       await this.onAppReady();
     };
-    
+
     if (app.isReady()) {
-      console.log("[ElectronApp] App is already ready, calling onAppReady immediately");
+      console.log(
+        "[ElectronApp] App is already ready, calling onAppReady immediately"
+      );
       await readyHandler();
     } else {
-      console.log("[ElectronApp] App not ready yet, setting up ready event listener...");
-      app.once('ready', readyHandler);
-      
+      console.log(
+        "[ElectronApp] App not ready yet, setting up ready event listener..."
+      );
+      app.once("ready", readyHandler);
+
       // Also listen for activate event (macOS specific)
-      app.once('activate', async () => {
+      app.once("activate", async () => {
         console.log("[ElectronApp] App activate event received");
         if (!this.mainWindow) {
           await readyHandler();
@@ -186,7 +192,7 @@ export class ElectronApp {
 
   private async onAppReady() {
     console.log("[ElectronApp] Starting app ready initialization...");
-    
+
     try {
       this.createMainWindow();
       console.log("[ElectronApp] Main window created");
@@ -207,11 +213,11 @@ export class ElectronApp {
       console.log("[ElectronApp] App initialization completed successfully");
 
       // Setup development plugins if in development mode
-      if (isDev) {
-        console.log("[ElectronApp] Setting up development plugins...");
-        await this.setupDevelopmentPlugins();
-        console.log("[ElectronApp] Development plugins setup completed");
-      }
+      // if (isDev) {
+      //   console.log("[ElectronApp] Setting up development plugins...");
+      //   await this.setupDevelopmentPlugins();
+      //   console.log("[ElectronApp] Development plugins setup completed");
+      // }
     } catch (error) {
       console.error("[ElectronApp] App initialization failed:", error);
       console.error("[ElectronApp] Error stack:", error.stack);
@@ -300,14 +306,6 @@ export class ElectronApp {
   private setupBasicIpcHandlers() {
     console.log("[ElectronApp] Setting up basic IPC handlers...");
     console.log("[ElectronApp] IPC_CHANNELS object:", IPC_CHANNELS);
-    console.log(
-      "[ElectronApp] WORKSPACE_RESCAN channel:",
-      IPC_CHANNELS.WORKSPACE_RESCAN
-    );
-    console.log(
-      "[ElectronApp] WORKSPACE_GET_PROJECTS channel:",
-      IPC_CHANNELS.WORKSPACE_GET_PROJECTS
-    );
 
     // Window management
     ipcMain.handle(IPC_CHANNELS.WINDOW_MINIMIZE, () => {
@@ -372,38 +370,39 @@ export class ElectronApp {
         }
       });
 
-      ipcMain.handle(IPC_CHANNELS.WORKSPACE_GET_PROJECTS, () => {
-        try {
-          console.log("[WORKSPACE] IPC handler called for getting projects");
-          if (!this.workspaceScanner) {
-            console.warn("[WORKSPACE] Workspace scanner not initialized yet");
-            return [];
-          }
-          const projects = this.workspaceScanner.getRegisteredProjects();
-          console.log(
-            `[WORKSPACE] Getting projects. Found ${projects.length} projects:`,
-            projects.map((p) => p.id)
-          );
+      // ipcMain.handle(IPC_CHANNELS.WORKSPACE_GET_PROJECTS, () => {
+      //   try {
+      //     console.log("[WORKSPACE] IPC handler called for getting projects");
+      //     if (!this.workspaceScanner) {
+      //       console.warn("[WORKSPACE] Workspace scanner not initialized yet");
+      //       return [];
+      //     }
 
-          const result = projects.map((project) => ({
-            id: project.id,
-            name: project.name,
-            version: project.version,
-            description:
-              project.packageJson?.description || project.description,
-            author: project.packageJson?.author || project.author,
-            hasDevServer: project.hasDevServer,
-            devServerPort: project.devServerPort,
-            isDevelopment: true,
-          }));
+      //     const projects = this.workspaceScanner.getRegisteredProjects();
+      //     console.log(
+      //       `[WORKSPACE] Getting projects. Found ${projects.length} projects:`,
+      //       projects.map((p) => p.id)
+      //     );
 
-          console.log("[WORKSPACE] Returning result:", result);
-          return result;
-        } catch (error) {
-          console.error("[WORKSPACE] Error getting projects:", error);
-          return [];
-        }
-      });
+      //     const result = projects.map((project) => ({
+      //       id: project.id,
+      //       name: project.name,
+      //       version: project.version,
+      //       description:
+      //         project.packageJson?.description || project.description,
+      //       author: project.packageJson?.author || project.author,
+      //       hasDevServer: project.hasDevServer,
+      //       devServerPort: project.devServerPort,
+      //       isDevelopment: true,
+      //     }));
+
+      //     console.log("[WORKSPACE] Returning result:", result);
+      //     return result;
+      //   } catch (error) {
+      //     console.error("[WORKSPACE] Error getting projects:", error);
+      //     return [];
+      //   }
+      // });
     } else {
       console.error(
         "[ElectronApp] Workspace IPC channels are undefined! Cannot set up handlers."
@@ -771,22 +770,25 @@ export class ElectronApp {
 console.log("[MAIN] Starting Electron app initialization...");
 
 // Wait for app to be ready first
-app.whenReady().then(async () => {
-  console.log("[MAIN] App is ready, creating ElectronApp instance...");
-  
-  try {
-    const electronApp = new ElectronApp();
-    console.log("[MAIN] ElectronApp instance created successfully");
-    
-    // Keep a reference to prevent garbage collection
-    global.electronApp = electronApp;
-    
-    console.log("[MAIN] App initialization complete");
-  } catch (error) {
-    console.error("[MAIN] Failed to create ElectronApp instance:", error);
+app
+  .whenReady()
+  .then(async () => {
+    console.log("[MAIN] App is ready, creating ElectronApp instance...");
+
+    try {
+      const electronApp = new ElectronApp();
+      console.log("[MAIN] ElectronApp instance created successfully");
+
+      // Keep a reference to prevent garbage collection
+      global.electronApp = electronApp;
+
+      console.log("[MAIN] App initialization complete");
+    } catch (error) {
+      console.error("[MAIN] Failed to create ElectronApp instance:", error);
+      process.exit(1);
+    }
+  })
+  .catch((error) => {
+    console.error("[MAIN] App failed to become ready:", error);
     process.exit(1);
-  }
-}).catch((error) => {
-  console.error("[MAIN] App failed to become ready:", error);
-  process.exit(1);
-});
+  });

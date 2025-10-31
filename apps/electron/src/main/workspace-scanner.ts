@@ -206,19 +206,7 @@ export class WorkspaceScanner {
         `${config.name} - Auto-detected workspace project`,
       author: config.packageJson.author || "Workspace",
       main: config.packageJson.main || "index.html",
-      plugin: {
-        config: {
-          enabled: true,
-          autoStart: true,
-        },
-        security: {
-          permissions: [
-            { type: "filesystem" as const, resource: "*", actions: ["read"] },
-            { type: "network" as const, resource: "*", actions: ["request"] },
-          ],
-          sandbox: false,
-        },
-      },
+      permissions: ["storage", "notifications", "communication"],
     };
 
     // Register with dev loader for file watching and hot reload
@@ -318,7 +306,7 @@ export class WorkspaceScanner {
           );
 
           // Trigger reload for the project
-          this.handleProjectFileChange(config, filename);
+          this.handleProjectFileChange(config, filename, eventType);
         }
       );
 
@@ -339,8 +327,9 @@ export class WorkspaceScanner {
    */
   private async handleProjectFileChange(
     config: ProjectConfig,
-    filename: string
-  ): Promise<void> {
+    filename: string,
+    eventType: string
+  ): void {
     console.log(
       `[WorkspaceScanner] Handling file change for ${config.id}: ${filename}`
     );

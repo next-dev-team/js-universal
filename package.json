@@ -2,6 +2,7 @@
   "name": "@js-universal",
   "private": true,
   "scripts": {
+    "counter": "turbo run dev --filter=counter-app-dev",
     "dev": "turbo dev --concurrency=12",
     "tron": "turbo run dev --filter=electron",
     "type:check": "turbo run type:check",
