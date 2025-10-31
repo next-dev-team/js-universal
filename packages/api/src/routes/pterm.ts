@@ -34,10 +34,6 @@ router.get("/version", async (req: Request, res: Response): Promise<void> => {
 
     // Get pterm version from package.json
     try {
-      const ptermPackage = await import("pterm/package.json", {
-        assert: { type: "json" },
-      });
-      versions.pterm = `pterm@${ptermPackage.default.version}`;
     } catch {
       versions.pterm = "Not available";
     }
@@ -45,7 +41,7 @@ router.get("/version", async (req: Request, res: Response): Promise<void> => {
     // Get versions from Pinokio daemon
     try {
       const response = await fetch(`${PINOKIO_DAEMON_URL}/pinokio/version`);
-      const data = await response.json() as any;
+      const data = (await response.json()) as any;
 
       versions.pinokiod = data.pinokiod
         ? `pinokiod@${data.pinokiod}`
@@ -99,14 +95,10 @@ router.get(
 
       if (component === "terminal") {
         // Get pterm version from package.json
-        const ptermPackage = await import("pterm/package.json", {
-          assert: { type: "json" },
-        });
-        version = `pterm@${ptermPackage.default.version}`;
       } else {
         // Get other versions from Pinokio daemon
         const response = await fetch(`${PINOKIO_DAEMON_URL}/pinokio/version`);
-        const data = await response.json() as any;
+        const data = (await response.json()) as any;
 
         if (component === "pinokiod") {
           version = data.pinokiod
@@ -204,7 +196,7 @@ router.get(
         throw new Error(`Daemon responded with ${response.status}`);
       }
 
-      const data = await response.json() as any;
+      const data = (await response.json()) as any;
       res.status(200).json({
         success: true,
         data: data.text || "",
