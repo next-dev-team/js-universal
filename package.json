@@ -2,7 +2,8 @@
   "name": "@js-universal",
   "private": true,
   "scripts": {
-    "dev": "turbo dev",
+    "dev": "turbo dev --concurrency=12",
+    "tron": "turbo run dev --filter=electron",
     "type:check": "turbo run type:check",
     "ui:add": "cd packages/ui && pnpm ui:add",
     "ui": "turbo dev --filter=rn-shadcn --concurrency 4",

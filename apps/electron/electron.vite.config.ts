@@ -5,9 +5,13 @@ import path from "path";
 
 const isDevelopment = process.env.NODE_ENV === "development";
 
+process.env.ELECTRON_EXEC_PATH = "/Users/zila/Documents/project/next-dev/electron-conda/apps/electron/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron";
+
 export default defineConfig({
   main: {
     build: {
+      input: path.resolve(__dirname, "src/main/index.ts"),
+      target: "node16",
       rollupOptions: {
         external: [
           "electron",
@@ -39,6 +43,7 @@ export default defineConfig({
   },
   preload: {
     build: {
+      target: "node16",
       rollupOptions: {
         input: {
           index: path.resolve(__dirname, "src/preload/index.ts"),
