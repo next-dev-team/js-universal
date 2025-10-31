@@ -46,6 +46,7 @@
     "antd": "^5.22.6",
     "clsx": "^2.1.1",
     "cors": "^2.8.5",
+    "detect-port": "2.1.0",
     "dotenv": "^17.2.1",
     "electron": "38.4.0",
     "electron-is-dev": "^3.0.1",
