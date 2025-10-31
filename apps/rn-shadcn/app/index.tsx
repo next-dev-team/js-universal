@@ -1,4 +1,4 @@
-import { Button, Text } from '@/ui';
+import { Button, Text } from '@js-universal/ui';
 import * as React from 'react';
 
 export default function Screen() {

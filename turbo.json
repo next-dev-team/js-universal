@@ -1,5 +1,5 @@
 {
-  "$schema": "https://turborepo.com/schema/2.5.json",
+  "$schema": "https://turbo.build/schema.json",
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -22,7 +22,8 @@
         "*.tsx",
         ".eslintrc*",
         "eslint.config.*"
-      ]
+      ],
+      "outputs": []
     },
     "test": {
       "dependsOn": ["^test"],
@@ -38,17 +39,43 @@
     },
     "test:watch": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "inputs": [
+        "src/**",
+        "test/**",
+        "*.test.*",
+        "*.spec.*",
+        "vitest.config.*",
+        "jest.config.*"
+      ]
     },
     "check-types": {
       "dependsOn": ["^check-types"],
-      "inputs": ["src/**", "tsconfig.json", "package.json"]
+      "inputs": ["src/**", "tsconfig.json", "package.json"],
+      "outputs": []
     },
     "dev": {
       "cache": false,
       "persistent": true,
-      "dependsOn": ["^build"]
+      "inputs": [
+        "src/**",
+        "app/**",
+        "components/**",
+        "lib/**",
+        "*.js",
+        "*.ts",
+        "*.tsx",
+        "*.json",
+        "package.json",
+        "tsconfig.json",
+        "tailwind.config.*",
+        "metro.config.*",
+        "babel.config.*",
+        "expo.json",
+        "app.json"
+      ]
     },
+
     "clean": {
       "cache": false,
       "outputs": []
@@ -63,28 +90,34 @@
     },
     "release": {
       "dependsOn": ["build"],
-      "cache": false
+      "cache": false,
+      "outputs": []
     },
     "release:dir": {
       "dependsOn": ["build"],
-      "cache": false
+      "cache": false,
+      "outputs": []
     },
     "release:win": {
       "dependsOn": ["build"],
-      "cache": false
+      "cache": false,
+      "outputs": []
     },
     "release:mac": {
       "dependsOn": ["build"],
-      "cache": false
+      "cache": false,
+      "outputs": []
     },
     "release:linux": {
       "dependsOn": ["build"],
-      "cache": false
+      "cache": false,
+      "outputs": []
     },
     "release:all": {
       "dependsOn": ["build"],
-      "cache": false
+      "cache": false,
+      "outputs": []
     }
   },
-  "globalDependencies": ["tsconfig.json", "package.json", "turbo.jsonc"]
+  "globalDependencies": ["tsconfig.json", "package.json"]
 }

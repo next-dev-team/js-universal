@@ -5,6 +5,7 @@
   "version": "1.0.0",
   "scripts": {
     "build": "echo 'Library package - no build needed'",
+    "dev": "echo 'Library package - watching for changes'",
     "clean": "rm -rf node_modules"
   },
   "dependencies": {
